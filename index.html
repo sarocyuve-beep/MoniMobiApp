@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#153f35">
-  <title>Raporo y’Uruzinduko | Musanze</title>
+  <title>Raporo y’Ibikorwa | Musanze</title>
   <style>
     :root {
       color-scheme: light;
@@ -122,8 +122,8 @@
   <header class="topbar">
     <div class="brand">
       <div>
-        <h1>Raporo y’Uruzinduko</h1>
-        <p>Ubuvuzi bw’Amatungo n’Ubworozi · Akarere ka Musanze · Umurenge wa Cyuve</p>
+        <h1>Raporo y’Ibikorwa</h1>
+        <p>Imihigo y’Umurenge wa Cyuve 2026–2027 · Akarere ka Musanze</p>
       </div>
       <span class="tag">Mobilization · Monitoring · Follow-up</span>
     </div>
@@ -143,7 +143,7 @@
     </div>
 
     <section class="card intro">
-      <h2>Uzuza raporo y’uruzinduko</h2>
+      <h2>Uzuza raporo y’ibikorwa</h2>
       <p>Ibice A–G na K byuzuzwa kuri buri ruzinduko; hitamo ubwoko bw’uruzinduko kugira ngo wuzuze H, I cyangwa J. Raporo zibikwa muri browser y’iki gikoresho gusa. Koresha “Manura JSON” kugira ngo ubike kopi yo hanze.</p>
     </section>
 
@@ -197,9 +197,14 @@
         <div class="section-heading"><span class="letter">D</span><div><h2>Intego n’igikorwa kigenzurwa</h2><p>Purpose · Hitamo mu mihigo yo muri dosiye watanze.</p></div></div>
         <div class="grid">
           <div class="field wide"><label for="purpose">Intego y’uruzinduko</label><textarea id="purpose" name="purpose"></textarea></div>
-          <div class="field wide"><label for="goal">Igikorwa kigenzurwa <span class="hint">Ibisabwa · imihigo y’ubworozi 15 ishyirwa imbere</span></label><select id="goal" name="goal"><option value="">Hitamo umuhigo</option></select></div>
+          <div class="field wide"><label for="goal">Igikorwa kigenzurwa <span class="hint">Ibisabwa · imihigo 15 ifite ibikorwa byanditse ishyirwa imbere</span></label><select id="goal" name="goal"><option value="">Hitamo umuhigo</option></select></div>
           <div class="field"><label for="goalCategory">Icyiciro cy’umuhigo</label><input id="goalCategory" name="goalCategory" readonly></div>
-          <div class="field"><label for="goalRelevance">Ijyanye n’ubworozi?</label><input id="goalRelevance" name="goalRelevance" readonly></div>
+          <div class="field"><label for="goalTargets">Baseline na intego y’umwaka</label><input id="goalTargets" name="goalTargets" readonly></div>
+          <div class="field wide"><label for="goalQuarterTarget" id="quarterTargetLabel">Intego ku gihembwe</label><input id="goalQuarterTarget" name="goalQuarterTarget" readonly><span class="hint">Umwaka w’imihigo utangira muri Nyakanga: Q1 Nyakanga–Nzeri, Q2 Ukwakira–Ukuboza, Q3 Mutarama–Werurwe, Q4 Mata–Kamena.</span></div>
+          <div class="field wide"><div class="field-label">Ibikorwa by’umuhigo byakozwe / bigenzurwa</div><span class="hint">Hitamo ibikorwa bijyanye n’umuhigo n’ubwoko bw’uruzinduko; “Byongeweho” bigufasha kwandika ikindi gikorwa.</span></div>
+          <div class="field"><label for="goalActivity1">Igikorwa 1</label><select id="goalActivity1" name="goalActivity1"><option value="">Banza uhitemo umuhigo n’ubwoko bw’uruzinduko</option></select><span class="hint" id="activityHint1"></span><input id="customActivity1" name="customActivity1" class="hidden" placeholder="Andika igikorwa cyongeweho" aria-label="Igikorwa cyongeweho 1"></div>
+          <div class="field"><label for="goalActivity2">Igikorwa 2</label><select id="goalActivity2" name="goalActivity2"><option value="">Banza uhitemo umuhigo n’ubwoko bw’uruzinduko</option></select><span class="hint" id="activityHint2"></span><input id="customActivity2" name="customActivity2" class="hidden" placeholder="Andika igikorwa cyongeweho" aria-label="Igikorwa cyongeweho 2"></div>
+          <div class="field"><label for="goalActivity3">Igikorwa 3</label><select id="goalActivity3" name="goalActivity3"><option value="">Banza uhitemo umuhigo n’ubwoko bw’uruzinduko</option></select><span class="hint" id="activityHint3"></span><input id="customActivity3" name="customActivity3" class="hidden" placeholder="Andika igikorwa cyongeweho" aria-label="Igikorwa cyongeweho 3"></div>
         </div>
       </section>
 
@@ -386,16 +391,17 @@
 
       function populateGoals() {
         const goal = $("goal");
+        const activityRefs = new Set(data.activities.map((item) => item.refNo));
         const groups = [
-          { label: "Imihigo y’ubworozi — gushyirwa imbere", goals: data.goals.filter((item) => item.livestock) },
-          { label: "Indi mihigo", goals: data.goals.filter((item) => !item.livestock) }
+          { label: "Imihigo ifite ibikorwa byanditse", goals: data.goals.filter((item) => activityRefs.has(item.refNo)) },
+          { label: "Indi mihigo", goals: data.goals.filter((item) => !activityRefs.has(item.refNo)) }
         ];
         groups.forEach((group) => {
           if (!group.goals.length) return;
           const optgroup = document.createElement("optgroup");
           optgroup.label = group.label;
           group.goals.forEach((item) => {
-            const option = new Option(item.title, String(item.id));
+            const option = new Option(item.title, String(item.refNo));
             optgroup.append(option);
           });
           goal.append(optgroup);
@@ -403,13 +409,75 @@
         goal.addEventListener("change", updateGoalDetails);
       }
 
+      function quarterForDate(value) {
+        if (!value) return null;
+        const year = Number(value.slice(0, 4));
+        const month = Number(value.slice(5, 7));
+        if (!((year === 2026 && month >= 7) || (year === 2027 && month <= 6))) return -1;
+        if (month >= 7 && month <= 9) return 1;
+        if (month >= 10) return 2;
+        if (month <= 3) return 3;
+        return 4;
+      }
+
+      function formatTarget(value) {
+        return value === null || value === undefined || value === "" ? "Ntabwo yatanzwe" : String(value);
+      }
+
+      function updateActivityCustomFields() {
+        for (let slot = 1; slot <= 3; slot++) {
+          const selection = $("goalActivity" + slot).value;
+          const custom = selection === "__custom__";
+          $("customActivity" + slot).classList.toggle("hidden", !custom);
+          const activity = data.activities.find((item) => String(item.row) === selection);
+          $("activityHint" + slot).textContent = activity
+            ? "Urwego rushinzwe: " + activity.responsibleLevel + (activity.source ? " · Inkomoko: " + activity.source : "")
+            : custom ? "Andika igikorwa kitari mu rutonde." : "";
+        }
+      }
+
+      function updateActivities() {
+        const selectedGoal = data.goals.find((item) => String(item.refNo) === $("goal").value);
+        const visitType = $("visitType").value;
+        for (let slot = 1; slot <= 3; slot++) {
+          const select = $("goalActivity" + slot);
+          const previous = select.value;
+          select.replaceChildren();
+          select.add(new Option(selectedGoal && visitType ? "Hitamo igikorwa (" + slot + ")" : "Banza uhitemo umuhigo n’ubwoko bw’uruzinduko", ""));
+          const matches = selectedGoal && visitType
+            ? data.activities.filter((item) => item.refNo === selectedGoal.refNo && item.visitType === visitType)
+            : [];
+          matches.forEach((item) => {
+            const option = new Option(item.description, String(item.row));
+            option.title = "Urwego rushinzwe: " + item.responsibleLevel + (item.source ? " · Inkomoko: " + item.source : "");
+            select.add(option);
+          });
+          if (selectedGoal && visitType) select.add(new Option("Byongeweho (wandike igikorwa)", "__custom__"));
+          select.disabled = !selectedGoal || !visitType;
+          if ([...select.options].some((option) => option.value === previous)) select.value = previous;
+        }
+        updateActivityCustomFields();
+      }
+
       function updateGoalDetails() {
-        const selected = data.goals.find((item) => String(item.id) === $("goal").value);
+        const selected = data.goals.find((item) => String(item.refNo) === $("goal").value);
         $("goalCategory").value = selected ? selected.category : "";
-        $("goalRelevance").value = selected ? (selected.livestock ? "Yego" : "Oya / ntibyagaragajwe") : "";
+        $("goalTargets").value = selected
+          ? "Baseline: " + formatTarget(selected.baseline) + " · Intego y’umwaka: " + formatTarget(selected.annualTarget)
+          : "";
+        const quarter = quarterForDate($("visitDate").value);
+        $("quarterTargetLabel").textContent = quarter === null ? "Intego ku gihembwe"
+          : quarter < 0 ? "Intego ku gihembwe (itariki iri hanze y’umwaka wa 2026–2027)"
+            : "Intego ku gihembwe (Q" + quarter + ")";
+        $("goalQuarterTarget").value = selected
+          ? quarter === null ? "Banza uhitemo itariki y’uruzinduko"
+            : quarter < 0 ? "Itariki iri hanze y’umwaka w’imihigo wa 2026–2027"
+              : "Q" + quarter + ": " + formatTarget(selected.quarterlyTargets[quarter - 1])
+          : "";
         $("visitAdvice").textContent = selected && selected.visitTypes.length
           ? "Ubwoko bw’uruzinduko bukwiye kuri uyu muhigo: " + selected.visitTypes.join(", ") + ". Inama, si itegeko."
           : "Nta bwoko bw’uruzinduko bwatanzwe kuri uyu muhigo.";
+        updateActivities();
         updateValidation();
       }
 
@@ -423,6 +491,7 @@
           panel.classList.toggle("disabled-panel", Boolean(type) && !enabled);
           panel.setAttribute("aria-hidden", String(!enabled));
         });
+        updateActivities();
         $("photoHint").textContent = type === "Monitoring" ? "Monitoring isaba nibura ifoto imwe." : "Amafoto y’uruzinduko niba ahari.";
         updateValidation();
       }
@@ -471,33 +540,62 @@
         [...form.querySelectorAll("input[name], select[name], textarea[name]")].forEach((field) => {
           fields[field.name] = field.value;
         });
+        const selectedGoal = data.goals.find((item) => String(item.refNo) === $("goal").value);
+        const selectedActivities = [];
+        for (let slot = 1; slot <= 3; slot++) {
+          const selection = $("goalActivity" + slot).value;
+          if (selection === "__custom__" && $("customActivity" + slot).value.trim()) {
+            selectedActivities.push({
+              slot,
+              refNo: selectedGoal ? selectedGoal.refNo : null,
+              goal: selectedGoal ? selectedGoal.title : "",
+              visitType: $("visitType").value,
+              description: $("customActivity" + slot).value.trim(),
+              responsibleLevel: "Byongeweho",
+              source: "Byongeweho"
+            });
+          } else {
+            const activity = data.activities.find((item) => String(item.row) === selection);
+            if (activity) selectedActivities.push({ slot, ...activity });
+          }
+        }
         return {
+          version: 2,
           id: fields.reportNumber,
           sequence: Number((fields.reportNumber || "").split("-").pop()) || 0,
           updatedAt: new Date().toISOString(),
           fields,
+          selectedActivities,
           actions: getRows("#actionsBody tr", "action"),
           followups: getRows("#followupsBody tr", "followup")
         };
       }
 
       function applyReport(report) {
+        const fields = { ...(report.fields || {}) };
+        if (report.version !== 2 && fields.goal && data.legacyGoalRefs[fields.goal]) {
+          fields.goal = String(data.legacyGoalRefs[fields.goal]);
+        }
         form.reset();
         [...form.querySelectorAll("input[name], select[name], textarea[name]")].forEach((field) => {
-          if (field.name === "village") return;
-          if (Object.prototype.hasOwnProperty.call(report.fields || {}, field.name)) field.value = report.fields[field.name];
+          if (field.name === "village" || /^goalActivity[123]$/.test(field.name)) return;
+          if (Object.prototype.hasOwnProperty.call(fields, field.name)) field.value = fields[field.name];
         });
-        $("reportNumber").value = report.fields.reportNumber || report.id || makeReportNumber();
-        $("pageDate").value = report.fields.pageDate || dateString;
-        populateVillages($("cell").value, (report.fields || {}).village || "");
+        $("reportNumber").value = fields.reportNumber || report.id || makeReportNumber();
+        $("pageDate").value = fields.pageDate || dateString;
+        populateVillages($("cell").value, fields.village || "");
+        updateGoalDetails();
+        updateConditionalPanels();
+        for (let slot = 1; slot <= 3; slot++) {
+          $("goalActivity" + slot).value = fields["goalActivity" + slot] || "";
+        }
+        updateActivityCustomFields();
         $("actionsBody").replaceChildren();
         $("followupsBody").replaceChildren();
         (report.actions || []).forEach(addActionRow);
         (report.followups || []).forEach(addFollowupRow);
         if (!$("actionsBody").rows.length) for (let i = 0; i < 5; i++) addActionRow();
         if (!$("followupsBody").rows.length) for (let i = 0; i < 7; i++) addFollowupRow();
-        updateGoalDetails();
-        updateConditionalPanels();
         refreshReportList();
       }
 
@@ -513,6 +611,11 @@
         required.forEach(([id, label]) => { if (!$(id).value.trim()) missing.push(label); });
         const activeActions = getRows("#actionsBody tr", "action").filter((row) => row.action || row.owner || row.deadline);
         if (!activeActions.some((row) => row.action && row.owner && row.deadline)) missing.push("Nibura inama/igikorwa kimwe gifite ushinzwe na deadline");
+        for (let slot = 1; slot <= 3; slot++) {
+          if ($("goalActivity" + slot).value === "__custom__" && !$("customActivity" + slot).value.trim()) {
+            missing.push("Andika igikorwa cyongeweho " + slot);
+          }
+        }
         if ($("visitType").value === "Monitoring") {
           if (!$("findings").value.trim()) missing.push("Findings zihariye za Monitoring");
           if (Number($("photoCount").value) < 1) missing.push("Nibura ifoto imwe ya Monitoring");
@@ -605,7 +708,11 @@
           };
           return missing.includes(labels[id]) && !$(id).closest(".conditional:not(.active)");
         });
-        if (firstMissing) $(firstMissing).focus();
+        const missingCustomActivity = [1, 2, 3].find((slot) =>
+          $("goalActivity" + slot).value === "__custom__" && !$("customActivity" + slot).value.trim()
+        );
+        if (missingCustomActivity) $("customActivity" + missingCustomActivity).focus();
+        else if (firstMissing) $(firstMissing).focus();
         else $("actionsBody").querySelector("input").focus();
       }
 
@@ -617,6 +724,11 @@
       populateLocations();
       populateGoals();
       $("visitType").addEventListener("change", updateConditionalPanels);
+      $("visitDate").addEventListener("change", updateGoalDetails);
+      [1, 2, 3].forEach((slot) => $("goalActivity" + slot).addEventListener("change", () => {
+        updateActivityCustomFields();
+        updateValidation();
+      }));
       $("addAction").addEventListener("click", () => addActionRow());
       $("addFollowup").addEventListener("click", () => addFollowupRow());
       $("saveReport").addEventListener("click", saveReport);
