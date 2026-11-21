@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="rw">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#153f35">
+  <title>Raporo y’Uruzinduko | Musanze</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #20302b;
+      --muted: #64736d;
+      --line: #dce5df;
+      --green: #153f35;
+      --green-2: #286d52;
+      --pale: #edf5ef;
+      --gold: #f3cf72;
+      --yellow: #fff7db;
+      --red: #a63c31;
+      --surface: #fff;
+      --bg: #f3f6f3;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .topbar { background: var(--green); color: white; padding: 18px max(20px, calc((100% - 1120px) / 2)); }
+    .brand { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand h1 { margin: 0; font-size: clamp(1.1rem, 3vw, 1.55rem); letter-spacing: .01em; }
+    .brand p { margin: 4px 0 0; color: #d1e2d9; font-size: .9rem; }
+    .tag { border: 1px solid #6f9b85; border-radius: 999px; padding: 7px 12px; color: #e6f4ea; font-size: .8rem; white-space: nowrap; }
+    main { width: min(1120px, calc(100% - 32px)); margin: 24px auto 60px; }
+    .toolbar, .card, .notice { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+    .toolbar { padding: 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .toolbar select { min-width: 220px; flex: 1; }
+    .toolbar .spacer { flex: 1; }
+    .card { padding: clamp(18px, 3vw, 28px); margin-bottom: 16px; box-shadow: 0 3px 14px #153f3508; }
+    .intro { background: var(--pale); border-color: #d0e3d4; }
+    .intro h2 { margin: 0 0 8px; color: var(--green); }
+    .intro p { margin: 0; color: #435b4f; line-height: 1.55; }
+    .section-heading { display: flex; align-items: start; gap: 12px; padding-bottom: 14px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
+    .section-heading h2 { margin: 0; font-size: 1.1rem; color: var(--green); }
+    .section-heading p { margin: 5px 0 0; color: var(--muted); font-size: .88rem; }
+    .letter { display: inline-grid; place-items: center; width: 31px; height: 31px; flex: 0 0 31px; border-radius: 9px; background: var(--green); color: white; font-weight: 700; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .field { min-width: 0; }
+    .field.wide { grid-column: 1 / -1; }
+    label, .field-label { display: block; font-size: .88rem; font-weight: 650; margin-bottom: 7px; }
+    .hint { display: block; color: var(--muted); font-weight: 400; font-size: .78rem; margin-top: 4px; }
+    input, select, textarea { width: 100%; color: var(--ink); border: 1px solid #cbd7d0; border-radius: 8px; padding: 10px 11px; background: white; }
+    input:focus, select:focus, textarea:focus { outline: 3px solid #286d5220; border-color: var(--green-2); }
+    input[readonly] { background: #edf5ef; color: var(--green); font-weight: 650; }
+    textarea { min-height: 90px; resize: vertical; line-height: 1.45; }
+    .compact textarea { min-height: 72px; }
+    .two-textareas { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .status-strip { position: sticky; top: 0; z-index: 5; margin-bottom: 16px; padding: 12px 15px; background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 4px 12px #20302b0d; }
+    .status-strip strong { color: var(--green); }
+    .status-strip p { margin: 4px 0 0; font-size: .86rem; color: var(--muted); }
+    .status-strip.has-errors { border-color: #edc6a9; background: #fffaf5; }
+    .status-strip.has-errors strong { color: var(--red); }
+    .advice { padding: 11px 13px; border-radius: 9px; background: var(--pale); color: var(--green); font-size: .88rem; line-height: 1.45; }
+    .actions-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .actions-table th, .actions-table td { text-align: left; vertical-align: top; border: 1px solid var(--line); padding: 8px; }
+    .actions-table th { background: #f4f8f5; font-size: .82rem; }
+    .actions-table td:first-child { width: 42px; text-align: center; font-weight: 700; padding-top: 17px; }
+    .actions-table input, .actions-table select { min-width: 110px; }
+    .table-wrap { width: 100%; overflow-x: auto; }
+    .conditional { display: none; }
+    .conditional.active { display: block; }
+    .disabled-panel { background: #f3f4f4; color: #7d8581; border-color: #e0e4e1; }
+    .disabled-panel input, .disabled-panel select, .disabled-panel textarea { background: #ecefed; color: #737d78; }
+    .btn { border: 1px solid transparent; border-radius: 8px; padding: 10px 14px; font-weight: 650; }
+    .btn.primary { color: white; background: var(--green); }
+    .btn.primary:hover { background: #205744; }
+    .btn.secondary { color: var(--green); background: white; border-color: #b6c9be; }
+    .btn.secondary:hover { background: var(--pale); }
+    .btn.danger { color: var(--red); background: #fff; border-color: #e8c8c3; }
+    .btn.small { padding: 7px 10px; font-size: .83rem; }
+    .footer-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .footer-actions .spacer { flex: 1; }
+    .notice { padding: 14px 16px; margin: 14px 0; line-height: 1.5; font-size: .89rem; }
+    .notice.warning { background: var(--yellow); border-color: #ebdcaa; }
+    .notice ul { margin: 7px 0 0; padding-left: 20px; }
+    .hidden { display: none !important; }
+    .signature-box { border: 1px solid var(--line); border-radius: 10px; padding: 14px; background: #fbfcfb; }
+    .signature-box h3 { margin: 0 0 12px; font-size: .94rem; color: var(--green); }
+    .muted-note { margin: 10px 0 0; color: var(--muted); font-size: .82rem; }
+    .toast { position: fixed; right: 20px; bottom: 20px; z-index: 10; max-width: min(420px, calc(100% - 40px)); padding: 13px 17px; border-radius: 10px; background: var(--green); color: #fff; box-shadow: 0 8px 26px #0002; }
+    .toast.error { background: #8e3028; }
+    .print-only { display: none; }
+
+    @media (max-width: 700px) {
+      .grid, .grid.three, .two-textareas { grid-template-columns: 1fr; }
+      .field.wide { grid-column: auto; }
+      .brand { align-items: flex-start; }
+      .tag { display: none; }
+      .status-strip { position: static; }
+      .toolbar select { min-width: 100%; }
+      .actions-table { min-width: 680px; }
+    }
+    @media print {
+      body { background: white; font-size: 10pt; }
+      .topbar { padding: 10px 0; background: white; color: var(--ink); border-bottom: 2px solid var(--green); }
+      .brand p { color: var(--muted); }
+      main { width: 100%; margin: 12px 0; }
+      .toolbar, .status-strip, .footer-actions, .no-print, .btn { display: none !important; }
+      .card { box-shadow: none; break-inside: avoid; padding: 14px 0; border: 0; border-bottom: 1px solid #aaa; border-radius: 0; }
+      .conditional.active { display: block !important; }
+      .conditional:not(.active) { display: none !important; }
+      input, select, textarea { border: 0; border-bottom: 1px solid #bbb; border-radius: 0; padding: 4px 0; background: white !important; color: #111 !important; }
+      textarea { min-height: 45px; }
+      .letter { border: 1px solid var(--green); color: var(--green); background: white; }
+      .intro { background: white; }
+      .actions-table th, .advice { background: #f1f1f1; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div>
+        <h1>Raporo y’Uruzinduko</h1>
+        <p>Ubuvuzi bw’Amatungo n’Ubworozi · Akarere ka Musanze · Umurenge wa Cyuve</p>
+      </div>
+      <span class="tag">Mobilization · Monitoring · Follow-up</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="toolbar no-print" aria-label="Ibikorwa bya raporo">
+      <select id="savedReports" aria-label="Hitamo raporo wabitswe">
+        <option value="">Raporo zabitswe kuri iki gikoresho…</option>
+      </select>
+      <button class="btn secondary" id="loadReport" type="button">Fungura</button>
+      <button class="btn danger" id="deleteReport" type="button">Siba</button>
+      <span class="spacer"></span>
+      <button class="btn secondary" id="newReport" type="button">Raporo nshya</button>
+      <button class="btn secondary" id="exportJson" type="button">Manura JSON</button>
+      <button class="btn secondary" id="printReport" type="button">Sohora / Bika PDF</button>
+    </div>
+
+    <section class="card intro">
+      <h2>Uzuza raporo y’uruzinduko</h2>
+      <p>Ibice A–G na K byuzuzwa kuri buri ruzinduko; hitamo ubwoko bw’uruzinduko kugira ngo wuzuze H, I cyangwa J. Raporo zibikwa muri browser y’iki gikoresho gusa. Koresha “Manura JSON” kugira ngo ubike kopi yo hanze.</p>
+    </section>
+
+    <div id="validationSummary" class="status-strip" role="status" aria-live="polite">
+      <strong id="validationTitle">Ibyuzuzwa bisigaye bizagaragara hano.</strong>
+      <p id="validationText">Raporo irabika nka Draft; ushobora kuyikomeza nyuma kuri iki gikoresho.</p>
+    </div>
+
+    <form id="reportForm" novalidate>
+      <section class="card">
+        <div class="section-heading"><span class="letter">A</span><div><h2>Amakuru y’ubuyobozi</h2><p>Administrative</p></div></div>
+        <div class="grid three">
+          <div class="field"><label for="reportNumber">Nomero ya raporo</label><input id="reportNumber" name="reportNumber" readonly></div>
+          <div class="field"><label for="pageDate">Itariki y’urupapuro</label><input id="pageDate" name="pageDate" type="date"></div>
+          <div class="field"><label for="visitDate">Itariki y’uruzinduko <span class="hint">Ibisabwa</span></label><input id="visitDate" name="visitDate" type="date"></div>
+          <div class="field"><label for="district">Akarere</label><input id="district" name="district" value="Musanze" readonly></div>
+          <div class="field"><label for="sector">Umurenge</label><input id="sector" name="sector" value="Cyuve" readonly></div>
+          <div class="field"><label for="cell">Akagari</label><select id="cell" name="cell"><option value="">Hitamo akagari</option></select></div>
+          <div class="field"><label for="village">Umudugudu</label><select id="village" name="village" disabled><option value="">Banza uhitemo akagari</option></select></div>
+          <div class="field"><label for="staffName">Umukozi wakoze uruzinduko <span class="hint">Ibisabwa</span></label><input id="staffName" name="staffName" autocomplete="name"></div>
+          <div class="field"><label for="staffRole">Umwanya / Inshingano y’umukozi</label><input id="staffRole" name="staffRole"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-heading"><span class="letter">B</span><div><h2>Umugenerwabikorwa — Umworozi</h2><p>Beneficiary</p></div></div>
+        <div class="grid">
+          <div class="field"><label for="beneficiaryName">Amazina yombi <span class="hint">Ibisabwa</span></label><input id="beneficiaryName" name="beneficiaryName" autocomplete="name"></div>
+          <div class="field"><label for="phone">Telefoni</label><input id="phone" name="phone" type="tel" autocomplete="tel"></div>
+          <div class="field"><label for="nationalId">Indangamuntu</label><input id="nationalId" name="nationalId"></div>
+          <div class="field"><label for="address">Aho atuye</label><input id="address" name="address"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-heading"><span class="letter">C</span><div><h2>Ubwoko bw’uruzinduko</h2><p>Hitamo kimwe; ni cyo kigaragaza igice cyihariye wuzuza.</p></div></div>
+        <div class="grid">
+          <div class="field"><label for="visitType">Ubwoko bw’uruzinduko <span class="hint">Ibisabwa</span></label>
+            <select id="visitType" name="visitType">
+              <option value="">Hitamo ubwoko</option>
+              <option value="Mobilization">Mobilization — Gukangurira</option>
+              <option value="Monitoring">Monitoring — Gukurikirana</option>
+              <option value="Follow-up">Follow-up — Gusubira gusura</option>
+            </select>
+          </div>
+          <div class="field"><div class="field-label">Ubwoko bw’uruzinduko bukwiye</div><div class="advice" id="visitAdvice">Hitamo umuhigo kugira ngo ubone inama iri ku rupapuro rw’Imihigo.</div></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-heading"><span class="letter">D</span><div><h2>Intego n’igikorwa kigenzurwa</h2><p>Purpose · Hitamo mu mihigo yo muri dosiye watanze.</p></div></div>
+        <div class="grid">
+          <div class="field wide"><label for="purpose">Intego y’uruzinduko</label><textarea id="purpose" name="purpose"></textarea></div>
+          <div class="field wide"><label for="goal">Igikorwa kigenzurwa <span class="hint">Ibisabwa · imihigo y’ubworozi 15 ishyirwa imbere</span></label><select id="goal" name="goal"><option value="">Hitamo umuhigo</option></select></div>
+          <div class="field"><label for="goalCategory">Icyiciro cy’umuhigo</label><input id="goalCategory" name="goalCategory" readonly></div>
+          <div class="field"><label for="goalRelevance">Ijyanye n’ubworozi?</label><input id="goalRelevance" name="goalRelevance" readonly></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-heading"><span class="letter">E</span><div><h2>Imbogamizi n’ibitekerezo by’umworozi</h2><p>Challenges & Feedback</p></div></div>
+        <div class="grid">
+          <div class="field"><label for="challenges">Imbogamizi zagaragaye</label><textarea id="challenges" name="challenges"></textarea></div>
+          <div class="field"><label for="rootCause">Impamvu nyayo</label><textarea id="rootCause" name="rootCause"></textarea></div>
+          <div class="field wide"><label for="feedback">Icyo umworozi avuga</label><textarea id="feedback" name="feedback"></textarea></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-heading"><span class="letter">F</span><div><h2>Inama n’ibyemeranyijweho</h2><p>Recommendation nibura imwe igomba kugira ushinzwe n’itariki ntarengwa.</p></div></div>
+        <div class="field"><label for="recommendations">Inama zatanzwe</label><textarea id="recommendations" name="recommendations"></textarea></div>
+        <div class="table-wrap">
+          <table class="actions-table">
+            <thead><tr><th>#</th><th>Igikorwa cyemeranyijweho <span class="hint">Nibura kimwe kirakenewe</span></th><th>Ushinzwe</th><th>Deadline</th><th class="no-print">Igikorwa</th></tr></thead>
+            <tbody id="actionsBody"></tbody>
+          </table>
+        </div>
+        <button class="btn secondary small no-print" type="button" id="addAction">+ Ongeramo igikorwa</button>
+      </section>
+
+      <section class="card">
+        <div class="section-heading"><span class="letter">G</span><div><h2>Ibimenyetso n’umwanzuro</h2><p>Evidence & Conclusion</p></div></div>
+        <div class="grid">
+          <div class="field"><label for="photoCount">Umubare w’amafoto <span class="hint" id="photoHint">Monitoring isaba nibura ifoto imwe.</span></label><input id="photoCount" name="photoCount" type="number" min="0" step="1" value="0"></div>
+          <div class="field"><label for="photoCodes">Kode / Nomero z’amafoto</label><input id="photoCodes" name="photoCodes" placeholder="Urugero: IMG_0101–IMG_0103"></div>
+          <div class="field wide"><label for="notes">Inyandiko / Notes</label><textarea id="notes" name="notes"></textarea></div>
+          <div class="field wide"><label for="conclusion">Umwanzuro</label><textarea id="conclusion" name="conclusion"></textarea></div>
+          <div class="field"><label for="nextVisitDate">Itariki yo gusura bwa nyuma</label><input id="nextVisitDate" name="nextVisitDate" type="date"></div>
+          <div class="field"><label for="followupOwner">Ushinzwe gusura</label><input id="followupOwner" name="followupOwner"></div>
+        </div>
+      </section>
+
+      <section class="card conditional" id="mobilizationPanel">
+        <div class="section-heading"><span class="letter">H</span><div><h2>Igice cyihariye: MOBILIZATION</h2><p>Gukangurira</p></div></div>
+        <div class="grid">
+          <div class="field"><label for="priorKnowledge">Ubumenyi yari afite mbere</label><textarea id="priorKnowledge" name="priorKnowledge"></textarea></div>
+          <div class="field"><label for="motivation">Ubushake (1 = buke cyane, 5 = bwinshi cyane)</label><select id="motivation" name="motivation"><option value="">Hitamo</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+          <div class="field"><label for="messageGiven">Ubutumwa yahawe</label><textarea id="messageGiven" name="messageGiven"></textarea></div>
+          <div class="field"><label for="messageReception">Uko yabwakiriye</label><textarea id="messageReception" name="messageReception"></textarea></div>
+          <div class="field"><label for="expectedActions">Ibyo asabwa gukora</label><textarea id="expectedActions" name="expectedActions"></textarea></div>
+          <div class="field"><label for="participationBarriers">Impamvu zishobora gutuma atitabira</label><textarea id="participationBarriers" name="participationBarriers"></textarea></div>
+          <div class="field wide"><label for="mobilizationAgreement">Ibyemeranyijweho</label><textarea id="mobilizationAgreement" name="mobilizationAgreement"></textarea></div>
+        </div>
+      </section>
+
+      <section class="card conditional" id="monitoringPanel">
+        <div class="section-heading"><span class="letter">I</span><div><h2>Igice cyihariye: MONITORING</h2><p>Gukurikirana</p></div></div>
+        <div class="grid">
+          <div class="field"><label for="expected">Icyari giteganyijwe</label><textarea id="expected" name="expected"></textarea></div>
+          <div class="field"><label for="performed">Icyakozwe</label><textarea id="performed" name="performed"></textarea></div>
+          <div class="field"><label for="quality">Ireme ry’igikorwa</label><select id="quality" name="quality"><option value="">Hitamo</option><option>Riri hejuru</option><option>Rirashimishije</option><option>Rikeneye kunozwa</option><option>Riri hasi</option></select></div>
+          <div class="field"><label for="findings">Findings — ibyagaragaye <span class="hint">Ibisabwa: andika ibisobanutse kandi byihariye.</span></label><textarea id="findings" name="findings"></textarea></div>
+          <div class="field"><label for="discrepancy">Itandukaniro hagati y’icyari giteganyijwe n’icyakozwe</label><textarea id="discrepancy" name="discrepancy"></textarea></div>
+          <div class="field"><label for="monitoringCause">Impamvu</label><textarea id="monitoringCause" name="monitoringCause"></textarea></div>
+          <div class="field"><label for="impact">Ingaruka</label><textarea id="impact" name="impact"></textarea></div>
+          <div class="field"><label for="correctiveAction">Ingamba zo gukosora</label><textarea id="correctiveAction" name="correctiveAction"></textarea></div>
+        </div>
+        <h3>Ibipimo by’ubworozi</h3>
+        <div class="grid three">
+          <div class="field"><label for="inseminationDate">Itariki y’intanga</label><input id="inseminationDate" name="inseminationDate" type="date"></div>
+          <div class="field"><label for="semenType">Ubwoko bw’intanga</label><input id="semenType" name="semenType"></div>
+          <div class="field"><label for="inspectionDate">Itariki y’isuzuma</label><input id="inspectionDate" name="inspectionDate" type="date"></div>
+          <div class="field"><label for="inspectionResult">Ibyavuye mu isuzuma</label><input id="inspectionResult" name="inspectionResult"></div>
+          <div class="field"><label for="birthDate">Itariki yo kubyara</label><input id="birthDate" name="birthDate" type="date"></div>
+          <div class="field"><label for="animalNumber">Nomero y’itungo / inyana</label><input id="animalNumber" name="animalNumber"></div>
+          <div class="field"><label for="calfRegistered">Inyana yamenyekanishijwe</label><select id="calfRegistered" name="calfRegistered"><option value="">Hitamo</option><option>Yego</option><option>Oya</option><option>Ntabwo bireba</option></select></div>
+          <div class="field"><label for="vaccinations">Inkingo (izakozwe n’itariki)</label><textarea id="vaccinations" name="vaccinations"></textarea></div>
+          <div class="field"><label for="records">Ububiko bw’amakuru (records)</label><select id="records" name="records"><option value="">Hitamo</option><option>Burahari kandi bunoze</option><option>Burahari ariko ntibunoze</option><option>Ntabwo buhari</option><option>Ntabwo bireba</option></select></div>
+          <div class="field"><label for="water">Amazi</label><select id="water" name="water"><option value="">Hitamo</option><option>Ahari</option><option>Ntahari</option><option>Ntabwo bireba</option></select></div>
+          <div class="field"><label for="shelter">Ikiraro</label><select id="shelter" name="shelter"><option value="">Hitamo</option><option>Kirahari kandi kimeze neza</option><option>Kirahari ariko gikeneye gusanwa</option><option>Nta kiraro</option><option>Ntabwo bireba</option></select></div>
+          <div class="field"><label for="hygiene">Isuku</label><select id="hygiene" name="hygiene"><option value="">Hitamo</option><option>Ni nziza</option><option>Ikeneye kunozwa</option><option>Ntabwo ireba</option></select></div>
+        </div>
+      </section>
+
+      <section class="card conditional" id="followupPanel">
+        <div class="section-heading"><span class="letter">J</span><div><h2>Igice cyihariye: FOLLOW-UP</h2><p>Gusubira gusura · buri nama ikurikiranwa ukwayo.</p></div></div>
+        <div class="grid">
+          <div class="field"><label for="previousReport">Raporo y’ubushize (nomero)</label><input id="previousReport" name="previousReport"></div>
+          <div class="field"><label for="lastVisitDate">Itariki y’uruzinduko rwa nyuma</label><input id="lastVisitDate" name="lastVisitDate" type="date"></div>
+        </div>
+        <div class="table-wrap">
+          <table class="actions-table">
+            <thead><tr><th>#</th><th>Inama yatanzwe ubushize</th><th>Yashyizwe mu bikorwa?</th><th>Impamvu niba itarakozwe</th><th class="no-print">Igikorwa</th></tr></thead>
+            <tbody id="followupsBody"></tbody>
+          </table>
+        </div>
+        <button class="btn secondary small no-print" type="button" id="addFollowup">+ Ongeramo inama yo gukurikirana</button>
+      </section>
+
+      <section class="card">
+        <div class="section-heading"><span class="letter">K</span><div><h2>Kwemeza no gusinya</h2><p>Status</p></div></div>
+        <div class="grid">
+          <div class="field"><label for="reportStatus">Status ya raporo</label><select id="reportStatus" name="reportStatus"><option>Draft</option><option>Yujujwe</option><option>Yoherejwe ngo yemezwe</option><option>Yemejwe</option></select></div>
+        </div>
+        <div class="grid three" style="margin-top:16px">
+          <div class="signature-box"><h3>Umukozi wakoze uruzinduko</h3><div class="field"><label for="staffSigner">Izina</label><input id="staffSigner" name="staffSigner"></div><div class="field"><label for="staffSignature">Umukono</label><input id="staffSignature" name="staffSignature" placeholder="Andika izina cyangwa usinye ku rupapuro"></div><div class="field"><label for="staffSignDate">Itariki</label><input id="staffSignDate" name="staffSignDate" type="date"></div></div>
+          <div class="signature-box"><h3>Umugenerwabikorwa</h3><div class="field"><label for="beneficiarySigner">Izina</label><input id="beneficiarySigner" name="beneficiarySigner"></div><div class="field"><label for="beneficiarySignature">Umukono</label><input id="beneficiarySignature" name="beneficiarySignature" placeholder="Andika izina cyangwa usinye ku rupapuro"></div><div class="field"><label for="beneficiarySignDate">Itariki</label><input id="beneficiarySignDate" name="beneficiarySignDate" type="date"></div></div>
+          <div class="signature-box"><h3>ES w’Umurenge (Sector Approval)</h3><div class="field"><label for="sectorSigner">Izina</label><input id="sectorSigner" name="sectorSigner"></div><div class="field"><label for="sectorSignature">Umukono</label><input id="sectorSignature" name="sectorSignature" placeholder="Andika izina cyangwa usinye ku rupapuro"></div><div class="field"><label for="sectorSignDate">Itariki</label><input id="sectorSignDate" name="sectorSignDate" type="date"></div></div>
+        </div>
+        <p class="muted-note">Ibyangombwa bishobora gusinywa ku rupapuro rwa PDF rwasohowe, iyo gukoresha umukono wa elegitoroniki bitari ngombwa.</p>
+      </section>
+
+      <div class="footer-actions no-print">
+        <button class="btn primary" type="button" id="saveReport">Bika raporo</button>
+        <button class="btn secondary" type="button" id="validateReport">Reba ibibura</button>
+        <span class="spacer"></span>
+        <button class="btn secondary" type="button" id="printBottom">Sohora / Bika PDF</button>
+      </div>
+      <div class="notice warning">
+        <strong>Amabwiriza y’ingenzi</strong>
+        <ul id="instructionsList"></ul>
+      </div>
+    </form>
+  </main>
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <script src="data.js"></script>
+  <script>
+    (() => {
+      "use strict";
+      const data = window.REPORT_DATA;
+      const form = document.getElementById("reportForm");
+      const $ = (id) => document.getElementById(id);
+      const storageKey = "musanze-visit-reports-v1";
+      const today = new Date();
+      const dateString = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      let toastTimer;
+      let storageReadFailed = false;
+
+      function getReports() {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(storageKey) || "[]");
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+          storageReadFailed = true;
+          showToast("Raporo zabitswe ntizashoboye gusomwa. Ntizahanaguwe.", true);
+          return [];
+        }
+      }
+
+      function makeReportNumber() {
+        const reports = getReports();
+        const sequence = Math.max(0, ...reports.map((report) => Number(report.sequence) || 0)) + 1;
+        return "MUS-CYU-" + dateString.replaceAll("-", "") + "-" + String(sequence).padStart(3, "0");
+      }
+
+      function showToast(message, error) {
+        const toast = $("toast");
+        toast.textContent = message;
+        toast.classList.toggle("error", Boolean(error));
+        toast.classList.remove("hidden");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.add("hidden"), 3500);
+      }
+
+      function populateLocations() {
+        const cell = $("cell");
+        data.locations.forEach((item) => {
+          const option = document.createElement("option");
+          option.value = item.name;
+          option.textContent = item.name;
+          cell.append(option);
+        });
+        cell.addEventListener("change", () => populateVillages(cell.value));
+      }
+
+      function populateVillages(cellName, selected) {
+        const village = $("village");
+        village.replaceChildren(new Option(cellName ? "Hitamo umudugudu" : "Banza uhitemo akagari", ""));
+        const cell = data.locations.find((item) => item.name === cellName);
+        (cell ? cell.villages : []).forEach((name) => village.add(new Option(name, name)));
+        village.add(new Option("Undi (wandike muri Aho atuye)", "__other__"));
+        village.disabled = !cellName;
+        if (selected && [...village.options].some((option) => option.value === selected)) village.value = selected;
+        else if (selected) {
+          village.value = "__other__";
+          $("address").value = $("address").value || selected;
+        }
+      }
+
+      function populateGoals() {
+        const goal = $("goal");
+        const groups = [
+          { label: "Imihigo y’ubworozi — gushyirwa imbere", goals: data.goals.filter((item) => item.livestock) },
+          { label: "Indi mihigo", goals: data.goals.filter((item) => !item.livestock) }
+        ];
+        groups.forEach((group) => {
+          if (!group.goals.length) return;
+          const optgroup = document.createElement("optgroup");
+          optgroup.label = group.label;
+          group.goals.forEach((item) => {
+            const option = new Option(item.title, String(item.id));
+            optgroup.append(option);
+          });
+          goal.append(optgroup);
+        });
+        goal.addEventListener("change", updateGoalDetails);
+      }
+
+      function updateGoalDetails() {
+        const selected = data.goals.find((item) => String(item.id) === $("goal").value);
+        $("goalCategory").value = selected ? selected.category : "";
+        $("goalRelevance").value = selected ? (selected.livestock ? "Yego" : "Oya / ntibyagaragajwe") : "";
+        $("visitAdvice").textContent = selected && selected.visitTypes.length
+          ? "Ubwoko bw’uruzinduko bukwiye kuri uyu muhigo: " + selected.visitTypes.join(", ") + ". Inama, si itegeko."
+          : "Nta bwoko bw’uruzinduko bwatanzwe kuri uyu muhigo.";
+        updateValidation();
+      }
+
+      function updateConditionalPanels() {
+        const type = $("visitType").value;
+        const mapping = { Mobilization: "mobilizationPanel", Monitoring: "monitoringPanel", "Follow-up": "followupPanel" };
+        Object.entries(mapping).forEach(([name, id]) => {
+          const panel = $(id);
+          const enabled = type === name;
+          panel.classList.toggle("active", enabled);
+          panel.classList.toggle("disabled-panel", Boolean(type) && !enabled);
+          panel.setAttribute("aria-hidden", String(!enabled));
+        });
+        $("photoHint").textContent = type === "Monitoring" ? "Monitoring isaba nibura ifoto imwe." : "Amafoto y’uruzinduko niba ahari.";
+        updateValidation();
+      }
+
+      function addActionRow(item = {}) {
+        const row = $("actionsBody").insertRow();
+        row.innerHTML = '<td class="row-number"></td><td><input aria-label="Igikorwa cyemeranyijweho"></td><td><input aria-label="Ushinzwe"></td><td><input aria-label="Deadline" type="date"></td><td class="no-print"><button type="button" class="btn danger small remove-row" aria-label="Siba umurongo">Siba</button></td>';
+        const inputs = row.querySelectorAll("input");
+        inputs[0].value = item.action || "";
+        inputs[1].value = item.owner || "";
+        inputs[2].value = item.deadline || "";
+        row.querySelector(".remove-row").addEventListener("click", () => { row.remove(); renumberRows(); updateValidation(); });
+        row.addEventListener("input", updateValidation);
+        renumberRows();
+      }
+
+      function addFollowupRow(item = {}) {
+        const row = $("followupsBody").insertRow();
+        row.innerHTML = '<td class="row-number"></td><td><input aria-label="Inama yatanzwe ubushize"></td><td><select aria-label="Yashyizwe mu bikorwa?"><option value="">Hitamo</option><option>Yego</option><option>Igice</option><option>Oya</option></select></td><td><input aria-label="Impamvu niba itarakozwe"></td><td class="no-print"><button type="button" class="btn danger small remove-row" aria-label="Siba umurongo">Siba</button></td>';
+        const inputs = row.querySelectorAll("input, select");
+        inputs[0].value = item.recommendation || "";
+        inputs[1].value = item.status || "";
+        inputs[2].value = item.reason || "";
+        row.querySelector(".remove-row").addEventListener("click", () => { row.remove(); renumberRows(); });
+        renumberRows();
+      }
+
+      function renumberRows() {
+        document.querySelectorAll("#actionsBody tr, #followupsBody tr").forEach((row) => {
+          const number = [...row.parentElement.rows].indexOf(row) + 1;
+          row.querySelector(".row-number").textContent = number;
+        });
+      }
+
+      function getRows(selector, kind) {
+        return [...document.querySelectorAll(selector)].map((row) => {
+          const values = [...row.querySelectorAll("input, select")].map((input) => input.value.trim());
+          return kind === "action"
+            ? { action: values[0], owner: values[1], deadline: values[2] }
+            : { recommendation: values[0], status: values[1], reason: values[2] };
+        });
+      }
+
+      function collectReport() {
+        const fields = {};
+        [...form.querySelectorAll("input[name], select[name], textarea[name]")].forEach((field) => {
+          fields[field.name] = field.value;
+        });
+        return {
+          id: fields.reportNumber,
+          sequence: Number((fields.reportNumber || "").split("-").pop()) || 0,
+          updatedAt: new Date().toISOString(),
+          fields,
+          actions: getRows("#actionsBody tr", "action"),
+          followups: getRows("#followupsBody tr", "followup")
+        };
+      }
+
+      function applyReport(report) {
+        form.reset();
+        [...form.querySelectorAll("input[name], select[name], textarea[name]")].forEach((field) => {
+          if (field.name === "village") return;
+          if (Object.prototype.hasOwnProperty.call(report.fields || {}, field.name)) field.value = report.fields[field.name];
+        });
+        $("reportNumber").value = report.fields.reportNumber || report.id || makeReportNumber();
+        $("pageDate").value = report.fields.pageDate || dateString;
+        populateVillages($("cell").value, (report.fields || {}).village || "");
+        $("actionsBody").replaceChildren();
+        $("followupsBody").replaceChildren();
+        (report.actions || []).forEach(addActionRow);
+        (report.followups || []).forEach(addFollowupRow);
+        if (!$("actionsBody").rows.length) for (let i = 0; i < 5; i++) addActionRow();
+        if (!$("followupsBody").rows.length) for (let i = 0; i < 7; i++) addFollowupRow();
+        updateGoalDetails();
+        updateConditionalPanels();
+        refreshReportList();
+      }
+
+      function missingRequirements() {
+        const missing = [];
+        const required = [
+          ["beneficiaryName", "Amazina y’umworozi"],
+          ["staffName", "Izina ry’umukozi"],
+          ["visitDate", "Itariki y’uruzinduko"],
+          ["visitType", "Ubwoko bw’uruzinduko"],
+          ["goal", "Igikorwa kigenzurwa"]
+        ];
+        required.forEach(([id, label]) => { if (!$(id).value.trim()) missing.push(label); });
+        const activeActions = getRows("#actionsBody tr", "action").filter((row) => row.action || row.owner || row.deadline);
+        if (!activeActions.some((row) => row.action && row.owner && row.deadline)) missing.push("Nibura inama/igikorwa kimwe gifite ushinzwe na deadline");
+        if ($("visitType").value === "Monitoring") {
+          if (!$("findings").value.trim()) missing.push("Findings zihariye za Monitoring");
+          if (Number($("photoCount").value) < 1) missing.push("Nibura ifoto imwe ya Monitoring");
+        }
+        if ($("visitType").value === "Follow-up" && !$("previousReport").value.trim()) missing.push("Nomero ya raporo y’ubushize");
+        return missing;
+      }
+
+      function updateValidation() {
+        const missing = missingRequirements();
+        const summary = $("validationSummary");
+        summary.classList.toggle("has-errors", missing.length > 0);
+        $("validationTitle").textContent = missing.length ? "Hari ibisabwa bitaruzuzwa (" + missing.length + ")" : "Ibisabwa by’ingenzi byujujwe.";
+        $("validationText").textContent = missing.length ? missing.join(" · ") : "Ushobora kubika cyangwa gusohora raporo.";
+      }
+
+      function refreshReportList() {
+        const select = $("savedReports");
+        const previous = select.value;
+        select.replaceChildren(new Option("Raporo zabitswe kuri iki gikoresho…", ""));
+        getReports().sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt))).forEach((report) => {
+          const person = (report.fields && report.fields.beneficiaryName) || "Nta zina";
+          const date = (report.fields && report.fields.visitDate) || "";
+          select.add(new Option((report.id || "Raporo") + " · " + person + (date ? " · " + date : ""), report.id));
+        });
+        if ([...select.options].some((option) => option.value === previous)) select.value = previous;
+      }
+
+      function saveReport() {
+        if (storageReadFailed) {
+          showToast("Nta raporo ibitswe yahinduwe. Manura raporo yawe nka JSON.", true);
+          return;
+        }
+        const report = collectReport();
+        const reports = getReports();
+        const index = reports.findIndex((item) => item.id === report.id);
+        if (index >= 0) reports[index] = report;
+        else reports.push(report);
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(reports));
+          refreshReportList();
+          $("savedReports").value = report.id;
+          updateValidation();
+          showToast("Raporo " + report.id + " yabitswe kuri iki gikoresho.");
+        } catch (error) {
+          showToast("Raporo ntiyabitswe. Reba niba browser yemera kubika amakuru.", true);
+        }
+      }
+
+      function resetReport() {
+        form.reset();
+        $("reportNumber").value = makeReportNumber();
+        $("pageDate").value = dateString;
+        $("cell").value = "";
+        populateVillages("");
+        $("actionsBody").replaceChildren();
+        $("followupsBody").replaceChildren();
+        for (let i = 0; i < 5; i++) addActionRow();
+        for (let i = 0; i < 7; i++) addFollowupRow();
+        updateGoalDetails();
+        updateConditionalPanels();
+        updateValidation();
+      }
+
+      function exportJson() {
+        const report = collectReport();
+        const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = (report.id || "raporo") + ".json";
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function validateAndFocus() {
+        updateValidation();
+        const missing = missingRequirements();
+        if (!missing.length) {
+          showToast("Ibisabwa by’ingenzi byujujwe.");
+          return;
+        }
+        const firstMissing = [
+          "beneficiaryName", "staffName", "visitDate", "visitType", "goal", "findings", "photoCount", "previousReport"
+        ].find((id) => {
+          const labels = {
+            beneficiaryName: "Amazina y’umworozi", staffName: "Izina ry’umukozi", visitDate: "Itariki y’uruzinduko",
+            visitType: "Ubwoko bw’uruzinduko", goal: "Igikorwa kigenzurwa", findings: "Findings zihariye za Monitoring",
+            photoCount: "Nibura ifoto imwe ya Monitoring", previousReport: "Nomero ya raporo y’ubushize"
+          };
+          return missing.includes(labels[id]) && !$(id).closest(".conditional:not(.active)");
+        });
+        if (firstMissing) $(firstMissing).focus();
+        else $("actionsBody").querySelector("input").focus();
+      }
+
+      data.instructions.forEach((text) => {
+        const li = document.createElement("li");
+        li.textContent = text;
+        $("instructionsList").append(li);
+      });
+      populateLocations();
+      populateGoals();
+      $("visitType").addEventListener("change", updateConditionalPanels);
+      $("addAction").addEventListener("click", () => addActionRow());
+      $("addFollowup").addEventListener("click", () => addFollowupRow());
+      $("saveReport").addEventListener("click", saveReport);
+      $("validateReport").addEventListener("click", validateAndFocus);
+      $("newReport").addEventListener("click", () => {
+        if (!formHasContent() || window.confirm("Fungura raporo nshya? Ibyo utarabika ntibizabikwa.")) resetReport();
+      });
+      $("loadReport").addEventListener("click", () => {
+        const report = getReports().find((item) => item.id === $("savedReports").value);
+        if (report) applyReport(report);
+        else showToast("Banza uhitemo raporo wabitswe.", true);
+      });
+      $("deleteReport").addEventListener("click", () => {
+        const id = $("savedReports").value;
+        if (!id) return showToast("Banza uhitemo raporo ushaka gusiba.", true);
+        if (!window.confirm("Urashaka gusiba raporo " + id + "?")) return;
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(getReports().filter((item) => item.id !== id)));
+          refreshReportList();
+          showToast("Raporo yasibwe kuri iki gikoresho.");
+        } catch (error) {
+          showToast("Raporo ntiyashoboye gusibwa.", true);
+        }
+      });
+      $("exportJson").addEventListener("click", exportJson);
+      $("printReport").addEventListener("click", () => window.print());
+      $("printBottom").addEventListener("click", () => window.print());
+      form.addEventListener("submit", (event) => { event.preventDefault(); saveReport(); });
+      form.addEventListener("input", updateValidation);
+      form.addEventListener("change", updateValidation);
+
+      function formHasContent() {
+        return [...form.querySelectorAll("input:not([readonly]), select, textarea")].some((field) =>
+          field.name !== "pageDate" && field.name !== "reportStatus" && field.value && field.value !== "0"
+        );
+      }
+
+      $("staffSigner").addEventListener("input", () => { if (!$("staffName").value) $("staffName").value = $("staffSigner").value; });
+      $("beneficiarySigner").addEventListener("input", () => { if (!$("beneficiaryName").value) $("beneficiaryName").value = $("beneficiarySigner").value; });
+      $("village").addEventListener("change", () => {
+        if ($("village").value && $("village").value !== "__other__") $("address").value = $("village").value;
+        else if ($("village").value === "__other__") $("address").value = "";
+      });
+
+      populateVillages("");
+      refreshReportList();
+      resetReport();
+      window.addEventListener("beforeprint", () => {
+        document.querySelectorAll(".conditional").forEach((panel) => {
+          panel.classList.toggle("active", panel.id === ({ Mobilization: "mobilizationPanel", Monitoring: "monitoringPanel", "Follow-up": "followupPanel" })[$("visitType").value]);
+        });
+      });
+      window.addEventListener("afterprint", updateConditionalPanels);
+    })();
+  </script>
+</body>
+</html>
