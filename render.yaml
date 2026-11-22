@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: monimobi-app
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.13.0
+      - key: NODE_ENV
+        value: production
+      - key: DB_PATH
+        value: /tmp/monimobi.sqlite
+      - key: RESTORE_GITHUB_SNAPSHOT
+        value: "true"
+      - key: TRUST_PROXY
+        value: "1"
+      - key: GH_DATA_PATH
+        value: monimobi.sqlite.enc
+      - key: GH_DATA_DEBOUNCE_MS
+        value: "15000"
+      - key: JWT_SECRET
+        sync: false
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_FULL_NAME
+        sync: false
+      - key: GH_DATA_TOKEN
+        sync: false
+      - key: GH_DATA_REPO
+        sync: false
+      - key: GH_DATA_ENCRYPTION_KEY
+        sync: false
