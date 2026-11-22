@@ -1,0 +1,814 @@
+diff --git a/index.html b/index.html
+index dd37120..5340ee3 100644
+--- a/index.html
++++ b/index.html
+@@ -186,6 +186,8 @@
+       <button class="btn secondary hidden" id="manageUsers" type="button">Genzura konti z’abakozi</button>
+       <span class="spacer"></span>
+       <button class="btn secondary" id="newReport" type="button">Raporo nshya</button>
++      <button class="btn" id="downloadDocx" type="button" title="Memo + raporo + amafoto, mu miterere ya Cyuve">Pakura Word (raporo iri hejuru)</button>
++      <button class="btn secondary" id="downloadDocxGroup" type="button" title="Raporo zose z’ubwoko bumwe, itariki n’akagari bimwe">Pakura Word (zose z’uwo munsi)</button>
+       <button class="btn secondary" id="exportJson" type="button">Manura JSON</button>
+       <button class="btn secondary" id="printReport" type="button">Sohora / Bika PDF</button>
+     </div>
+@@ -795,6 +797,37 @@
+         updateValidation();
+       }
+ 
++      async function downloadDocx(group) {
++        const selected = currentReports.find((report) => report.id === $("savedReports").value);
++        if (!selected) return showToast("Banza uhitemo raporo wabitswe mu rutonde.", true);
++        const key = (report) => [report.fields.visitType, report.fields.visitDate, report.fields.cell].join("|");
++        const chosen = group
++          ? currentReports.filter((report) => key(report) === key(selected))
++          : [selected];
++        chosen.sort((a, b) => String(a.fields.reportNumber).localeCompare(String(b.fields.reportNumber)));
++        try {
++          const response = await fetch("/api/reports/docx", {
++            method: "POST",
++            headers: { "Content-Type": "application/json", Authorization: "Bearer " + authToken },
++            body: JSON.stringify({ ids: chosen.map((report) => report.id) })
++          });
++          if (!response.ok) {
++            const body = await response.json().catch(() => ({}));
++            throw new Error(body.error || "Ntibishobotse gukora Word.");
++          }
++          const blob = await response.blob();
++          const match = /filename="([^"]+)"/.exec(response.headers.get("Content-Disposition") || "");
++          const link = document.createElement("a");
++          link.href = URL.createObjectURL(blob);
++          link.download = match ? match[1] : "Raporo_Imihigo.docx";
++          link.click();
++          URL.revokeObjectURL(link.href);
++          showToast("Word yakozwe (" + chosen.length + (chosen.length > 1 ? " raporo)." : " raporo)."));
++        } catch (error) {
++          showToast(error.message, true);
++        }
++      }
++
+       function exportJson() {
+         const report = collectReport();
+         const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json;charset=utf-8" });
+@@ -851,6 +884,8 @@
+       $("newReport").addEventListener("click", () => {
+         if (!formHasContent() || window.confirm("Fungura raporo nshya? Ibyo utarabika ntibizabikwa.")) resetReport();
+       });
++      $("downloadDocx").addEventListener("click", () => downloadDocx(false));
++      $("downloadDocxGroup").addEventListener("click", () => downloadDocx(true));
+       $("exportJson").addEventListener("click", exportJson);
+       $("printReport").addEventListener("click", () => window.print());
+       $("printBottom").addEventListener("click", () => window.print());
+diff --git a/package.json b/package.json
+index b4d73be..4a004d1 100644
+--- a/package.json
++++ b/package.json
+@@ -14,6 +14,7 @@
+   },
+   "dependencies": {
+     "bcryptjs": "^2.4.3",
++    "docx": "^9.5.0",
+     "dotenv": "^16.4.7",
+     "express": "^4.21.2",
+     "express-rate-limit": "^7.5.0",
+diff --git a/src/assets/emblem.jpeg b/src/assets/emblem.jpeg
+new file mode 100644
+index 0000000000000000000000000000000000000000..b5b8f89122d06c0db58b62ec55097257fcb13592
+GIT binary patch
+literal 9757
+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
+Dq0*N(
+
+literal 0
+HcmV?d00001
+
+diff --git a/src/docx-report.js b/src/docx-report.js
+new file mode 100644
+index 0000000..e1c3d99
+--- /dev/null
++++ b/src/docx-report.js
+@@ -0,0 +1,468 @@
++"use strict";
++// Gukora raporo za Word (memo interne + raporo + amafoto) mu miterere y'amasample ya Cyuve.
++const fs = require("node:fs");
++const path = require("node:path");
++const {
++  Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, ImageRun, Footer,
++  AlignmentType, WidthType, BorderStyle, ShadingType, PageOrientation, VerticalAlign, HeightRule,
++  HorizontalPositionRelativeFrom, VerticalPositionRelativeFrom, TextWrappingType, TextWrappingSide, TabStopType
++} = require("docx");
++
++const emblem = fs.readFileSync(path.join(__dirname, "assets", "emblem.jpeg"));
++
++// Imihigo iva muri data.js (ni yo ikoreshwa na form), kugira ngo tubone izina ry'umuhigo n'icyiciro.
++const goalsByRef = (() => {
++  try {
++    const source = fs.readFileSync(path.join(__dirname, "..", "data.js"), "utf8");
++    const json = source.replace(/^\s*window\.REPORT_DATA\s*=\s*/, "").replace(/;\s*$/, "");
++    const goals = JSON.parse(json).goals || [];
++    return new Map(goals.map((goal) => [String(goal.refNo), goal]));
++  } catch {
++    return new Map();
++  }
++})();
++
++const TYPES = {
++  Monitoring: {
++    fileLabel: "Monitoring",
++    reason: "Raporo y’ubugenzuzi (Monitoring)",
++    reportTitle: "RAPORO Y’UBUGENZUZI (MONITORING)",
++    partI: "I. ICYICIRO N’UMUHIGO WAGENZUWE",
++    goalHeader: "UMUHIGO WAGENZUWE",
++    whoHeader: "ABAGENZUWE",
++    whereHeader: "AHO UBUGENZUZI BWAKOREWE",
++    partII: "II. AMAKURU KU MUHIGO WAGENZUWE",
++    photos: "III. AMAFOTO Y’UBUGENZUZI",
++    widths: [400, 1000, 1400, 1600, 2600, 2600, 1700, 2000, 920],
++    headers: ["SN", "Umuhigo", "Icyari giteganyijwe", "Icyakozwe", "Ireme ry’igikorwa na Findings",
++      "Itandukaniro n’impamvu", "Ingaruka", "Ingamba zo gukosora", "IFOTO"]
++  },
++  Mobilization: {
++    fileLabel: "Mobilization",
++    reason: "Raporo y’ubukangurambaga",
++    reportTitle: "RAPORO Y’UBUKANGURAMBAGA",
++    partI: "I. ICYICIRO N’IMIHIGO YAKOREWE UBUKANGURAMBAGA",
++    goalHeader: "UMUHIGO WAKOREWE UBUKANGURAMBAGA",
++    whoHeader: "ABAGEZWEHO N’UBUKANGURAMBAGA",
++    whereHeader: "AHO UBUKANGURAMBAGA BWAKOREWE",
++    partII: "II. AMAKURU KU MIHIGO WAKOREWE UBUKANGURAMBAGA",
++    photos: "III. AMAFOTO Y’UBUKANGURAMBAGA",
++    widths: [465, 1750, 1351, 2681, 1530, 1620, 1440, 1890, 1493],
++    headers: ["SN", "Umuhigo", "Ubumenyi basanzwe bafite ku gikorwa", "Ubutumwa/Ibikorwa by’ubukangurambaga",
++      "Uko bakiriye ubutumwa n’ubushake bwo kwitabira", "Ibyo basabwa gukora kugira ngo bitabire",
++      "Impamvu zishobora gutuma batitabira", "Ibyemeranyijweho nyuma ya mobilization", "IFOTO"]
++  },
++  "Follow-up": {
++    fileLabel: "Followup",
++    reason: "Raporo yo gusubira gusura (Follow-up)",
++    reportTitle: "RAPORO YO GUSUBIRA GUSURA (FOLLOW-UP)",
++    partI: "I. ICYICIRO N’UMUHIGO WASUBIWEMO GUSURA",
++    goalHeader: "UMUHIGO WAKURIKIRANWE",
++    whoHeader: "ABASURWE",
++    whereHeader: "AHO UBUSURA BWAKOREWE",
++    partII: "II. AMAKURU KU MUHIGO WAKURIKIRANWE",
++    photos: "III. AMAFOTO Y’UBUSURA",
++    widths: [400, 1100, 1500, 2100, 1300, 2400, 2400, 1900, 1120],
++    headers: ["SN", "Umuhigo", "Raporo y’ubushize", "Inama yatanzwe ubushize", "Yashyizwe mu bikorwa?",
++      "Impamvu niba itarakozwe", "Ibyemeranyijweho (igikorwa gishya)", "Ushinzwe na Deadline", "IFOTO"]
++  }
++};
++
++const SERIF = "Times New Roman";
++const SANS = "Arial";
++const border = { style: BorderStyle.SINGLE, size: 4, color: "000000" };
++const borders = { top: border, bottom: border, left: border, right: border };
++const cellMargins = { top: 50, bottom: 50, left: 80, right: 80 };
++
++const clean = (value) => (typeof value === "string" ? value.trim() : "");
++const noEnd = (value) => clean(value).replace(/[\s.;,:]+$/, "");
++const fieldsOf = (report) => report.fields || {};
++
++function formatDate(value) {
++  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(clean(value));
++  return match ? match[3] + "/" + match[2] + "/" + match[1] : clean(value);
++}
++
++function unique(values) {
++  return [...new Set(values.map(clean).filter(Boolean))];
++}
++
++function joinList(values) {
++  if (values.length <= 1) return values.join("");
++  return values.slice(0, -1).join(", ") + " na " + values[values.length - 1];
++}
++
++function goalOf(report) {
++  const fields = fieldsOf(report);
++  const known = goalsByRef.get(String(fields.goal));
++  const activity = (report.selectedActivities || []).find((item) => item.goal);
++  return {
++    title: (known && known.title) || (activity && activity.goal) || clean(fields.goal),
++    category: clean(fields.goalCategory) || (known && known.category) || ""
++  };
++}
++
++function run(text, options = {}) {
++  return new TextRun({ text, font: options.font || SERIF, size: options.size || 24, bold: options.bold, underline: options.underline ? {} : undefined, italics: options.italics });
++}
++
++function para(children, options = {}) {
++  const runs = typeof children === "string" ? [run(children, options)] : children;
++  return new Paragraph({ children: runs, alignment: options.alignment, spacing: { before: options.before || 0, after: options.after === undefined ? 120 : options.after, line: options.line }, keepNext: options.keepNext });
++}
++
++// Ikirango kiri ibumoso (floating), amagambo ari iruhande yacyo — nk'uko biri mu samples.
++function header(imageWidth, imageHeight) {
++  const line = (text, underline) => new Paragraph({
++    alignment: AlignmentType.JUSTIFIED,
++    spacing: { after: 0 },
++    children: [run(text, { underline })]
++  });
++  return [
++    new Paragraph({
++      alignment: AlignmentType.JUSTIFIED,
++      spacing: { after: 0 },
++      children: [new ImageRun({
++        type: "jpg",
++        data: emblem,
++        transformation: { width: imageWidth, height: imageHeight },
++        altText: { title: "emblemrwenvois", description: "emblemrwenvois", name: "emblem" },
++        floating: {
++          horizontalPosition: { relative: HorizontalPositionRelativeFrom.MARGIN, offset: -133350 },
++          verticalPosition: { relative: VerticalPositionRelativeFrom.PARAGRAPH, offset: 88900 },
++          wrap: { type: TextWrappingType.SQUARE, side: TextWrappingSide.BOTH_SIDES },
++          margins: { left: 114300, right: 114300, bottom: 114300 },
++          allowOverlap: true
++        }
++      })]
++    }),
++    line("Repubulika y’u Rwanda", true),
++    line("Intara y’Amajyaruguru"),
++    line("Akarere ka Musanze"),
++    line("Umurenge wa Cyuve")
++  ];
++}
++
++const blank = (count = 1) => Array.from({ length: count }, () => new Paragraph({ spacing: { after: 0 }, children: [run("")] }));
++
++function footer() {
++  const part = (text) => new TextRun({ text, font: "Cambria", size: 16, bold: true, italics: true });
++  return new Footer({
++    children: [
++      new Paragraph({
++        border: { top: { style: BorderStyle.SINGLE, size: 24, space: 1, color: "auto" } },
++        tabStops: [{ type: TabStopType.CENTER, position: 4680 }, { type: TabStopType.RIGHT, position: 9360 }],
++        children: [part("Email: cyuve@musanze.gov.rw"), new TextRun({ text: "\t", size: 16 }), part("Phone contact: 0782468519"), new TextRun({ text: "\t", size: 16 }), part("Po. Box: 03 Musanze")]
++      })
++    ]
++  });
++}
++
++// Igice cya "Authority" kiri mu memo (nk'uko kiri muri sample).
++function authorityBlock() {
++  const none = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
++  const noBorders = { top: none, bottom: none, left: none, right: none };
++  const b = (text, options = {}) => new Paragraph({
++    alignment: options.alignment,
++    spacing: { after: options.after || 0, line: options.line },
++    children: [new TextRun({ text, font: SERIF, size: 24, bold: true, underline: options.underline ? {} : undefined })]
++  });
++  const dots = "…………………………………………………";
++  return new Table({
++    width: { size: 9026, type: WidthType.DXA },
++    columnWidths: [4513, 4513],
++    rows: [new TableRow({
++      cantSplit: true,
++      children: [
++        new TableCell({ width: { size: 4513, type: WidthType.DXA }, borders: noBorders, children: [b("Authority Comments:", { after: 60 }), b(dots, { line: 360 }), b(dots, { line: 360 }), b(dots, { line: 360 })] }),
++        new TableCell({ width: { size: 4513, type: WidthType.DXA }, borders: noBorders, children: [b("Authority Names, Signature and Stump", { alignment: AlignmentType.CENTER, underline: true, after: 360 }), b("NDAYAMBAJE KARIMA Augustin", { alignment: AlignmentType.CENTER }), b("Executive Secretary/Cyuve Sector", { alignment: AlignmentType.CENTER })] })
++      ]
++    })]
++  });
++}
++
++function cell(lines, width, options = {}) {
++  const items = (Array.isArray(lines) ? lines : [lines]).flatMap((line) => String(line === undefined || line === null ? "" : line).split("\n"));
++  const paragraphs = items.length ? items.map((text) => new Paragraph({
++    alignment: options.alignment,
++    spacing: { after: 40 },
++    children: [new TextRun({ text, font: SANS, size: options.size || 18, bold: options.bold })]
++  })) : [new Paragraph({ children: [] })];
++  return new TableCell({
++    width: { size: width, type: WidthType.DXA },
++    borders,
++    margins: cellMargins,
++    verticalAlign: options.verticalAlign || VerticalAlign.TOP,
++    columnSpan: options.columnSpan,
++    rowSpan: options.rowSpan,
++    shading: options.shaded ? { type: ShadingType.CLEAR, color: "auto", fill: "D9D9D9" } : undefined,
++    children: paragraphs
++  });
++}
++
++const dash = (value) => (clean(value) ? clean(value) : "-");
++const labelled = (label, value) => (clean(value) ? label + ": " + clean(value) : "");
++const compact = (lines) => lines.filter(Boolean);
++
++function actionLines(actions) {
++  return (actions || [])
++    .filter((item) => item && (item.action || item.owner || item.deadline))
++    .map((item, index) => (index + 1) + ") " + dash(item.action) +
++      (item.owner || item.deadline ? " — " + [item.owner && "ushinzwe: " + item.owner, item.deadline && "deadline: " + formatDate(item.deadline)].filter(Boolean).join("; ") : ""));
++}
++
++function photoCell(report) {
++  const fields = fieldsOf(report);
++  const codes = clean(fields.photoCodes);
++  const count = parseInt(fields.photoCount, 10);
++  if (codes) return codes;
++  return count > 0 ? "Reba igice III" : "";
++}
++
++const MONITORING_EXTRA = [
++  ["inseminationDate", "Itariki y’intanga", true], ["semenType", "Ubwoko bw’intanga"], ["inspectionDate", "Itariki y’isuzuma", true],
++  ["inspectionResult", "Ibyavuye mu isuzuma"], ["birthDate", "Itariki yo kubyara", true], ["animalNumber", "Nomero y’itungo/inyana"],
++  ["calfRegistered", "Inyana yamenyekanishijwe"], ["vaccinations", "Inkingo"], ["records", "Ububiko bw’amakuru"],
++  ["water", "Amazi"], ["shelter", "Ikiraro"], ["hygiene", "Isuku"]
++];
++
++function detailRows(type, reports, widths) {
++  const rows = [];
++  let serial = 0;
++  reports.forEach((report) => {
++    const f = fieldsOf(report);
++    const goal = goalOf(report).title;
++    const photo = photoCell(report);
++    const agreed = actionLines(report.actions);
++    if (type === "Monitoring") {
++      const extra = MONITORING_EXTRA.filter(([key]) => clean(f[key]))
++        .map(([key, label, isDate]) => label + ": " + (isDate ? formatDate(f[key]) : clean(f[key])));
++      const values = [
++        String(++serial), goal, dash(f.expected), dash(f.performed),
++        compact([labelled("Ireme", f.quality), labelled("Findings", f.findings), ...extra]).join("\n") || "-",
++        compact([labelled("Itandukaniro", f.discrepancy), labelled("Impamvu", f.monitoringCause)]).join("\n") || "-",
++        dash(f.impact),
++        compact([clean(f.correctiveAction), ...agreed]).join("\n") || "-",
++        photo
++      ];
++      rows.push(new TableRow({ children: values.map((value, index) => cell(value, widths[index])) }));
++    } else if (type === "Mobilization") {
++      const reception = compact([clean(f.messageReception), clean(f.motivation) ? "Ubushake: " + clean(f.motivation) + "/5" : ""]).join("\n");
++      const values = [
++        String(++serial), goal, dash(f.priorKnowledge), dash(f.messageGiven), dash(reception),
++        dash(f.expectedActions), dash(f.participationBarriers),
++        compact([clean(f.mobilizationAgreement), ...agreed]).join("\n") || "-",
++        photo
++      ];
++      rows.push(new TableRow({ children: values.map((value, index) => cell(value, widths[index])) }));
++    } else {
++      const followups = (report.followups || []).filter((item) => item && (item.recommendation || item.status || item.reason));
++      const actions = (report.actions || []).filter((item) => item && (item.action || item.owner || item.deadline));
++      const count = Math.max(followups.length, actions.length, 1);
++      for (let i = 0; i < count; i++) {
++        const followup = followups[i] || {};
++        const action = actions[i] || {};
++        const previous = compact([clean(f.previousReport), labelled("Uruzinduko rwa nyuma", formatDate(f.lastVisitDate))]).join("\n");
++        const values = [
++          String(++serial), goal, dash(previous), dash(followup.recommendation), dash(followup.status), dash(followup.reason),
++          dash(action.action), compact([clean(action.owner), action.deadline ? formatDate(action.deadline) : ""]).join("; ") || "-",
++          i === 0 ? photo : ""
++        ];
++        rows.push(new TableRow({ children: values.map((value, index) => cell(value, widths[index])) }));
++      }
++    }
++  });
++  return rows;
++}
++
++function locationTable(config, reports) {
++  const widths = [700, 1820, 4140, 2520, 2020, 3020];
++  const head = (text, width, options = {}) => cell(text, width, { bold: true, shaded: true, alignment: AlignmentType.CENTER, ...options });
++  const rows = [
++    new TableRow({
++      tableHeader: true,
++      children: [
++        head("SN", widths[0], { rowSpan: 2 }), head("ICYICIRO", widths[1], { rowSpan: 2 }),
++        head(config.goalHeader, widths[2], { rowSpan: 2 }), head(config.whoHeader, widths[3], { rowSpan: 2 }),
++        head(config.whereHeader, widths[4] + widths[5], { columnSpan: 2 })
++      ]
++    }),
++    new TableRow({ tableHeader: true, children: [head("AKAGARI", widths[4]), head("UMUDUGUDU", widths[5])] })
++  ];
++  reports.forEach((report, index) => {
++    const f = fieldsOf(report);
++    const goal = goalOf(report);
++    rows.push(new TableRow({
++      children: [
++        cell(String(index + 1), widths[0]), cell(goal.category, widths[1]), cell(goal.title, widths[2]),
++        cell(dash(f.beneficiaryName), widths[3]), cell(clean(f.cell).toUpperCase(), widths[4]), cell(clean(f.village).toUpperCase(), widths[5])
++      ]
++    }));
++  });
++  return new Table({ width: { size: 14220, type: WidthType.DXA }, columnWidths: widths, rows });
++}
++
++function memoSummary(type, reports) {
++  if (type === "Follow-up") {
++    const rows = reports.flatMap((report) => report.followups || []).filter((item) => item && item.status);
++    if (!rows.length) return "";
++    const count = (status) => rows.filter((item) => item.status === status).length;
++    return "Muri uru ruzinduko hakurikiranywe inama " + rows.length + " zatanzwe mu bugenzuzi bwabanje: Yego " +
++      count("Yego") + ", Igice " + count("Igice") + ", Oya " + count("Oya") + ". Ibitarakozwe byahawe ushinzwe n’igihe ntarengwa.";
++  }
++  if (type === "Monitoring") {
++    const parts = reports.map((report) => {
++      const f = fieldsOf(report);
++      return compact([labelled("Icyari giteganyijwe", noEnd(f.expected)), labelled("icyakozwe", noEnd(f.performed)), labelled("ireme ry’igikorwa", noEnd(f.quality))]).join("; ");
++    }).filter(Boolean);
++    return parts.length ? "Muri ubu bugenzuzi: " + parts.join(" | ") + "." : "";
++  }
++  const messages = unique(reports.map((report) => noEnd(fieldsOf(report).messageGiven)));
++  return messages.length ? "Muri ubu bukangurambaga hatanzwe ubutumwa bukurikira: " + messages.join(" | ") + "." : "";
++}
++
++function memoBody(type, reports, context) {
++  const { goals, who, cells, villages, visitDate } = context;
++  const place = "mu kagari ka " + joinList(cells.map((value) => value.toUpperCase())) +
++    (villages.length ? " Umudugudu wa " + joinList(villages.map((value) => value.toUpperCase())) : "");
++  const what = { Monitoring: "raporo y’ubugenzuzi (monitoring) ku muhigo wa ", Mobilization: "raporo y’ubukangurambaga ku muhigo wa ", "Follow-up": "raporo yo gusubira gusura (follow-up) ku muhigo wa " }[type];
++  const verb = type === "Follow-up" ? "yakozwe" : "bwakozwe";
++  const intro = "Nejejwe no kubandikira iyi memo interne ngira ngo mbagezeho ku mugereka wayo " + what + joinList(goals) +
++    " " + verb + " kuwa " + visitDate + " ku " + who + " " + place + ".";
++  const closing = type === "Monitoring"
++    ? "Ibindi bijyanye n’icyari giteganyijwe, icyakozwe, findings, itandukaniro n’impamvu zaryo, ingaruka n’ingamba zo gukosora, murabisanga muri raporo iri ku mugereka. Mbasabye kudushyigikira mu gukurikirana ko izo ngamba zishyirwa mu bikorwa."
++    : type === "Mobilization"
++      ? "Ibindi bijyanye n’uko bakiriye ubutumwa, ubushake bwo kwitabira, ibyo basabwa gukora, impamvu zishobora gutuma batitabira n’ibyemeranyijweho nyuma y’ubukangurambaga, murabisanga muri raporo iri ku mugereka."
++      : "Ibindi bijyanye n’inama yatanzwe ubushize, uko yashyizwe mu bikorwa, impamvu z’ibitarakozwe n’ibyemeranyijweho bishya, murabisanga muri raporo iri ku mugereka. Mbasabye kudushyigikira mu gukurikirana ibyemeranyijweho bishya.";
++  return compact([intro, memoSummary(type, reports), closing]);
++}
++
++function photoSection(config, reports, signature) {
++  const entries = [];
++  reports.forEach((report) => {
++    const f = fieldsOf(report);
++    const count = Math.min(Math.max(parseInt(f.photoCount, 10) || 0, 0), 12);
++    const codes = clean(f.photoCodes).split(/[\n,;]+/).map(clean).filter(Boolean);
++    const total = Math.max(count, codes.length);
++    for (let i = 0; i < total; i++) {
++      entries.push("Ifoto " + (entries.length + 1) + (codes[i] ? " — " + codes[i] : "") + (reports.length > 1 ? " (" + dash(f.beneficiaryName) + ")" : ""));
++    }
++  });
++  const children = [para([run(config.photos, { font: SANS, size: 26, bold: true, underline: true }), run(" (labeled photos)", { font: SANS, size: 22, italics: true, bold: true })], { after: 160, keepNext: true })];
++  if (!entries.length) {
++    children.push(para("Nta mafoto yashyizweho muri raporo.", { font: SANS, size: 22 }));
++    return children;
++  }
++  const half = 7110;
++  const rows = [];
++  for (let i = 0; i < entries.length; i += 2) {
++    const make = (label) => label
++      ? new TableCell({
++        width: { size: half, type: WidthType.DXA }, borders, margins: cellMargins,
++        children: [new Paragraph({ children: [new TextRun({ text: "[Shyiramo ifoto hano]", font: SANS, size: 18, italics: true, color: "808080" })], spacing: { after: 1800 } }),
++          new Paragraph({ children: [new TextRun({ text: label, font: SANS, size: 18, bold: true })] })]
++      })
++      : new TableCell({ width: { size: half, type: WidthType.DXA }, borders, margins: cellMargins, children: [new Paragraph({ children: [] })] });
++    rows.push(new TableRow({ cantSplit: true, height: { value: 3200, rule: HeightRule.ATLEAST }, children: [make(entries[i]), make(entries[i + 1])] }));
++  }
++  children.push(new Table({ width: { size: 14220, type: WidthType.DXA }, columnWidths: [half, half], rows }));
++  return children;
++}
++
++async function buildReportDocx(reports, options = {}) {
++  if (!Array.isArray(reports) || !reports.length) throw new Error("Nta raporo zahiswemo.");
++  const type = fieldsOf(reports[0]).visitType;
++  const config = TYPES[type];
++  if (!config) throw new Error("Ubwoko bw’uruzinduko ntibuzwi: " + (type || "ntabwo bwahiswemo") + ".");
++  if (reports.some((report) => fieldsOf(report).visitType !== type)) {
++    throw new Error("Raporo zihujwe zigomba kuba zifite ubwoko bumwe bw’uruzinduko.");
++  }
++
++  const first = fieldsOf(reports[0]);
++  const today = new Date().toISOString().slice(0, 10);
++  const reportDate = formatDate(options.reportDate || first.pageDate || today);
++  const visitDates = unique(reports.map((report) => formatDate(fieldsOf(report).visitDate)));
++  const context = {
++    goals: unique(reports.map((report) => goalOf(report).title)),
++    who: joinList(unique(reports.map((report) => fieldsOf(report).beneficiaryName))) || "aborozi",
++    cells: unique(reports.map((report) => fieldsOf(report).cell)),
++    villages: unique(reports.map((report) => fieldsOf(report).village)),
++    visitDate: joinList(visitDates) || reportDate
++  };
++  const staffName = clean(first.staffName) || clean(options.staffName);
++  const role = clean(first.staffRole) || "Umukozi ushinzwe Ubworozi";
++  const roleLine = /murenge/i.test(role) ? role : role + " mu Murenge wa CYUVE";
++
++  const bold = (text) => run(text, { bold: true });
++  const jp = (children, options = {}) => new Paragraph({ alignment: AlignmentType.JUSTIFIED, spacing: { after: 0, line: options.line }, children });
++  const memo = [
++    ...header(84, 79),
++    ...blank(2),
++    jp([run("MEMO INTERNE No ………..", { underline: true })]),
++    jp([run("REF: SARO")]),
++    ...blank(2),
++    jp([bold("KUVA KURI: "), run(roleLine)], { line: 276 }),
++    jp([bold("KUJYA KURI: "), run("Bwana Umunyamabanga Nshingwabikorwa w’Umurenge wa CYUVE")], { line: 276 }),
++    jp([bold("ITARIKI: "), run(reportDate)], { line: 276 }),
++    ...blank(1),
++    jp([run("IMPAMVU:", { bold: true, underline: true }), bold(" " + config.reason + " ku " + context.who)]),
++    ...blank(1),
++    jp([run("Bwana Muyobozi,")]),
++    ...blank(1),
++    ...memoBody(type, reports, context).flatMap((text) => [jp([run(text)], { line: 276 }), ...blank(1)]),
++    jp([run("Mugire amahoro.")]),
++    ...blank(4),
++    jp([bold(staffName)]),
++    jp([bold(roleLine)]),
++    ...blank(1),
++    authorityBlock()
++  ];
++
++  const report = [
++    ...header(69, 58),
++    para([run(config.reportTitle, { font: SANS, size: 26, bold: true, underline: true })], { alignment: AlignmentType.CENTER, after: 200 }),
++    para([run(config.partI, { font: SANS, size: 22, bold: true })], { after: 120, keepNext: true }),
++    locationTable(config, reports),
++    para("", { after: 160 }),
++    para([run(config.partII, { font: SANS, size: 22, bold: true })], { after: 120, keepNext: true }),
++    new Table({
++      width: { size: 14220, type: WidthType.DXA },
++      columnWidths: config.widths,
++      rows: [
++        new TableRow({ tableHeader: true, children: config.headers.map((text, index) => cell(text, config.widths[index], { bold: true, shaded: true, alignment: AlignmentType.CENTER, size: 16 })) }),
++        ...detailRows(type, reports, config.widths).map((row) => row)
++      ]
++    }),
++    para([run("Bikorewe Cyuve kuwa " + reportDate)], { alignment: AlignmentType.CENTER, before: 160, after: 120 }),
++    ...blank(4),
++    new Paragraph({ alignment: AlignmentType.JUSTIFIED, spacing: { after: 0 }, children: [run(staffName, { bold: true })] }),
++    new Paragraph({ alignment: AlignmentType.JUSTIFIED, spacing: { after: 0 }, children: [run(roleLine, { bold: true })] })
++  ];
++
++  const landscape = {
++    page: {
++      size: { width: 12240, height: 15840, orientation: PageOrientation.LANDSCAPE },
++      margin: { top: 1080, right: 1080, bottom: 1080, left: 1080, header: 708, footer: 500 }
++    }
++  };
++  const doc = new Document({
++    creator: staffName || "MoniMobi",
++    title: config.reportTitle,
++    styles: { default: { document: { run: { font: SERIF, size: 24 } } } },
++    sections: [
++      { properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1440, right: 1440, bottom: 1440, left: 1440, header: 708, footer: 708 } } }, footers: { default: footer() }, children: memo },
++      { properties: landscape, footers: { default: footer() }, children: report },
++      { properties: landscape, footers: { default: footer() }, children: photoSection(config, reports) }
++    ]
++  });
++  return Packer.toBuffer(doc);
++}
++
++function docxFileName(reports) {
++  const first = fieldsOf(reports[0]);
++  const config = TYPES[first.visitType] || { fileLabel: "Raporo" };
++  const date = clean(first.visitDate) || new Date().toISOString().slice(0, 10);
++  return "Raporo_Imihigo_" + config.fileLabel + "_" + date + ".docx";
++}
++
++module.exports = { buildReportDocx, docxFileName };
+diff --git a/src/server.js b/src/server.js
+index eb0e6d1..7e61fb5 100644
+--- a/src/server.js
++++ b/src/server.js
+@@ -9,6 +9,7 @@ const helmet = require("helmet");
+ const { db } = require("./db");
+ const { login, publicUser, requireAuth, requireAdmin } = require("./auth");
+ const persistence = require("./persist");
++const { buildReportDocx, docxFileName } = require("./docx-report");
+ 
+ const app = express();
+ const publicDirectory = path.resolve(__dirname, "..");
+@@ -115,6 +116,25 @@ app.get("/api/reports", requireAuth, (req, res) => {
+   res.json({ reports: rows.map(reportFromRow) });
+ });
+ 
++app.post("/api/reports/docx", requireAuth, async (req, res) => {
++  const ids = req.body && req.body.ids;
++  if (!Array.isArray(ids) || !ids.length || ids.length > 50 || ids.some((id) => typeof id !== "string")) {
++    return res.status(400).json({ error: "Hitamo raporo kuva kuri 1 kugeza kuri 50." });
++  }
++  const reports = ids.map((id) => db.prepare(reportSelect + " WHERE r.id = ?").get(id)).filter(Boolean).map(reportFromRow);
++  if (reports.length !== ids.length) return res.status(404).json({ error: "Hari raporo itabonetse." });
++  try {
++    const buffer = await buildReportDocx(reports, { staffName: req.user.full_name });
++    res.set({
++      "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
++      "Content-Disposition": 'attachment; filename="' + docxFileName(reports) + '"'
++    });
++    res.send(buffer);
++  } catch (error) {
++    res.status(400).json({ error: error.message });
++  }
++});
++
+ app.get("/api/reports/:id", requireAuth, (req, res) => {
+   const row = db.prepare(reportSelect + " WHERE r.id = ?").get(req.params.id);
+   if (!row) return res.status(404).json({ error: "Raporo ntiyabonetse." });
+diff --git a/test/server.test.js b/test/server.test.js
+index a5156c1..78f1673 100644
+--- a/test/server.test.js
++++ b/test/server.test.js
+@@ -187,3 +187,31 @@ test("admins can create employee accounts but employees cannot", async () => {
+   });
+   assert.equal(denied.response.status, 403);
+ });
++
++test("Word report endpoint builds a .docx from saved reports", async () => {
++  const sample = (visitType) => ({
++    version: 3,
++    fields: { reportNumber: "R-DOCX-" + visitType, visitDate: "2026-11-20", visitType, goal: "12", cell: "KABEZA", village: "GASHANGIRO", beneficiaryName: "Itsinda GIRAMATA", staffName: "Staff One" },
++    actions: [{ action: "Gutera intanga", owner: "Aborozi", deadline: "2026-12-01" }],
++    followups: [{ recommendation: "Inama", status: "Yego", reason: "" }]
++  });
++  const created = await request("/api/reports", { token: staffToken, method: "POST", body: sample("Monitoring") });
++  const response = await fetch(baseUrl + "/api/reports/docx", {
++    method: "POST",
++    headers: { Authorization: "Bearer " + staffToken, "Content-Type": "application/json" },
++    body: JSON.stringify({ ids: [created.result.report.id] })
++  });
++  assert.equal(response.status, 200);
++  assert.match(response.headers.get("content-disposition"), /Raporo_Imihigo_Monitoring_2026-11-20\.docx/);
++  const bytes = Buffer.from(await response.arrayBuffer());
++  assert.equal(bytes.subarray(0, 2).toString(), "PK");
++
++  const missing = await request("/api/reports/docx", { token: staffToken, method: "POST", body: { ids: ["does-not-exist"] } });
++  assert.equal(missing.response.status, 404);
++  const anonymous = await request("/api/reports/docx", { method: "POST", body: { ids: [created.result.report.id] } });
++  assert.equal(anonymous.response.status, 401);
++
++  const mixed = await request("/api/reports", { token: staffToken, method: "POST", body: sample("Follow-up") });
++  const mixedResponse = await request("/api/reports/docx", { token: staffToken, method: "POST", body: { ids: [created.result.report.id, mixed.result.report.id] } });
++  assert.equal(mixedResponse.response.status, 400);
++});
