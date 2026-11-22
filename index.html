@@ -28,6 +28,8 @@
     button { cursor: pointer; }
     .topbar { background: var(--green); color: white; padding: 18px max(20px, calc((100% - 1120px) / 2)); }
     .brand { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand-copy { flex: 1; }
+    .user-session { display: flex; align-items: center; gap: 10px; font-size: .85rem; }
     .brand h1 { margin: 0; font-size: clamp(1.1rem, 3vw, 1.55rem); letter-spacing: .01em; }
     .brand p { margin: 4px 0 0; color: #d1e2d9; font-size: .9rem; }
     .tag { border: 1px solid #6f9b85; border-radius: 999px; padding: 7px 12px; color: #e6f4ea; font-size: .8rem; white-space: nowrap; }
@@ -91,6 +93,17 @@
     .toast { position: fixed; right: 20px; bottom: 20px; z-index: 10; max-width: min(420px, calc(100% - 40px)); padding: 13px 17px; border-radius: 10px; background: var(--green); color: #fff; box-shadow: 0 8px 26px #0002; }
     .toast.error { background: #8e3028; }
     .print-only { display: none; }
+    .login-shell { width: min(440px, calc(100% - 32px)); margin: 56px auto; }
+    .login-card { background: white; border: 1px solid var(--line); border-radius: 14px; padding: 26px; box-shadow: 0 8px 26px #153f3510; }
+    .login-card h2 { margin: 0 0 8px; color: var(--green); }
+    .login-card p { color: var(--muted); line-height: 1.5; }
+    .login-card .field { margin: 14px 0; }
+    .login-message { min-height: 1.4em; color: var(--red); font-size: .88rem; }
+    .connection-state { color: #d1e2d9; font-size: .78rem; }
+    .user-table { width: 100%; border-collapse: collapse; }
+    .user-table th, .user-table td { border: 1px solid var(--line); padding: 9px; text-align: left; }
+    .user-table th { background: #f4f8f5; font-size: .84rem; }
+    .account-form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-items: end; }
 
     @media (max-width: 700px) {
       .grid, .grid.three, .two-textareas { grid-template-columns: 1fr; }
@@ -100,6 +113,8 @@
       .status-strip { position: static; }
       .toolbar select { min-width: 100%; }
       .actions-table { min-width: 680px; }
+      .account-form { grid-template-columns: 1fr; }
+      .user-session { flex-wrap: wrap; justify-content: flex-end; }
     }
     @media print {
       body { background: white; font-size: 10pt; }
@@ -121,36 +136,82 @@
 <body>
   <header class="topbar">
     <div class="brand">
-      <div>
+      <div class="brand-copy">
         <h1>Raporo y’Ibikorwa</h1>
         <p>Imihigo y’Umurenge wa Cyuve 2026–2027 · Akarere ka Musanze</p>
       </div>
       <span class="tag">Mobilization · Monitoring · Follow-up</span>
+      <div class="user-session hidden" id="userSession">
+        <span id="sessionUser"></span>
+        <span class="connection-state" id="connectionState">Nta murongo uhari</span>
+        <button class="btn secondary small" type="button" id="logoutButton">Sohoka</button>
+      </div>
     </div>
   </header>
 
-  <main>
+  <section class="login-shell hidden" id="loginView">
+    <div class="login-card">
+      <h2>Kwinjira muri MoniMobi</h2>
+      <p>Injira ukoresheje konti wahawe kugira ngo urebe cyangwa wuzuze raporo zisangirwa n’ikipe.</p>
+      <form id="loginForm">
+        <div class="field"><label for="loginUsername">Izina rya konti</label><input id="loginUsername" name="username" autocomplete="username" required></div>
+        <div class="field"><label for="loginPassword">Ijambo ry’ibanga</label><input id="loginPassword" name="password" type="password" autocomplete="current-password" required></div>
+        <button class="btn primary" type="submit" id="loginButton">Injira</button>
+        <div class="login-message" id="loginMessage" role="alert"></div>
+      </form>
+    </div>
+  </section>
+
+  <section class="login-shell hidden" id="passwordView">
+    <div class="login-card">
+      <h2>Hindura ijambo ry’ibanga</h2>
+      <p>Ku mutekano, konti nshya igomba gushyiraho ijambo ry’ibanga rishya mbere yo gukomeza.</p>
+      <form id="changePasswordForm">
+        <div class="field"><label for="currentPassword">Ijambo ry’ibanga wahawe</label><input id="currentPassword" type="password" autocomplete="current-password" required></div>
+        <div class="field"><label for="newPassword">Ijambo ry’ibanga rishya (inyuguti 12+)</label><input id="newPassword" type="password" minlength="12" autocomplete="new-password" required></div>
+        <button class="btn primary" type="submit" id="changePasswordButton">Hindura ijambo ry’ibanga</button>
+        <div class="login-message" id="passwordMessage" role="alert"></div>
+      </form>
+    </div>
+  </section>
+
+  <main id="appView" class="hidden">
     <div class="toolbar no-print" aria-label="Ibikorwa bya raporo">
       <select id="savedReports" aria-label="Hitamo raporo wabitswe">
         <option value="">Raporo zabitswe kuri iki gikoresho…</option>
       </select>
       <button class="btn secondary" id="loadReport" type="button">Fungura</button>
       <button class="btn danger" id="deleteReport" type="button">Siba</button>
+      <button class="btn secondary" id="importLocal" type="button">Himura raporo zo kuri iki gikoresho</button>
+      <button class="btn secondary hidden" id="manageUsers" type="button">Genzura konti z’abakozi</button>
       <span class="spacer"></span>
       <button class="btn secondary" id="newReport" type="button">Raporo nshya</button>
       <button class="btn secondary" id="exportJson" type="button">Manura JSON</button>
       <button class="btn secondary" id="printReport" type="button">Sohora / Bika PDF</button>
     </div>
 
+    <section class="card hidden no-print" id="usersPanel">
+      <div class="section-heading"><span class="letter">U</span><div><h2>Konti z’abakozi</h2><p>Admin ashobora gukora cyangwa guhagarika konti z’abakozi.</p></div></div>
+      <form id="createUserForm" class="account-form">
+        <div class="field"><label for="newUserName">Amazina</label><input id="newUserName" required autocomplete="name"></div>
+        <div class="field"><label for="newUsername">Username</label><input id="newUsername" required autocomplete="off"></div>
+        <div class="field"><label for="newUserPassword">Ijambo ry’ibanga ry’agateganyo</label><input id="newUserPassword" type="password" minlength="12" required autocomplete="new-password"></div>
+        <button class="btn primary" type="submit" id="createUserButton">Kora konti y’umukozi</button>
+      </form>
+      <p class="login-message" id="userMessage" role="status"></p>
+      <div class="table-wrap"><table class="user-table"><thead><tr><th>Amazina</th><th>Username</th><th>Uruhare</th><th>Imimerere</th><th>Igikorwa</th></tr></thead><tbody id="usersBody"></tbody></table></div>
+    </section>
+
     <section class="card intro">
       <h2>Uzuza raporo y’ibikorwa</h2>
-      <p>Ibice A–G na K byuzuzwa kuri buri ruzinduko; hitamo ubwoko bw’uruzinduko kugira ngo wuzuze H, I cyangwa J. Raporo zibikwa muri browser y’iki gikoresho gusa. Koresha “Manura JSON” kugira ngo ubike kopi yo hanze.</p>
+      <p>Ibice A–G na K byuzuzwa kuri buri ruzinduko; hitamo ubwoko bw’uruzinduko kugira ngo wuzuze H, I cyangwa J. Raporo zibikwa kuri server, zisangirwa n’abakoresha bafite konti. Gukora backup kuri GitHub private bisaba ko umuyobozi ashyiraho ibanga ryayo muri Render.</p>
     </section>
 
     <div id="validationSummary" class="status-strip" role="status" aria-live="polite">
       <strong id="validationTitle">Ibyuzuzwa bisigaye bizagaragara hano.</strong>
       <p id="validationText">Raporo irabika nka Draft; ushobora kuyikomeza nyuma kuri iki gikoresho.</p>
     </div>
+    <div id="readOnlyNotice" class="notice warning hidden no-print" role="status">Ureba raporo yakozwe n’undi mukozi. Abakozi bose bashobora kureba raporo, ariko uyikoze na admin ni bo bashobora kuyihindura cyangwa kuyisiba.</div>
 
     <form id="reportForm" novalidate>
       <section class="card">
@@ -333,26 +394,38 @@
       const form = document.getElementById("reportForm");
       const $ = (id) => document.getElementById(id);
       const storageKey = "musanze-visit-reports-v1";
+      const tokenKey = "musanze-session-token";
       const today = new Date();
       const dateString = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
       let toastTimer;
-      let storageReadFailed = false;
-
-      function getReports() {
-        try {
-          const parsed = JSON.parse(localStorage.getItem(storageKey) || "[]");
-          return Array.isArray(parsed) ? parsed : [];
-        } catch (error) {
-          storageReadFailed = true;
-          showToast("Raporo zabitswe ntizashoboye gusomwa. Ntizahanaguwe.", true);
-          return [];
-        }
-      }
+      let authToken = sessionStorage.getItem(tokenKey) || "";
+      let currentUser = null;
+      let currentReports = [];
+      let currentReportId = null;
+      let currentUpdatedAt = null;
+      let pollTimer = null;
 
       function makeReportNumber() {
-        const reports = getReports();
-        const sequence = Math.max(0, ...reports.map((report) => Number(report.sequence) || 0)) + 1;
-        return "MUS-CYU-" + dateString.replaceAll("-", "") + "-" + String(sequence).padStart(3, "0");
+        const suffix = crypto.randomUUID().replaceAll("-", "").slice(0, 6).toUpperCase();
+        return "MUS-CYU-" + dateString.replaceAll("-", "") + "-" + suffix;
+      }
+
+      async function api(url, options = {}) {
+        const response = await fetch(url, {
+          ...options,
+          headers: {
+            "Content-Type": "application/json",
+            ...(authToken ? { Authorization: "Bearer " + authToken } : {}),
+            ...(options.headers || {})
+          }
+        });
+        const body = response.status === 204 ? {} : await response.json().catch(() => ({}));
+        if (response.status === 401 && url !== "/api/auth/login") {
+          logout("Igihe cyo kwinjira cyarangiye. Ongera winjire.");
+          throw new Error(body.error || "Ongera winjire muri konti.");
+        }
+        if (!response.ok) throw new Error(body.error || "Habaye ikibazo. Ongera ugerageze.");
+        return body;
       }
 
       function showToast(message, error) {
@@ -362,6 +435,11 @@
         toast.classList.remove("hidden");
         clearTimeout(toastTimer);
         toastTimer = setTimeout(() => toast.classList.add("hidden"), 3500);
+      }
+
+      function setConnection(connected, message) {
+        $("connectionState").textContent = message || (connected ? "Server ihari" : "Nta murongo uhari");
+        $("connectionState").style.color = connected ? "#d1e2d9" : "#ffd5cc";
       }
 
       function populateLocations() {
@@ -560,10 +638,9 @@
           }
         }
         return {
-          version: 2,
-          id: fields.reportNumber,
-          sequence: Number((fields.reportNumber || "").split("-").pop()) || 0,
-          updatedAt: new Date().toISOString(),
+          version: 3,
+          id: currentReportId,
+          updatedAt: currentUpdatedAt,
           fields,
           selectedActivities,
           actions: getRows("#actionsBody tr", "action"),
@@ -573,7 +650,7 @@
 
       function applyReport(report) {
         const fields = { ...(report.fields || {}) };
-        if (report.version !== 2 && fields.goal && data.legacyGoalRefs[fields.goal]) {
+        if ((!report.version || report.version < 2) && fields.goal && data.legacyGoalRefs[fields.goal]) {
           fields.goal = String(data.legacyGoalRefs[fields.goal]);
         }
         form.reset();
@@ -583,6 +660,10 @@
         });
         $("reportNumber").value = fields.reportNumber || report.id || makeReportNumber();
         $("pageDate").value = fields.pageDate || dateString;
+        currentReportId = report.id || null;
+        currentUpdatedAt = report.updatedAt || null;
+        setReportReadOnly(Boolean(currentUser && currentUser.role !== "ADMIN" &&
+          report.owner && report.owner.id !== currentUser.id));
         populateVillages($("cell").value, fields.village || "");
         updateGoalDetails();
         updateConditionalPanels();
@@ -596,7 +677,7 @@
         (report.followups || []).forEach(addFollowupRow);
         if (!$("actionsBody").rows.length) for (let i = 0; i < 5; i++) addActionRow();
         if (!$("followupsBody").rows.length) for (let i = 0; i < 7; i++) addFollowupRow();
-        refreshReportList();
+        $("savedReports").value = currentReportId || "";
       }
 
       function missingRequirements() {
@@ -635,40 +716,74 @@
       function refreshReportList() {
         const select = $("savedReports");
         const previous = select.value;
-        select.replaceChildren(new Option("Raporo zabitswe kuri iki gikoresho…", ""));
-        getReports().sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt))).forEach((report) => {
+        select.replaceChildren(new Option("Raporo zibitswe kuri server…", ""));
+        currentReports.slice().sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt))).forEach((report) => {
           const person = (report.fields && report.fields.beneficiaryName) || "Nta zina";
           const date = (report.fields && report.fields.visitDate) || "";
-          select.add(new Option((report.id || "Raporo") + " · " + person + (date ? " · " + date : ""), report.id));
+          const owner = report.owner ? " · " + report.owner.fullName : "";
+          select.add(new Option((report.fields.reportNumber || report.reportNumber || "Raporo") + " · " + person + (date ? " · " + date : "") + owner, report.id));
         });
         if ([...select.options].some((option) => option.value === previous)) select.value = previous;
+        updateSelectedReportActions();
       }
 
-      function saveReport() {
-        if (storageReadFailed) {
-          showToast("Nta raporo ibitswe yahinduwe. Manura raporo yawe nka JSON.", true);
-          return;
-        }
+      function updateSelectedReportActions() {
+        const selected = currentReports.find((report) => report.id === $("savedReports").value);
+        const canEdit = selected && currentUser &&
+          (currentUser.role === "ADMIN" || selected.owner.id === currentUser.id);
+        $("deleteReport").disabled = !canEdit;
+      }
+
+      function setReportReadOnly(readOnly) {
+        form.inert = readOnly;
+        $("readOnlyNotice").classList.toggle("hidden", !readOnly);
+      }
+
+      async function loadReports(showStatus = false) {
+        const result = await api("/api/reports");
+        currentReports = result.reports;
+        refreshReportList();
+        setConnection(true);
+        if (showStatus) showToast("Raporo zasomwe kuri server.");
+      }
+
+      async function saveReport() {
         const report = collectReport();
-        const reports = getReports();
-        const index = reports.findIndex((item) => item.id === report.id);
-        if (index >= 0) reports[index] = report;
-        else reports.push(report);
+        const wasNew = !currentReportId;
         try {
-          localStorage.setItem(storageKey, JSON.stringify(reports));
+          const result = wasNew
+            ? await api("/api/reports", { method: "POST", body: JSON.stringify(report) })
+            : await api("/api/reports/" + encodeURIComponent(currentReportId), {
+                method: "PUT",
+                body: JSON.stringify({ ...report, expectedUpdatedAt: currentUpdatedAt })
+              });
+          currentReportId = result.report.id;
+          currentUpdatedAt = result.report.updatedAt;
+          const index = currentReports.findIndex((item) => item.id === result.report.id);
+          if (index >= 0) currentReports[index] = result.report;
+          else currentReports.unshift(result.report);
           refreshReportList();
-          $("savedReports").value = report.id;
+          $("savedReports").value = currentReportId;
           updateValidation();
-          showToast("Raporo " + report.id + " yabitswe kuri iki gikoresho.");
+          setConnection(true);
+          showToast("Raporo " + result.report.reportNumber + " yabitswe kandi isangiwe n’ikipe.");
         } catch (error) {
-          showToast("Raporo ntiyabitswe. Reba niba browser yemera kubika amakuru.", true);
+          setConnection(false, "Ntiyabitswe");
+          showToast(error.message, true);
         }
       }
 
       function resetReport() {
+        setReportReadOnly(false);
         form.reset();
+        currentReportId = null;
+        currentUpdatedAt = null;
         $("reportNumber").value = makeReportNumber();
         $("pageDate").value = dateString;
+        if (currentUser) {
+          $("staffName").value = currentUser.fullName;
+          $("staffSigner").value = currentUser.fullName;
+        }
         $("cell").value = "";
         populateVillages("");
         $("actionsBody").replaceChildren();
@@ -686,7 +801,7 @@
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = (report.id || "raporo") + ".json";
+        link.download = (report.fields.reportNumber || "raporo") + ".json";
         link.click();
         URL.revokeObjectURL(url);
       }
@@ -736,23 +851,6 @@
       $("newReport").addEventListener("click", () => {
         if (!formHasContent() || window.confirm("Fungura raporo nshya? Ibyo utarabika ntibizabikwa.")) resetReport();
       });
-      $("loadReport").addEventListener("click", () => {
-        const report = getReports().find((item) => item.id === $("savedReports").value);
-        if (report) applyReport(report);
-        else showToast("Banza uhitemo raporo wabitswe.", true);
-      });
-      $("deleteReport").addEventListener("click", () => {
-        const id = $("savedReports").value;
-        if (!id) return showToast("Banza uhitemo raporo ushaka gusiba.", true);
-        if (!window.confirm("Urashaka gusiba raporo " + id + "?")) return;
-        try {
-          localStorage.setItem(storageKey, JSON.stringify(getReports().filter((item) => item.id !== id)));
-          refreshReportList();
-          showToast("Raporo yasibwe kuri iki gikoresho.");
-        } catch (error) {
-          showToast("Raporo ntiyashoboye gusibwa.", true);
-        }
-      });
       $("exportJson").addEventListener("click", exportJson);
       $("printReport").addEventListener("click", () => window.print());
       $("printBottom").addEventListener("click", () => window.print());
@@ -766,6 +864,128 @@
         );
       }
 
+      function showLogin(message = "") {
+        $("loginView").classList.remove("hidden");
+        $("passwordView").classList.add("hidden");
+        $("appView").classList.add("hidden");
+        $("userSession").classList.add("hidden");
+        $("loginMessage").textContent = message;
+      }
+
+      async function showApp(user) {
+        currentUser = user;
+        if (user.mustChangePassword) {
+          $("loginView").classList.add("hidden");
+          $("appView").classList.add("hidden");
+          $("passwordView").classList.remove("hidden");
+          $("userSession").classList.add("hidden");
+          return;
+        }
+        $("passwordView").classList.add("hidden");
+        $("loginView").classList.add("hidden");
+        $("appView").classList.remove("hidden");
+        $("userSession").classList.remove("hidden");
+        $("sessionUser").textContent = user.fullName + " · " + (user.role === "ADMIN" ? "Admin" : "Umukozi");
+        $("manageUsers").classList.toggle("hidden", user.role !== "ADMIN");
+        if (user.role === "ADMIN") await loadUsers();
+        await loadReports();
+        resetReport();
+        updateLocalImportButton();
+        clearInterval(pollTimer);
+        pollTimer = setInterval(async () => {
+          try {
+            await loadReports();
+          } catch {
+            setConnection(false);
+          }
+        }, 15000);
+      }
+
+      function logout(message = "") {
+        clearInterval(pollTimer);
+        authToken = "";
+        currentUser = null;
+        currentReports = [];
+        currentReportId = null;
+        currentUpdatedAt = null;
+        sessionStorage.removeItem(tokenKey);
+        showLogin(message);
+      }
+
+      function updateLocalImportButton() {
+        try {
+          const oldReports = JSON.parse(localStorage.getItem(storageKey) || "[]");
+          const migrated = localStorage.getItem(storageKey + "-migrated") === "true";
+          $("importLocal").classList.toggle("hidden", migrated || !Array.isArray(oldReports) || oldReports.length === 0);
+          if (!migrated && Array.isArray(oldReports) && oldReports.length) {
+            $("importLocal").textContent = "Himura raporo " + oldReports.length + " zo kuri iki gikoresho";
+          }
+        } catch {
+          $("importLocal").classList.add("hidden");
+        }
+      }
+
+      async function importLocalReports() {
+        let oldReports;
+        try {
+          oldReports = JSON.parse(localStorage.getItem(storageKey) || "[]");
+        } catch {
+          showToast("Raporo za kera ntizisomeka; ntizahinduwe.", true);
+          return;
+        }
+        if (!Array.isArray(oldReports) || !oldReports.length) return;
+        if (!window.confirm("Himura raporo " + oldReports.length + " za kuri iki gikoresho uzishyire kuri server? Kopi ya browser izasigara.")) return;
+        try {
+          let totalImported = 0;
+          for (let start = 0; start < oldReports.length; start += 10) {
+            const batch = oldReports.slice(start, start + 10).map((report, index) => ({
+              legacyId: String(report.id || (report.fields && report.fields.reportNumber) || (start + index)),
+              report
+            }));
+            const result = await api("/api/reports/import", { method: "POST", body: JSON.stringify({ reports: batch }) });
+            totalImported += result.imported;
+          }
+          localStorage.setItem(storageKey + "-migrated", "true");
+          updateLocalImportButton();
+          await loadReports();
+          showToast("Raporo " + totalImported + " zimuriwe kuri server.");
+        } catch (error) {
+          showToast(error.message, true);
+        }
+      }
+
+      async function loadUsers() {
+        const result = await api("/api/users");
+        const body = $("usersBody");
+        body.replaceChildren();
+        result.users.forEach((user) => {
+          const row = body.insertRow();
+          [user.fullName, user.username, user.role === "ADMIN" ? "Admin" : "Umukozi", user.isActive ? "Irakora" : "Yahagaritswe"]
+            .forEach((value) => { row.insertCell().textContent = value; });
+          const actionCell = row.insertCell();
+          if (user.id === currentUser.id || user.role === "ADMIN") {
+            actionCell.textContent = "—";
+          } else {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "btn " + (user.isActive ? "danger" : "secondary") + " small";
+            button.textContent = user.isActive ? "Hagarika" : "Ongera ukore";
+            button.addEventListener("click", async () => {
+              try {
+                await api("/api/users/" + user.id + "/status", {
+                  method: "PATCH",
+                  body: JSON.stringify({ isActive: !user.isActive })
+                });
+                await loadUsers();
+              } catch (error) {
+                $("userMessage").textContent = error.message;
+              }
+            });
+            actionCell.append(button);
+          }
+        });
+      }
+
       $("staffSigner").addEventListener("input", () => { if (!$("staffName").value) $("staffName").value = $("staffSigner").value; });
       $("beneficiarySigner").addEventListener("input", () => { if (!$("beneficiaryName").value) $("beneficiaryName").value = $("beneficiarySigner").value; });
       $("village").addEventListener("change", () => {
@@ -774,14 +994,114 @@
       });
 
       populateVillages("");
-      refreshReportList();
       resetReport();
+      $("loginForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        $("loginButton").disabled = true;
+        $("loginMessage").textContent = "";
+        try {
+          const result = await api("/api/auth/login", {
+            method: "POST",
+            body: JSON.stringify({
+              username: $("loginUsername").value.trim(),
+              password: $("loginPassword").value
+            })
+          });
+          authToken = result.token;
+          sessionStorage.setItem(tokenKey, authToken);
+          $("loginForm").reset();
+          await showApp(result.user);
+        } catch (error) {
+          $("loginMessage").textContent = error.message;
+        } finally {
+          $("loginButton").disabled = false;
+        }
+      });
+      $("changePasswordForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        $("changePasswordButton").disabled = true;
+        $("passwordMessage").textContent = "";
+        try {
+          const result = await api("/api/auth/change-password", {
+            method: "POST",
+            body: JSON.stringify({
+              currentPassword: $("currentPassword").value,
+              newPassword: $("newPassword").value
+            })
+          });
+          $("changePasswordForm").reset();
+          await showApp(result.user);
+        } catch (error) {
+          $("passwordMessage").textContent = error.message;
+        } finally {
+          $("changePasswordButton").disabled = false;
+        }
+      });
+      $("logoutButton").addEventListener("click", () => logout());
+      $("loadReport").addEventListener("click", async () => {
+        const id = $("savedReports").value;
+        if (!id) return showToast("Banza uhitemo raporo.", true);
+        try {
+          const result = await api("/api/reports/" + encodeURIComponent(id));
+          applyReport(result.report);
+          showToast("Raporo yafunguwe.");
+        } catch (error) {
+          showToast(error.message, true);
+        }
+      });
+      $("savedReports").addEventListener("change", updateSelectedReportActions);
+      $("deleteReport").addEventListener("click", async () => {
+        const id = $("savedReports").value;
+        if (!id) return showToast("Banza uhitemo raporo ushaka gusiba.", true);
+        if (!window.confirm("Urashaka gusiba raporo wahisemo?")) return;
+        try {
+          await api("/api/reports/" + encodeURIComponent(id), { method: "DELETE" });
+          currentReports = currentReports.filter((report) => report.id !== id);
+          refreshReportList();
+          if (currentReportId === id) resetReport();
+          showToast("Raporo yasibwe kuri server.");
+        } catch (error) {
+          showToast(error.message, true);
+        }
+      });
+      $("importLocal").addEventListener("click", importLocalReports);
+      $("manageUsers").addEventListener("click", () => $("usersPanel").classList.toggle("hidden"));
+      $("createUserForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        $("createUserButton").disabled = true;
+        $("userMessage").textContent = "";
+        try {
+          await api("/api/users", {
+            method: "POST",
+            body: JSON.stringify({
+              fullName: $("newUserName").value.trim(),
+              username: $("newUsername").value.trim(),
+              temporaryPassword: $("newUserPassword").value
+            })
+          });
+          $("createUserForm").reset();
+          $("userMessage").textContent = "Konti yakozwe. Ha umukozi username n’ijambo ry’ibanga mu buryo bwizewe.";
+          await loadUsers();
+        } catch (error) {
+          $("userMessage").textContent = error.message;
+        } finally {
+          $("createUserButton").disabled = false;
+        }
+      });
       window.addEventListener("beforeprint", () => {
         document.querySelectorAll(".conditional").forEach((panel) => {
           panel.classList.toggle("active", panel.id === ({ Mobilization: "mobilizationPanel", Monitoring: "monitoringPanel", "Follow-up": "followupPanel" })[$("visitType").value]);
         });
       });
       window.addEventListener("afterprint", updateConditionalPanels);
+
+      if (authToken) {
+        api("/api/auth/me")
+          .then((result) => showApp(result.user))
+          .catch(() => logout("Ongera winjire muri konti."));
+      } else {
+        showLogin();
+      }
     })();
   </script>
 </body>
