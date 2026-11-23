@@ -32,7 +32,7 @@ const TYPES = {
     whoHeader: "ABAGENZUWE",
     whereHeader: "AHO UBUGENZUZI BWAKOREWE",
     partII: "II. AMAKURU KU MUHIGO WAGENZUWE",
-    photos: "III. AMAFOTO Y’UBUGENZUZI",
+    photos: "IV. AMAFOTO Y’UBUGENZUZI",
     widths: [400, 1000, 1400, 1600, 2600, 2600, 1700, 2000, 920],
     headers: ["SN", "Umuhigo", "Icyari giteganyijwe", "Icyakozwe", "Ireme ry’igikorwa na Findings",
       "Itandukaniro n’impamvu", "Ingaruka", "Ingamba zo gukosora", "IFOTO"]
@@ -46,7 +46,7 @@ const TYPES = {
     whoHeader: "ABAGEZWEHO N’UBUKANGURAMBAGA",
     whereHeader: "AHO UBUKANGURAMBAGA BWAKOREWE",
     partII: "II. AMAKURU KU MIHIGO WAKOREWE UBUKANGURAMBAGA",
-    photos: "III. AMAFOTO Y’UBUKANGURAMBAGA",
+    photos: "IV. AMAFOTO Y’UBUKANGURAMBAGA",
     widths: [465, 1750, 1351, 2681, 1530, 1620, 1440, 1890, 1493],
     headers: ["SN", "Umuhigo", "Ubumenyi basanzwe bafite ku gikorwa", "Ubutumwa/Ibikorwa by’ubukangurambaga",
       "Uko bakiriye ubutumwa n’ubushake bwo kwitabira", "Ibyo basabwa gukora kugira ngo bitabire",
@@ -61,7 +61,7 @@ const TYPES = {
     whoHeader: "ABASURWE",
     whereHeader: "AHO UBUSURA BWAKOREWE",
     partII: "II. AMAKURU KU MUHIGO WAKURIKIRANWE",
-    photos: "III. AMAFOTO Y’UBUSURA",
+    photos: "IV. AMAFOTO Y’UBUSURA",
     widths: [400, 1100, 1500, 2100, 1300, 2400, 2400, 1900, 1120],
     headers: ["SN", "Umuhigo", "Raporo y’ubushize", "Inama yatanzwe ubushize", "Yashyizwe mu bikorwa?",
       "Impamvu niba itarakozwe", "Ibyemeranyijweho (igikorwa gishya)", "Ushinzwe na Deadline", "IFOTO"]
@@ -256,16 +256,19 @@ function detailRows(type, reports, widths) {
       ];
       rows.push(new TableRow({ children: values.map((value, index) => cell(value, widths[index])) }));
     } else {
-      const followups = (report.followups || []).filter((item) => item && (item.recommendation || item.status || item.reason));
-      const actions = (report.actions || []).filter((item) => item && (item.action || item.owner || item.deadline));
-      const count = Math.max(followups.length, actions.length, 1);
+      const followups = (report.followups || []).filter((item) => item && (item.recommendation || item.status || item.reason || item.newAction || item.owner || item.deadline));
+      const legacyActions = (report.actions || []).filter((item) => item && (item.action || item.owner || item.deadline));
+      const count = Math.max(followups.length, legacyActions.length, 1);
       for (let i = 0; i < count; i++) {
         const followup = followups[i] || {};
-        const action = actions[i] || {};
+        const legacyAction = legacyActions[i] || {};
         const previous = compact([clean(f.previousReport), labelled("Uruzinduko rwa nyuma", formatDate(f.lastVisitDate))]).join("\n");
+        const newAction = followup.newAction || legacyAction.action;
+        const owner = followup.owner || legacyAction.owner;
+        const deadline = followup.deadline || legacyAction.deadline;
         const values = [
           String(++serial), goal, dash(previous), dash(followup.recommendation), dash(followup.status), dash(followup.reason),
-          dash(action.action), compact([clean(action.owner), action.deadline ? formatDate(action.deadline) : ""]).join("; ") || "-",
+          dash(newAction), compact([clean(owner), deadline ? formatDate(deadline) : ""]).join("; ") || "-",
           i === 0 ? photo : ""
         ];
         rows.push(new TableRow({ children: values.map((value, index) => cell(value, widths[index])) }));
@@ -273,6 +276,21 @@ function detailRows(type, reports, widths) {
     }
   });
   return rows;
+}
+
+function staffParticipantsTable(reports) {
+  const people = Array.isArray(reports[0] && reports[0].staffParticipants) ? reports[0].staffParticipants : [];
+  const widths = [700, 3600, 3300, 2500, 4120];
+  const head = (text, width) => cell(text, width, { bold: true, shaded: true, alignment: AlignmentType.CENTER });
+  const rows = [new TableRow({ tableHeader: true, children: [
+    head("SN", widths[0]), head("AMAZINA", widths[1]), head("ICYO ASHINZWE", widths[2]),
+    head("TELEPHONE", widths[3]), head("UMUKONO", widths[4])
+  ] })];
+  people.forEach((person, index) => rows.push(new TableRow({ children: [
+    cell(String(index + 1), widths[0]), cell(dash(person.name), widths[1]), cell(dash(person.role), widths[2]),
+    cell(dash(person.phone), widths[3]), cell(dash(person.signature), widths[4])
+  ] })));
+  return new Table({ width: { size: 14220, type: WidthType.DXA }, columnWidths: widths, rows });
 }
 
 function locationTable(config, reports) {
@@ -303,22 +321,36 @@ function locationTable(config, reports) {
 }
 
 function memoSummary(type, reports) {
+  const purposes = reports.map((report) => {
+    const purpose = clean(fieldsOf(report).purpose);
+    return purpose ? goalOf(report).title + ": " + purpose : "";
+  }).filter(Boolean);
+  const purposeLine = purposes.length ? "Intego z’uruzinduko kuri buri muhigo: " + purposes.join(" | ") + "." : "";
   if (type === "Follow-up") {
-    const rows = reports.flatMap((report) => report.followups || []).filter((item) => item && item.status);
-    if (!rows.length) return "";
+    const rows = reports.flatMap((report) => report.followups || []).filter((item) => item && (item.recommendation || item.status));
+    if (!rows.length) return purposeLine;
     const count = (status) => rows.filter((item) => item.status === status).length;
-    return "Muri uru ruzinduko hakurikiranywe inama " + rows.length + " zatanzwe mu bugenzuzi bwabanje: Yego " +
-      count("Yego") + ", Igice " + count("Igice") + ", Oya " + count("Oya") + ". Ibitarakozwe byahawe ushinzwe n’igihe ntarengwa.";
+    const uncompleted = rows.filter((item) => item.status === "Igice" || item.status === "Oya").length;
+    return compact([purposeLine, "Mu nama " + rows.length + " zakurikiranywe, " + count("Yego") + " zarashyizwe mu bikorwa, " +
+      count("Igice") + " zishyirwa mu bikorwa igice, naho " + count("Oya") + " ntizishyirwa mu bikorwa. " +
+      (uncompleted ? "Ibitararangira byahawe ibikorwa bishya, ababishinzwe n’igihe ntarengwa muri raporo." : "Inama zose zakurikiranywe zashyizwe mu bikorwa.")]).join(" ");
   }
   if (type === "Monitoring") {
     const parts = reports.map((report) => {
       const f = fieldsOf(report);
       return compact([labelled("Icyari giteganyijwe", noEnd(f.expected)), labelled("icyakozwe", noEnd(f.performed)), labelled("ireme ry’igikorwa", noEnd(f.quality))]).join("; ");
     }).filter(Boolean);
-    return parts.length ? "Muri ubu bugenzuzi: " + parts.join(" | ") + "." : "";
+    return compact([purposeLine, parts.length ? "Muri ubu bugenzuzi: " + parts.join(" | ") + "." : ""]).join(" ");
   }
   const messages = unique(reports.map((report) => noEnd(fieldsOf(report).messageGiven)));
-  return messages.length ? "Muri ubu bukangurambaga hatanzwe ubutumwa bukurikira: " + messages.join(" | ") + "." : "";
+  const reception = unique(reports.map((report) => noEnd(fieldsOf(report).messageReception)));
+  const agreements = unique(reports.map((report) => noEnd(fieldsOf(report).mobilizationAgreement)));
+  return compact([
+    purposeLine,
+    messages.length ? "Ubutumwa bwibanze bwatanzwe: " + messages.join(" | ") + "." : "",
+    reception.length ? "Abagezweho babwakiriye batya: " + reception.join(" | ") + "." : "",
+    agreements.length ? "Ibyemeranyijweho: " + agreements.join(" | ") + "." : ""
+  ]).join(" ");
 }
 
 function memoBody(type, reports, context) {
@@ -332,8 +364,8 @@ function memoBody(type, reports, context) {
   const closing = type === "Monitoring"
     ? "Ibindi bijyanye n’icyari giteganyijwe, icyakozwe, findings, itandukaniro n’impamvu zaryo, ingaruka n’ingamba zo gukosora, murabisanga muri raporo iri ku mugereka. Mbasabye kudushyigikira mu gukurikirana ko izo ngamba zishyirwa mu bikorwa."
     : type === "Mobilization"
-      ? "Ibindi bijyanye n’uko bakiriye ubutumwa, ubushake bwo kwitabira, ibyo basabwa gukora, impamvu zishobora gutuma batitabira n’ibyemeranyijweho nyuma y’ubukangurambaga, murabisanga muri raporo iri ku mugereka."
-      : "Ibindi bijyanye n’inama yatanzwe ubushize, uko yashyizwe mu bikorwa, impamvu z’ibitarakozwe n’ibyemeranyijweho bishya, murabisanga muri raporo iri ku mugereka. Mbasabye kudushyigikira mu gukurikirana ibyemeranyijweho bishya.";
+      ? "Ibindi bijyanye n’ubumenyi abagezweho bari basanganywe, uko bakiriye ubutumwa, imbogamizi n’ibyemeranyijweho, murabisanga muri raporo iri ku mugereka. Mbasabye kudushyigikira mu gukurikirana ishyirwa mu bikorwa ry’ibyemeranyijweho."
+      : "Ibindi bijyanye n’inama zatanzwe ubushize, uko zashyizwe mu bikorwa, impamvu z’ibitarakozwe n’ibyemeranyijweho bishya, murabisanga muri raporo iri ku mugereka. Mbasabye kudushyigikira mu gukurikirana ibyemeranyijweho bishya.";
   return compact([intro, memoSummary(type, reports), closing]);
 }
 
@@ -371,6 +403,33 @@ function photoSection(config, reports, signature) {
 
 async function buildReportDocx(reports, options = {}) {
   if (!Array.isArray(reports) || !reports.length) throw new Error("Nta raporo zahiswemo.");
+  // Expand the new visit -> targets structure into one report row per target for the existing Word layout.
+  reports = reports.flatMap((visit) => {
+    if (!Array.isArray(visit.targets) || !visit.targets.length) return [visit];
+    const base = fieldsOf(visit);
+    return visit.targets.map((target) => {
+      const detail = target.details || {};
+      const people = (target.beneficiaries || []).filter((person) => person && person.name).map((person) =>
+        person.name + (person.role === "Partner" ? " (Umufatanyabikorwa)" : " (Umugenerwabikorwa)"));
+      const fields = {
+        ...base, ...detail,
+        goal: String(target.goal || ""),
+        goalCategory: target.category || "",
+        beneficiaryName: people.join(", "),
+        cell: target.cell || "", village: target.village || "",
+        visitType: base.visitType
+      };
+      const followups = fields.visitType === "Follow-up" ? [{
+        recommendation: detail.previousRecommendation || "",
+        status: detail.implementationStatus || "",
+        reason: detail.notImplementedReason || "",
+        newAction: detail.newAction || "",
+        owner: detail.actionOwner || "",
+        deadline: detail.actionDeadline || ""
+      }] : [];
+      return { ...visit, fields, actions: target.actions || [], followups, selectedActivities: [] };
+    });
+  });
   const type = fieldsOf(reports[0]).visitType;
   const config = TYPES[type];
   if (!config) throw new Error("Ubwoko bw’uruzinduko ntibuzwi: " + (type || "ntabwo bwahiswemo") + ".");
@@ -389,8 +448,11 @@ async function buildReportDocx(reports, options = {}) {
     villages: unique(reports.map((report) => fieldsOf(report).village)),
     visitDate: joinList(visitDates) || reportDate
   };
-  const staffName = clean(first.staffName) || clean(options.staffName);
-  const role = clean(first.staffRole) || "Umukozi ushinzwe Ubworozi";
+  const team = Array.isArray(reports[0].staffParticipants) ? reports[0].staffParticipants : [];
+  const staffName = team.length
+    ? team.map((person) => [clean(person.name), clean(person.role)].filter(Boolean).join(" — ")).filter(Boolean).join("; ")
+    : clean(first.staffName) || clean(options.staffName);
+  const role = team.length ? "Abakoze igikorwa" : clean(first.staffRole) || "Umukozi ushinzwe Ubworozi";
   const roleLine = /murenge/i.test(role) ? role : role + " mu Murenge wa CYUVE";
 
   const bold = (text) => run(text, { bold: true });
@@ -424,7 +486,10 @@ async function buildReportDocx(reports, options = {}) {
     para([run(config.partI, { font: SANS, size: 22, bold: true })], { after: 120, keepNext: true }),
     locationTable(config, reports),
     para("", { after: 160 }),
-    para([run(config.partII, { font: SANS, size: 22, bold: true })], { after: 120, keepNext: true }),
+    para([run("II. ABAKOZE IGIKORWA", { font: SANS, size: 22, bold: true })], { after: 120, keepNext: true }),
+    staffParticipantsTable(reports),
+    para("", { after: 160 }),
+    para([run("III. " + config.partII.replace(/^II\. /, ""), { font: SANS, size: 22, bold: true })], { after: 120, keepNext: true }),
     new Table({
       width: { size: 14220, type: WidthType.DXA },
       columnWidths: config.widths,
