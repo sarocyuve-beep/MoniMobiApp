@@ -187,3 +187,79 @@ test("admins can create employee accounts but employees cannot", async () => {
   });
   assert.equal(denied.response.status, 403);
 });
+
+test("Word report endpoint builds a .docx from saved reports", async () => {
+  const sample = (visitType) => ({
+    version: 3,
+    fields: { reportNumber: "R-DOCX-" + visitType, visitDate: "2026-11-20", visitType, goal: "12", cell: "KABEZA", village: "GASHANGIRO", beneficiaryName: "Itsinda GIRAMATA", staffName: "Staff One" },
+    actions: [{ action: "Gutera intanga", owner: "Aborozi", deadline: "2026-12-01" }],
+    followups: [{ recommendation: "Inama", status: "Yego", reason: "" }]
+  });
+  const created = await request("/api/reports", { token: staffToken, method: "POST", body: sample("Monitoring") });
+  const response = await fetch(baseUrl + "/api/reports/docx", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + staffToken, "Content-Type": "application/json" },
+    body: JSON.stringify({ ids: [created.result.report.id] })
+  });
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-disposition"), /Raporo_Imihigo_Monitoring_2026-11-20\.docx/);
+  const bytes = Buffer.from(await response.arrayBuffer());
+  assert.equal(bytes.subarray(0, 2).toString(), "PK");
+
+  const missing = await request("/api/reports/docx", { token: staffToken, method: "POST", body: { ids: ["does-not-exist"] } });
+  assert.equal(missing.response.status, 404);
+  const anonymous = await request("/api/reports/docx", { method: "POST", body: { ids: [created.result.report.id] } });
+  assert.equal(anonymous.response.status, 401);
+
+  const mixed = await request("/api/reports", { token: staffToken, method: "POST", body: sample("Follow-up") });
+  const mixedResponse = await request("/api/reports/docx", { token: staffToken, method: "POST", body: { ids: [created.result.report.id, mixed.result.report.id] } });
+  assert.equal(mixedResponse.response.status, 400);
+});
+
+test("employees can request an account and an admin approves or rejects it", async () => {
+  const payload = { fullName: "Mukamana Jeanne", username: "jeanne.m", password: "jeanne-password-123" };
+
+  const weak = await request("/api/auth/request-account", { method: "POST", body: { ...payload, password: "short" } });
+  assert.equal(weak.response.status, 400);
+  const taken = await request("/api/auth/request-account", { method: "POST", body: { ...payload, username: "staff1" } });
+  assert.equal(taken.response.status, 409);
+
+  const created = await request("/api/auth/request-account", { method: "POST", body: payload });
+  assert.equal(created.response.status, 201);
+  const duplicate = await request("/api/auth/request-account", { method: "POST", body: payload });
+  assert.equal(duplicate.response.status, 409);
+
+  // Mbere yo kwemezwa: ntiyinjira, ariko abwirwa ko ategereje.
+  const early = await request("/api/auth/login", { method: "POST", body: { username: "jeanne.m", password: payload.password } });
+  assert.equal(early.response.status, 403);
+  assert.match(early.result.error, /itegereje|buracyategereje/);
+  const wrongPassword = await request("/api/auth/login", { method: "POST", body: { username: "jeanne.m", password: "not-the-password-1" } });
+  assert.equal(wrongPassword.response.status, 401);
+
+  // Umukozi ntashobora kureba cyangwa kwemeza ubusabe.
+  assert.equal((await request("/api/account-requests", { token: staffToken })).response.status, 403);
+
+  const pending = await request("/api/account-requests", { token: adminToken });
+  assert.equal(pending.response.status, 200);
+  const entry = pending.result.requests.find((item) => item.username === "jeanne.m");
+  assert.ok(entry);
+  assert.equal(entry.password_hash, undefined);
+
+  assert.equal((await request("/api/account-requests/" + entry.id + "/approve", { token: staffToken, method: "POST" })).response.status, 403);
+  const approved = await request("/api/account-requests/" + entry.id + "/approve", { token: adminToken, method: "POST" });
+  assert.equal(approved.response.status, 200);
+  assert.equal((await request("/api/account-requests/" + entry.id + "/approve", { token: adminToken, method: "POST" })).response.status, 404);
+
+  const login = await request("/api/auth/login", { method: "POST", body: { username: "jeanne.m", password: payload.password } });
+  assert.equal(login.response.status, 200);
+  assert.equal(login.result.user.role, "EMPLOYEE");
+  assert.equal(login.result.user.mustChangePassword, false);
+
+  const second = await request("/api/auth/request-account", { method: "POST", body: { fullName: "Uwase Alice", username: "alice.u", password: "alice-password-123" } });
+  assert.equal(second.response.status, 201);
+  const list = await request("/api/account-requests", { token: adminToken });
+  const alice = list.result.requests.find((item) => item.username === "alice.u");
+  assert.equal((await request("/api/account-requests/" + alice.id + "/reject", { token: adminToken, method: "POST" })).response.status, 200);
+  const rejected = await request("/api/auth/login", { method: "POST", body: { username: "alice.u", password: "alice-password-123" } });
+  assert.equal(rejected.response.status, 403);
+});
