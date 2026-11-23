@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#153f35">
   <title>Raporo y’Ibikorwa | Musanze</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23153f35'/%3E%3Cpath d='M20 10h17l11 11v32a3 3 0 0 1-3 3H20a3 3 0 0 1-3-3V13a3 3 0 0 1 3-3z' fill='white'/%3E%3Cpath d='M37 10v11h11z' fill='%23b9d6c8'/%3E%3Cpath d='M23 31h20M23 38h20M23 45h12' stroke='%23153f35' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E">
   <style>
     :root {
       color-scheme: light;
@@ -99,6 +100,14 @@
     .login-card p { color: var(--muted); line-height: 1.5; }
     .login-card .field { margin: 14px 0; }
     .login-message { min-height: 1.4em; color: var(--red); font-size: .88rem; }
+    .login-message.ok { color: var(--green); }
+    .link-button { background: none; border: 0; padding: 0; color: var(--green); font: inherit; text-decoration: underline; cursor: pointer; }
+    .switch-link { margin: 16px 0 0; font-size: .9rem; }
+    .report-icon { display: inline-flex; align-items: center; gap: 6px; color: var(--green); font-weight: 700; }
+    .report-icon svg { width: 26px; height: 26px; }
+    .count-badge { min-width: 22px; padding: 1px 7px; border-radius: 999px; background: var(--green); color: #fff; font-size: .76rem; text-align: center; }
+    .count-badge.alert { background: #8e3028; }
+    .sub-heading { margin: 18px 0 8px; color: var(--green); font-size: 1rem; }
     .connection-state { color: #d1e2d9; font-size: .78rem; }
     .user-table { width: 100%; border-collapse: collapse; }
     .user-table th, .user-table td { border: 1px solid var(--line); padding: 9px; text-align: left; }
@@ -159,6 +168,23 @@
         <button class="btn primary" type="submit" id="loginButton">Injira</button>
         <div class="login-message" id="loginMessage" role="alert"></div>
       </form>
+      <p class="switch-link">Nta konti ufite? <button type="button" class="link-button" id="showRequest">Saba konti</button></p>
+    </div>
+  </section>
+
+  <section class="login-shell hidden" id="requestView">
+    <div class="login-card">
+      <h2>Saba konti</h2>
+      <p>Uzuza amakuru yawe. Admin azabona ubusabe bwawe akabwemeza; nyuma yaho uzinjira ukoresheje username n’ijambo ry’ibanga wahisemo hano.</p>
+      <form id="requestForm">
+        <div class="field"><label for="requestName">Amazina yuzuye</label><input id="requestName" autocomplete="name" minlength="3" maxlength="100" required></div>
+        <div class="field"><label for="requestUsername">Username wifuza (inyuguti, imibare, . _ -)</label><input id="requestUsername" autocomplete="username" pattern="[a-zA-Z0-9._-]{3,40}" required></div>
+        <div class="field"><label for="requestPassword">Ijambo ry’ibanga (inyuguti 12+)</label><input id="requestPassword" type="password" minlength="12" autocomplete="new-password" required></div>
+        <div class="field"><label for="requestPassword2">Subiramo ijambo ry’ibanga</label><input id="requestPassword2" type="password" minlength="12" autocomplete="new-password" required></div>
+        <button class="btn primary" type="submit" id="requestButton">Ohereza ubusabe</button>
+        <div class="login-message" id="requestMessage" role="alert"></div>
+      </form>
+      <p class="switch-link"><button type="button" class="link-button" id="backToLogin">← Subira ku kwinjira</button></p>
     </div>
   </section>
 
@@ -177,6 +203,10 @@
 
   <main id="appView" class="hidden">
     <div class="toolbar no-print" aria-label="Ibikorwa bya raporo">
+      <span class="report-icon" title="Raporo zabitswe kuri server" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5h8.5L19 7v13.5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-17a1 1 0 0 1 1-1z"/><path d="M14 2.5V7h5"/><path d="M8.5 12h7M8.5 15.5h7M8.5 19h4"/></svg>
+        <span class="count-badge" id="reportCount">0</span>
+      </span>
       <select id="savedReports" aria-label="Hitamo raporo wabitswe">
         <option value="">Raporo zabitswe kuri iki gikoresho…</option>
       </select>
@@ -186,12 +216,19 @@
       <button class="btn secondary hidden" id="manageUsers" type="button">Genzura konti z’abakozi</button>
       <span class="spacer"></span>
       <button class="btn secondary" id="newReport" type="button">Raporo nshya</button>
+      <button class="btn" id="downloadDocx" type="button" title="Memo + raporo + amafoto, mu miterere ya Cyuve">Pakura Word (raporo iri hejuru)</button>
+      <button class="btn secondary" id="downloadDocxGroup" type="button" title="Raporo zose z’ubwoko bumwe, itariki n’akagari bimwe">Pakura Word (zose z’uwo munsi)</button>
       <button class="btn secondary" id="exportJson" type="button">Manura JSON</button>
       <button class="btn secondary" id="printReport" type="button">Sohora / Bika PDF</button>
     </div>
 
     <section class="card hidden no-print" id="usersPanel">
       <div class="section-heading"><span class="letter">U</span><div><h2>Konti z’abakozi</h2><p>Admin ashobora gukora cyangwa guhagarika konti z’abakozi.</p></div></div>
+      <div id="requestsBlock" class="hidden">
+        <h3 class="sub-heading">Ubusabe bwa konti butegerejwe icyemezo</h3>
+        <div class="table-wrap"><table class="user-table"><thead><tr><th>Amazina</th><th>Username</th><th>Itariki</th><th>Igikorwa</th></tr></thead><tbody id="requestsBody"></tbody></table></div>
+      </div>
+      <h3 class="sub-heading">Kora konti y’umukozi ubwawe</h3>
       <form id="createUserForm" class="account-form">
         <div class="field"><label for="newUserName">Amazina</label><input id="newUserName" required autocomplete="name"></div>
         <div class="field"><label for="newUsername">Username</label><input id="newUsername" required autocomplete="off"></div>
@@ -724,6 +761,7 @@
           select.add(new Option((report.fields.reportNumber || report.reportNumber || "Raporo") + " · " + person + (date ? " · " + date : "") + owner, report.id));
         });
         if ([...select.options].some((option) => option.value === previous)) select.value = previous;
+        $("reportCount").textContent = String(currentReports.length);
         updateSelectedReportActions();
       }
 
@@ -795,6 +833,37 @@
         updateValidation();
       }
 
+      async function downloadDocx(group) {
+        const selected = currentReports.find((report) => report.id === $("savedReports").value);
+        if (!selected) return showToast("Banza uhitemo raporo wabitswe mu rutonde.", true);
+        const key = (report) => [report.fields.visitType, report.fields.visitDate, report.fields.cell].join("|");
+        const chosen = group
+          ? currentReports.filter((report) => key(report) === key(selected))
+          : [selected];
+        chosen.sort((a, b) => String(a.fields.reportNumber).localeCompare(String(b.fields.reportNumber)));
+        try {
+          const response = await fetch("/api/reports/docx", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: "Bearer " + authToken },
+            body: JSON.stringify({ ids: chosen.map((report) => report.id) })
+          });
+          if (!response.ok) {
+            const body = await response.json().catch(() => ({}));
+            throw new Error(body.error || "Ntibishobotse gukora Word.");
+          }
+          const blob = await response.blob();
+          const match = /filename="([^"]+)"/.exec(response.headers.get("Content-Disposition") || "");
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.download = match ? match[1] : "Raporo_Imihigo.docx";
+          link.click();
+          URL.revokeObjectURL(link.href);
+          showToast("Word yakozwe (" + chosen.length + (chosen.length > 1 ? " raporo)." : " raporo)."));
+        } catch (error) {
+          showToast(error.message, true);
+        }
+      }
+
       function exportJson() {
         const report = collectReport();
         const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json;charset=utf-8" });
@@ -851,6 +920,8 @@
       $("newReport").addEventListener("click", () => {
         if (!formHasContent() || window.confirm("Fungura raporo nshya? Ibyo utarabika ntibizabikwa.")) resetReport();
       });
+      $("downloadDocx").addEventListener("click", () => downloadDocx(false));
+      $("downloadDocxGroup").addEventListener("click", () => downloadDocx(true));
       $("exportJson").addEventListener("click", exportJson);
       $("printReport").addEventListener("click", () => window.print());
       $("printBottom").addEventListener("click", () => window.print());
@@ -866,6 +937,7 @@
 
       function showLogin(message = "") {
         $("loginView").classList.remove("hidden");
+        $("requestView").classList.add("hidden");
         $("passwordView").classList.add("hidden");
         $("appView").classList.add("hidden");
         $("userSession").classList.add("hidden");
@@ -883,6 +955,7 @@
         }
         $("passwordView").classList.add("hidden");
         $("loginView").classList.add("hidden");
+        $("requestView").classList.add("hidden");
         $("appView").classList.remove("hidden");
         $("userSession").classList.remove("hidden");
         $("sessionUser").textContent = user.fullName + " · " + (user.role === "ADMIN" ? "Admin" : "Umukozi");
@@ -895,6 +968,7 @@
         pollTimer = setInterval(async () => {
           try {
             await loadReports();
+            if (currentUser && currentUser.role === "ADMIN") await loadAccountRequests();
           } catch {
             setConnection(false);
           }
@@ -954,7 +1028,42 @@
         }
       }
 
+      async function loadAccountRequests() {
+        const result = await api("/api/account-requests");
+        const body = $("requestsBody");
+        body.replaceChildren();
+        result.requests.forEach((request) => {
+          const row = body.insertRow();
+          [request.fullName, request.username, String(request.createdAt).slice(0, 10)]
+            .forEach((value) => { row.insertCell().textContent = value; });
+          const actionCell = row.insertCell();
+          const decide = (action, label, className, confirmText) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "btn " + className + " small";
+            button.textContent = label;
+            button.addEventListener("click", async () => {
+              if (confirmText && !window.confirm(confirmText)) return;
+              try {
+                await api("/api/account-requests/" + request.id + "/" + action, { method: "POST" });
+                $("userMessage").textContent = action === "approve" ? "Konti ya " + request.fullName + " yemejwe." : "Ubusabe bwa " + request.fullName + " bwanzwe.";
+                await loadUsers();
+              } catch (error) {
+                $("userMessage").textContent = error.message;
+              }
+            });
+            actionCell.append(button, " ");
+          };
+          decide("approve", "Emeza", "primary", "");
+          decide("reject", "Anga", "danger", "Wange ubusabe bwa " + request.fullName + "?");
+        });
+        $("requestsBlock").classList.toggle("hidden", !result.requests.length);
+        const label = result.requests.length ? "Genzura konti z’abakozi (" + result.requests.length + " zitegereje)" : "Genzura konti z’abakozi";
+        $("manageUsers").textContent = label;
+      }
+
       async function loadUsers() {
+        await loadAccountRequests();
         const result = await api("/api/users");
         const body = $("usersBody");
         body.replaceChildren();
@@ -1066,6 +1175,43 @@
       });
       $("importLocal").addEventListener("click", importLocalReports);
       $("manageUsers").addEventListener("click", () => $("usersPanel").classList.toggle("hidden"));
+      $("showRequest").addEventListener("click", () => {
+        $("loginView").classList.add("hidden");
+        $("requestView").classList.remove("hidden");
+        $("requestMessage").textContent = "";
+      });
+      $("backToLogin").addEventListener("click", () => {
+        $("requestView").classList.add("hidden");
+        $("loginView").classList.remove("hidden");
+      });
+      $("requestForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const message = $("requestMessage");
+        message.classList.remove("ok");
+        message.textContent = "";
+        if ($("requestPassword").value !== $("requestPassword2").value) {
+          message.textContent = "Amagambo y’ibanga ntabwo ahuye.";
+          return;
+        }
+        $("requestButton").disabled = true;
+        try {
+          const result = await api("/api/auth/request-account", {
+            method: "POST",
+            body: JSON.stringify({
+              fullName: $("requestName").value.trim(),
+              username: $("requestUsername").value.trim(),
+              password: $("requestPassword").value
+            })
+          });
+          $("requestForm").reset();
+          message.classList.add("ok");
+          message.textContent = result.message;
+        } catch (error) {
+          message.textContent = error.message;
+        } finally {
+          $("requestButton").disabled = false;
+        }
+      });
       $("createUserForm").addEventListener("submit", async (event) => {
         event.preventDefault();
         $("createUserButton").disabled = true;
