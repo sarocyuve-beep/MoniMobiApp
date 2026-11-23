@@ -41,6 +41,18 @@ db.exec(`
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL
   );
+  CREATE TABLE IF NOT EXISTS account_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL COLLATE NOCASE,
+    full_name TEXT NOT NULL,
+    password_hash TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED')),
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    decided_by INTEGER,
+    decided_at TEXT,
+    FOREIGN KEY (decided_by) REFERENCES users(id) ON DELETE SET NULL
+  );
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_account_requests_pending ON account_requests(username) WHERE status = 'PENDING';
   CREATE INDEX IF NOT EXISTS idx_reports_updated_at ON reports(updated_at);
   CREATE INDEX IF NOT EXISTS idx_reports_created_by ON reports(created_by);
   CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at);
