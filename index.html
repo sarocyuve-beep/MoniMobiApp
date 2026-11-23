@@ -140,6 +140,17 @@
       .intro { background: white; }
       .actions-table th, .advice { background: #f1f1f1; }
     }
+  
+    .new-logic-section { margin-top: 18px; }
+    .repeat-card { border:1px solid var(--line,#d8e0dc); border-radius:14px; padding:16px; margin:14px 0; background:#fbfdfc; }
+    .repeat-card h3 { margin:0 0 12px; }
+    .repeat-card .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+    .repeat-card .field { min-width:0; }
+    .repeat-card textarea { min-height:76px; }
+    .repeat-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+    .legacy-section { display:none !important; }
+    #cell, #village { display:none !important; }
+    @media print { .legacy-section { display:none !important; } .repeat-card { break-inside:avoid; } }
   </style>
 </head>
 <body>
@@ -241,7 +252,7 @@
 
     <section class="card intro">
       <h2>Uzuza raporo y’ibikorwa</h2>
-      <p>Ibice A–G na K byuzuzwa kuri buri ruzinduko; hitamo ubwoko bw’uruzinduko kugira ngo wuzuze H, I cyangwa J. Raporo zibikwa kuri server, zisangirwa n’abakoresha bafite konti. Gukora backup kuri GitHub private bisaba ko umuyobozi ashyiraho ibanga ryayo muri Render.</p>
+      <p>Uzuza amakuru y’uruzinduko, hitamo ubwoko bwa raporo, wongereho imihigo yose n’abagenerwabikorwa/abafatanyabikorwa ba buri muhigo. Hanyuma wuzuze amakuru yihariye kuri buri muhigo. Raporo zibikwa kuri server kandi zisangirwa n’abakoresha bafite konti.</p>
     </section>
 
     <div id="validationSummary" class="status-strip" role="status" aria-live="polite">
@@ -266,7 +277,27 @@
         </div>
       </section>
 
-      <section class="card">
+      <section class="card new-logic-section" id="newVisitLogic">
+        <div class="section-heading"><span class="letter">B–D</span><div><h2>Amakuru y’imihigo n’uruzinduko</h2><p>Hitamo ubwoko bwa raporo, wandike imihigo yose n’abagenerwabikorwa bayo, hanyuma wuzuze amakuru ya buri muhigo.</p></div></div>
+        <div class="grid">
+          <div class="field"><label for="newVisitType">Ubwoko bwa raporo</label><select id="newVisitType"><option value="">Hitamo ubwoko</option><option value="Mobilization">Sensitization / Ubukangurambaga</option><option value="Monitoring">Monitoring / Ubugenzuzi</option><option value="Follow-up">Follow-up / Gusubira gusura</option></select></div>
+        </div>
+        <h3>GROUP I — Imihigo, abagenerwabikorwa/abafatanyabikorwa n’aho iherereye</h3>
+        <div id="targetsList"></div>
+        <div class="repeat-actions"><button class="btn secondary" type="button" id="addTarget">+ Ongeramo undi muhigo</button></div>
+        <hr style="margin:22px 0;border:0;border-top:1px solid #d8e0dc">
+        <h3>GROUP II — Abakoze igikorwa</h3>
+        <p class="muted-note">Andika abantu bose bakoze igikorwa. Bashobora kuba umwe cyangwa benshi.</p>
+        <div id="staffParticipants"></div>
+        <div class="repeat-actions"><button class="btn secondary" type="button" id="addStaffParticipant">+ Ongeramo uwakoze igikorwa</button></div>
+        <hr style="margin:22px 0;border:0;border-top:1px solid #d8e0dc">
+        <h3>GROUP III — Amakuru yihariye kuri buri muhigo</h3>
+        <p class="muted-note">Banza urangize kwandika imihigo yose muri GROUP I. Hanyuma hitamo umuhigo umwe hano wuzuze amakuru yawo; subiramo kuri buri muhigo.</p>
+        <div class="grid"><div class="field"><label for="detailTargetSelect">Hitamo umuhigo ugiye kuzuza amakuru</label><select id="detailTargetSelect"><option value="">Banza wongereho umuhigo</option></select></div></div>
+        <div id="targetDetailsEditor"></div>
+      </section>
+
+      <section class="card legacy-section">
         <div class="section-heading"><span class="letter">B</span><div><h2>Umugenerwabikorwa — Umworozi</h2><p>Beneficiary</p></div></div>
         <div class="grid">
           <div class="field"><label for="beneficiaryName">Amazina yombi <span class="hint">Ibisabwa</span></label><input id="beneficiaryName" name="beneficiaryName" autocomplete="name"></div>
@@ -389,7 +420,7 @@
         </div>
         <div class="table-wrap">
           <table class="actions-table">
-            <thead><tr><th>#</th><th>Inama yatanzwe ubushize</th><th>Yashyizwe mu bikorwa?</th><th>Impamvu niba itarakozwe</th><th class="no-print">Igikorwa</th></tr></thead>
+            <thead><tr><th>#</th><th>Inama yatanzwe ubushize</th><th>Yashyizwe mu bikorwa?</th><th>Impamvu niba itarakozwe</th><th>Igikorwa gishya cyemeranyijweho</th><th>Ushinzwe</th><th>Deadline</th><th class="no-print">Igikorwa</th></tr></thead>
             <tbody id="followupsBody"></tbody>
           </table>
         </div>
@@ -625,12 +656,17 @@
 
       function addFollowupRow(item = {}) {
         const row = $("followupsBody").insertRow();
-        row.innerHTML = '<td class="row-number"></td><td><input aria-label="Inama yatanzwe ubushize"></td><td><select aria-label="Yashyizwe mu bikorwa?"><option value="">Hitamo</option><option>Yego</option><option>Igice</option><option>Oya</option></select></td><td><input aria-label="Impamvu niba itarakozwe"></td><td class="no-print"><button type="button" class="btn danger small remove-row" aria-label="Siba umurongo">Siba</button></td>';
-        const inputs = row.querySelectorAll("input, select");
+        row.innerHTML = '<td class="row-number"></td><td><textarea aria-label="Inama yatanzwe ubushize" rows="2"></textarea></td><td><select aria-label="Yashyizwe mu bikorwa?"><option value="">Hitamo</option><option>Yego</option><option>Igice</option><option>Oya</option></select></td><td><textarea aria-label="Impamvu niba itarakozwe" rows="2"></textarea></td><td><textarea aria-label="Igikorwa gishya cyemeranyijweho" rows="2"></textarea></td><td><input aria-label="Ushinzwe"></td><td><input aria-label="Deadline" type="date"></td><td class="no-print"><button type="button" class="btn danger small remove-row" aria-label="Siba umurongo">Siba</button></td>';
+        const inputs = row.querySelectorAll("input, select, textarea");
         inputs[0].value = item.recommendation || "";
         inputs[1].value = item.status || "";
         inputs[2].value = item.reason || "";
-        row.querySelector(".remove-row").addEventListener("click", () => { row.remove(); renumberRows(); });
+        inputs[3].value = item.newAction || "";
+        inputs[4].value = item.owner || "";
+        inputs[5].value = item.deadline || "";
+        row.querySelector(".remove-row").addEventListener("click", () => { row.remove(); renumberRows(); updateValidation(); });
+        row.addEventListener("input", updateValidation);
+        row.addEventListener("change", updateValidation);
         renumberRows();
       }
 
@@ -646,15 +682,132 @@
           const values = [...row.querySelectorAll("input, select")].map((input) => input.value.trim());
           return kind === "action"
             ? { action: values[0], owner: values[1], deadline: values[2] }
-            : { recommendation: values[0], status: values[1], reason: values[2] };
+            : { recommendation: values[0], status: values[1], reason: values[2], newAction: values[3], owner: values[4], deadline: values[5] };
         });
       }
 
+      // New repeatable visit model: one visit -> many targets -> many beneficiaries/partners.
+      let targetDrafts = [];
+      let staffDrafts = [];
+      let selectedTargetId = null;
+      const reportTypeLabels = { Mobilization: "Sensitization / Ubukangurambaga", Monitoring: "Monitoring / Ubugenzuzi", "Follow-up": "Follow-up / Gusubira gusura" };
+      const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+      function targetDetailFields(type) {
+        const common = [{key:"purpose",label:"Intego y’uruzinduko kuri uyu muhigo",kind:"textarea"},{key:"photoCount",label:"Umubare w’amafoto",kind:"number"},{key:"photoCodes",label:"Kode / nomero z’amafoto"},{key:"notes",label:"Izindi nyandiko",kind:"textarea"}];
+        if (type === "Mobilization") return [
+          {key:"priorKnowledge",label:"Ubumenyi basanzwe bafite",kind:"textarea"},
+          {key:"messageGiven",label:"Ubutumwa / ibikorwa by’ubukangurambaga",kind:"textarea"},
+          {key:"messageReception",label:"Uko bakiriye ubutumwa / ubushake bwo kwitabira",kind:"textarea"},
+          {key:"expectedActions",label:"Ibyo basabwa gukora kugira ngo bitabire",kind:"textarea"},
+          {key:"participationBarriers",label:"Impamvu zishobora gutuma batitabira",kind:"textarea"},
+          {key:"mobilizationAgreement",label:"Ibyo bemeranyijweho nyuma ya mobilization",kind:"textarea"}, ...common];
+        if (type === "Monitoring") return [
+          {key:"expected",label:"Icyari giteganyijwe",kind:"textarea"},{key:"performed",label:"Icyakozwe",kind:"textarea"},
+          {key:"quality",label:"Ireme ry’igikorwa",kind:"textarea"},{key:"findings",label:"Findings / Ibyagaragaye",kind:"textarea"},
+          {key:"discrepancy",label:"Itandukaniro n’impamvu",kind:"textarea"},{key:"monitoringCause",label:"Impamvu",kind:"textarea"},
+          {key:"impact",label:"Ingaruka",kind:"textarea"},{key:"correctiveAction",label:"Ingamba zo gukosora",kind:"textarea"},
+          {key:"inseminationDate",label:"Itariki y’intanga",kind:"date"},{key:"semenType",label:"Ubwoko bw’intanga"},
+          {key:"inspectionDate",label:"Itariki y’isuzuma",kind:"date"},{key:"inspectionResult",label:"Ibyavuye mu isuzuma"},
+          {key:"birthDate",label:"Itariki yo kubyara",kind:"date"},{key:"animalNumber",label:"Nomero y’itungo/inyana"},
+          {key:"vaccinations",label:"Inkingo",kind:"textarea"},{key:"records",label:"Ububiko bw’amakuru (records)"},
+          {key:"water",label:"Amazi"},{key:"shelter",label:"Ikiraro"},{key:"hygiene",label:"Isuku"}, ...common];
+        return [
+          {key:"previousReport",label:"Raporo y’ubushize (nomero)"},{key:"lastVisitDate",label:"Itariki y’uruzinduko rwa nyuma",kind:"date"},
+          {key:"previousRecommendation",label:"Inama zatanzwe ubushize",kind:"textarea"},{key:"implementationStatus",label:"Yashyizwe mu bikorwa? (Yego / Igice / Oya)"},
+          {key:"notImplementedReason",label:"Impamvu niba itarakozwe",kind:"textarea"},{key:"newAction",label:"Ibyemeranyijweho (igikorwa gishya)",kind:"textarea"},
+          {key:"actionOwner",label:"Ushinzwe"},{key:"actionDeadline",label:"Deadline",kind:"date"}, ...common];
+      }
+      function makeTargetDraft() { return { id: crypto.randomUUID(), category:"", goal:"", beneficiaries:[{name:"",role:"Beneficiary"}], cell:"", village:"", details:{} }; }
+      function renderTargetCards() {
+        const host = $("targetsList"); host.replaceChildren();
+        targetDrafts.forEach((t, index) => {
+          const card = document.createElement("div"); card.className="repeat-card"; card.dataset.targetId=t.id;
+          const cats=[...new Set(data.goals.map(g=>g.category))].sort();
+          const peopleHeading = ({Mobilization:"Abagezweho n’ubukangurambaga / abafatanyabikorwa",Monitoring:"Abagenzuwe / abafatanyabikorwa", "Follow-up":"Abasuzwe / abafatanyabikorwa"})[$("newVisitType").value] || "Abagenerwabikorwa / Abafatanyabikorwa";
+          card.innerHTML = `<h3>Umuhigo ${index+1}</h3><div class="grid">
+            <div class="field"><label>Icyiciro</label><select data-key="category"><option value="">Hitamo icyiciro</option>${cats.map(c=>`<option ${t.category===c?'selected':''} value="${esc(c)}">${esc(c)}</option>`).join('')}</select></div>
+            <div class="field"><label>Umuhigo</label><select data-key="goal"><option value="">${t.category?'Hitamo umuhigo':'Banza uhitemo icyiciro'}</option>${data.goals.filter(g=>t.category && g.category===t.category).map(g=>`<option value="${g.refNo}" ${String(t.goal)===String(g.refNo)?'selected':''}>${esc(g.title)}</option>`).join('')}</select></div>
+            <div class="field"><label>Akagari</label><select data-key="cell"><option value="">Hitamo akagari</option>${data.locations.map(l=>`<option value="${esc(l.name)}" ${t.cell===l.name?'selected':''}>${esc(l.name)}</option>`).join('')}</select></div>
+            <div class="field"><label>Umudugudu</label><select data-key="village"><option value="">Hitamo umudugudu</option>${(data.locations.find(l=>l.name===t.cell)?.villages||[]).map(v=>`<option ${t.village===v?'selected':''}>${esc(v)}</option>`).join('')}</select></div>
+          </div><div class="beneficiaries"><h4>${peopleHeading}</h4><div class="beneficiary-list">${t.beneficiaries.map((b,i)=>`<div class="grid beneficiary-row" data-index="${i}"><div class="field"><label>Amazina</label><input data-beneficiary="name" value="${esc(b.name)}" placeholder="Andika amazina"></div><div class="field"><label>Uruhare</label><select data-beneficiary="role"><option ${b.role==='Beneficiary'?'selected':''} value="Beneficiary">Umugenerwabikorwa</option><option ${b.role==='Partner'?'selected':''} value="Partner">Umufatanyabikorwa</option></select></div><div class="field"><label>Telefoni (niba ihari)</label><input data-beneficiary="phone" value="${esc(b.phone||'')}" type="tel"></div><div class="field"><button type="button" class="btn danger small remove-beneficiary" ${t.beneficiaries.length===1?'disabled':''}>Siba</button></div></div>`).join('')}</div><button type="button" class="btn secondary small add-beneficiary">+ Ongeramo umugenerwabikorwa/umufatanyabikorwa</button></div>
+          <div class="repeat-actions"><button type="button" class="btn danger small remove-target">Siba uyu muhigo</button></div>`;
+          host.append(card);
+        });
+      }
+      function renderTargetDetailEditor() {
+        const select = $("detailTargetSelect");
+        const available = targetDrafts.filter(t => t.goal);
+        if (!available.some(t => t.id === selectedTargetId)) selectedTargetId = available[0]?.id || null;
+        select.replaceChildren(new Option(available.length ? "Hitamo umuhigo" : "Banza wongereho umuhigo", ""));
+        available.forEach((t, index) => {
+          const goal = data.goals.find(g => String(g.refNo) === String(t.goal));
+          select.add(new Option((index + 1) + ". " + (goal ? goal.title : "Umuhigo"), t.id));
+        });
+        select.value = selectedTargetId || "";
+        const target = targetDrafts.find(t => t.id === selectedTargetId);
+        const host = $("targetDetailsEditor"); host.replaceChildren();
+        if (!target) return;
+        const card = document.createElement("div"); card.className = "repeat-card";
+        const fields = targetDetailFields($("newVisitType").value);
+        card.innerHTML = `<h4>Amakuru y’umuhigo: ${esc((data.goals.find(g=>String(g.refNo)===String(target.goal))||{}).title||'')}</h4><div class="grid">${fields.map(f=>`<div class="field"><label>${esc(f.label)}</label>${f.kind==='textarea'?`<textarea data-detail="${f.key}">${esc(target.details[f.key]||'')}</textarea>`:`<input data-detail="${f.key}" type="${f.kind||'text'}" value="${esc(target.details[f.key]||'')}">`}</div>`).join('')}</div>`;
+        host.append(card);
+      }
+
+      function renderStaffCards() {
+        const host=$("staffParticipants"); host.replaceChildren();
+        staffDrafts.forEach((person,i)=>{ const card=document.createElement('div');card.className='repeat-card staff-person';card.dataset.index=i;
+          card.innerHTML=`<h4>Uwakoze igikorwa ${i+1}</h4><div class="grid"><div class="field"><label>Amazina</label><input data-staff="name" value="${esc(person.name||'')}"></div><div class="field"><label>Icyo ashinzwe</label><input data-staff="role" value="${esc(person.role||'')}"></div><div class="field"><label>Telephone</label><input data-staff="phone" type="tel" value="${esc(person.phone||'')}"></div><div class="field"><label>Umukono</label><input data-staff="signature" value="${esc(person.signature||'')}"></div></div><div class="repeat-actions"><button type="button" class="btn danger small remove-staff">Siba</button></div>`;host.append(card); });
+      }
+      function renderNewLogic() { renderTargetCards(); renderStaffCards(); renderTargetDetailEditor(); }
+      function syncNewLogicToLegacy() { $("visitType").value=$("newVisitType").value; }
+      function collectNewLogic() {
+        const targets=[...$("targetsList").querySelectorAll('.repeat-card')].map(card=>{
+          const t=targetDrafts.find(x=>x.id===card.dataset.targetId)||makeTargetDraft();
+          card.querySelectorAll('[data-key]').forEach(el=>t[el.dataset.key]=el.value);
+          card.querySelectorAll('.beneficiary-row').forEach(row=>{const b=t.beneficiaries[Number(row.dataset.index)]||{};row.querySelectorAll('[data-beneficiary]').forEach(el=>b[el.dataset.beneficiary]=el.value.trim());t.beneficiaries[Number(row.dataset.index)]=b;});
+          card.querySelectorAll('[data-detail]').forEach(el=>t.details[el.dataset.detail]=el.value);
+          return {...t, beneficiaries:t.beneficiaries.filter(b=>b.name.trim())};
+        });
+        const detailTarget = targets.find(t => t.id === selectedTargetId);
+        if (detailTarget) $("targetDetailsEditor").querySelectorAll('[data-detail]').forEach(el => detailTarget.details[el.dataset.detail] = el.value);
+        const staff=[...$("staffParticipants").querySelectorAll('.staff-person')].map(card=>{const x={};card.querySelectorAll('[data-staff]').forEach(el=>x[el.dataset.staff]=el.value.trim());return x;}).filter(x=>x.name);
+        return {targets, staffParticipants:staff};
+      }
+      function initNewLogic() {
+        // Retain the original A and K administrative/signature blocks; replace the old single-target workflow.
+        [...form.querySelectorAll(':scope > section.card')].forEach(section=>{const letter=section.querySelector('.section-heading .letter')?.textContent?.trim();if(letter && !['A','B–D'].includes(letter)) section.classList.add('legacy-section');});
+        $('cell').closest('.field').classList.add('hidden'); $('village').closest('.field').classList.add('hidden');
+        // B was marked legacy in markup; remaining legacy sections are hidden as well.
+        $("newVisitType").addEventListener('change',()=>{syncNewLogicToLegacy();targetDrafts=collectNewLogic().targets;renderTargetCards();renderTargetDetailEditor();updateValidation();});
+        $("detailTargetSelect").addEventListener('change',()=>{targetDrafts=collectNewLogic().targets;selectedTargetId=$("detailTargetSelect").value||null;renderTargetDetailEditor();updateValidation();});
+        $("targetDetailsEditor").addEventListener('input',()=>{targetDrafts=collectNewLogic().targets;updateValidation();});
+        $("addTarget").addEventListener('click',()=>{targetDrafts=collectNewLogic().targets;targetDrafts.push(makeTargetDraft());renderTargetCards();renderTargetDetailEditor();});
+        $("addStaffParticipant").addEventListener('click',()=>{staffDrafts=collectNewLogic().staffParticipants;staffDrafts.push({});renderStaffCards();});
+        $("targetsList").addEventListener('change',e=>{const card=e.target.closest('.repeat-card');if(!card)return;targetDrafts=collectNewLogic().targets;const t=targetDrafts.find(x=>x.id===card.dataset.targetId);if(e.target.dataset.key==='category'){t.goal='';renderTargetCards();renderTargetDetailEditor();}else if(e.target.dataset.key==='cell'){t.village='';renderTargetCards();renderTargetDetailEditor();} });
+        $("targetsList").addEventListener('input',()=>{targetDrafts=collectNewLogic().targets;});
+        $("targetsList").addEventListener('click',e=>{const card=e.target.closest('.repeat-card');if(!card)return;targetDrafts=collectNewLogic().targets;if(e.target.closest('.remove-target')){targetDrafts=targetDrafts.filter(t=>t.id!==card.dataset.targetId);if(selectedTargetId===card.dataset.targetId)selectedTargetId=null;renderTargetCards();renderTargetDetailEditor();}else if(e.target.closest('.add-beneficiary')){const t=targetDrafts.find(x=>x.id===card.dataset.targetId);t.beneficiaries.push({name:'',role:'Beneficiary'});renderTargetCards();renderTargetDetailEditor();}else if(e.target.closest('.remove-beneficiary')){const row=e.target.closest('.beneficiary-row');const t=targetDrafts.find(x=>x.id===card.dataset.targetId);t.beneficiaries.splice(Number(row.dataset.index),1);renderTargetCards();renderTargetDetailEditor();}});
+        $("staffParticipants").addEventListener('input',()=>{staffDrafts=collectNewLogic().staffParticipants;});
+        $("staffParticipants").addEventListener('click',e=>{if(e.target.closest('.remove-staff')){staffDrafts=collectNewLogic().staffParticipants;staffDrafts.splice(Number(e.target.closest('.staff-person').dataset.index),1);renderStaffCards();}});
+        targetDrafts=[makeTargetDraft()];staffDrafts=[{name:'',role:'',phone:'',signature:''}];renderNewLogic();
+      }
+
       function collectReport() {
+        syncNewLogicToLegacy();
         const fields = {};
         [...form.querySelectorAll("input[name], select[name], textarea[name]")].forEach((field) => {
           fields[field.name] = field.value;
         });
+        const newLogic = collectNewLogic();
+        const firstTarget = newLogic.targets[0];
+        if (firstTarget) {
+          const firstGoal = data.goals.find((item) => String(item.refNo) === String(firstTarget.goal));
+          fields.goal = firstTarget.goal || "";
+          fields.goalCategory = firstTarget.category || "";
+          fields.cell = firstTarget.cell || "";
+          fields.village = firstTarget.village || "";
+          fields.beneficiaryName = firstTarget.beneficiaries.map(person => person.name).filter(Boolean).join(", ");
+          fields.goalTitle = firstGoal ? firstGoal.title : "";
+        }
         const selectedGoal = data.goals.find((item) => String(item.refNo) === $("goal").value);
         const selectedActivities = [];
         for (let slot = 1; slot <= 3; slot++) {
@@ -675,8 +828,9 @@
           }
         }
         return {
-          version: 3,
+          version: 4,
           id: currentReportId,
+          ...newLogic,
           updatedAt: currentUpdatedAt,
           fields,
           selectedActivities,
@@ -691,6 +845,11 @@
           fields.goal = String(data.legacyGoalRefs[fields.goal]);
         }
         form.reset();
+        $("newVisitType").value = fields.visitType || "";
+        targetDrafts = Array.isArray(report.targets) && report.targets.length ? report.targets.map(t=>({...t, beneficiaries:Array.isArray(t.beneficiaries)&&t.beneficiaries.length?t.beneficiaries:[{name:"",role:"Beneficiary"}], details:t.details||{}})) : (fields.goal ? [{...makeTargetDraft(), category:fields.goalCategory||"", goal:fields.goal, beneficiaries:[{name:fields.beneficiaryName||"",role:"Beneficiary",phone:fields.phone||""}], cell:fields.cell||"", village:fields.village||"", details:{...fields}}] : [makeTargetDraft()]);
+        staffDrafts = Array.isArray(report.staffParticipants) ? report.staffParticipants : (fields.staffName ? [{name:fields.staffName,role:fields.staffRole||"",phone:"",signature:fields.staffSignature||""}] : []);
+        selectedTargetId = targetDrafts.find(t=>t.goal)?.id || null;
+        renderNewLogic();
         [...form.querySelectorAll("input[name], select[name], textarea[name]")].forEach((field) => {
           if (field.name === "village" || /^goalActivity[123]$/.test(field.name)) return;
           if (Object.prototype.hasOwnProperty.call(fields, field.name)) field.value = fields[field.name];
@@ -719,27 +878,30 @@
 
       function missingRequirements() {
         const missing = [];
-        const required = [
-          ["beneficiaryName", "Amazina y’umworozi"],
-          ["staffName", "Izina ry’umukozi"],
-          ["visitDate", "Itariki y’uruzinduko"],
-          ["visitType", "Ubwoko bw’uruzinduko"],
-          ["goal", "Igikorwa kigenzurwa"]
-        ];
-        required.forEach(([id, label]) => { if (!$(id).value.trim()) missing.push(label); });
-        const activeActions = getRows("#actionsBody tr", "action").filter((row) => row.action || row.owner || row.deadline);
-        if (!activeActions.some((row) => row.action && row.owner && row.deadline)) missing.push("Nibura inama/igikorwa kimwe gifite ushinzwe na deadline");
-        for (let slot = 1; slot <= 3; slot++) {
-          if ($("goalActivity" + slot).value === "__custom__" && !$("customActivity" + slot).value.trim()) {
-            missing.push("Andika igikorwa cyongeweho " + slot);
+        const model = collectNewLogic();
+        if (!$('newVisitType').value) missing.push('Ubwoko bwa raporo');
+        if (!model.targets.length || !model.targets.some(t=>t.goal)) missing.push('Nibura umuhigo umwe wahiswemo');
+        model.targets.forEach((t,i)=>{
+          if (!t.category || !t.goal) missing.push('Umuhigo '+(i+1)+': icyiciro n’umuhigo birakenewe');
+          if (!t.beneficiaries.length) missing.push('Umuhigo '+(i+1)+': andika nibura umugenerwabikorwa cyangwa umufatanyabikorwa');
+          if (!t.cell || !t.village) missing.push('Umuhigo '+(i+1)+': location (Akagari n’Umudugudu) irakenewe');
+          if ($('newVisitType').value==='Monitoring' && !String(t.details.findings||'').trim()) missing.push('Umuhigo '+(i+1)+': Findings zirakenewe');
+          if ($('newVisitType').value==='Monitoring' && Number(t.details.photoCount||0)<1) missing.push('Umuhigo '+(i+1)+': nibura ifoto imwe irakenewe');
+          if ($('newVisitType').value==='Follow-up') {
+            if (!String(t.details.previousReport||'').trim()) missing.push('Umuhigo '+(i+1)+': raporo y’ubushize irakenewe');
+            if (!String(t.details.previousRecommendation||'').trim()) missing.push('Umuhigo '+(i+1)+': inama yatanzwe ubushize irakenewe');
+            if (!String(t.details.implementationStatus||'').trim()) missing.push('Umuhigo '+(i+1)+': hitamo niba inama yarashyizwe mu bikorwa');
+            if (['Igice','Oya'].includes(t.details.implementationStatus)) {
+              if (!String(t.details.notImplementedReason||'').trim()) missing.push('Umuhigo '+(i+1)+': sobanura impamvu itarashyizwe mu bikorwa');
+              if (!String(t.details.newAction||'').trim() || !String(t.details.actionOwner||'').trim() || !String(t.details.actionDeadline||'').trim()) missing.push('Umuhigo '+(i+1)+': igikorwa gishya, ugishinzwe na deadline birakenewe');
+            }
           }
-        }
-        if ($("visitType").value === "Monitoring") {
-          if (!$("findings").value.trim()) missing.push("Findings zihariye za Monitoring");
-          if (Number($("photoCount").value) < 1) missing.push("Nibura ifoto imwe ya Monitoring");
-        }
-        if ($("visitType").value === "Follow-up" && !$("previousReport").value.trim()) missing.push("Nomero ya raporo y’ubushize");
+        });
+        if (!model.staffParticipants.length) missing.push('Andika nibura umuntu umwe wakoze igikorwa');
+        if (!$('staffName').value.trim()) missing.push('Izina ry’umukozi wakoze uruzinduko');
+        if (!$('visitDate').value) missing.push('Itariki y’uruzinduko');
         return missing;
+
       }
 
       function updateValidation() {
@@ -755,7 +917,7 @@
         const previous = select.value;
         select.replaceChildren(new Option("Raporo zibitswe kuri server…", ""));
         currentReports.slice().sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt))).forEach((report) => {
-          const person = (report.fields && report.fields.beneficiaryName) || "Nta zina";
+          const person = (report.fields && report.fields.beneficiaryName) || (report.targets && report.targets[0] && report.targets[0].beneficiaries && report.targets[0].beneficiaries.map(x=>x.name).filter(Boolean).join(", ")) || "Nta zina";
           const date = (report.fields && report.fields.visitDate) || "";
           const owner = report.owner ? " · " + report.owner.fullName : "";
           select.add(new Option((report.fields.reportNumber || report.reportNumber || "Raporo") + " · " + person + (date ? " · " + date : "") + owner, report.id));
@@ -814,6 +976,8 @@
       function resetReport() {
         setReportReadOnly(false);
         form.reset();
+        $("newVisitType").value = "";
+        targetDrafts = [makeTargetDraft()]; staffDrafts = [{name:"",role:"",phone:"",signature:""}]; selectedTargetId = null; renderNewLogic();
         currentReportId = null;
         currentUpdatedAt = null;
         $("reportNumber").value = makeReportNumber();
@@ -836,7 +1000,8 @@
       async function downloadDocx(group) {
         const selected = currentReports.find((report) => report.id === $("savedReports").value);
         if (!selected) return showToast("Banza uhitemo raporo wabitswe mu rutonde.", true);
-        const key = (report) => [report.fields.visitType, report.fields.visitDate, report.fields.cell].join("|");
+        const key = (report) => [report.fields.visitType, report.fields.visitDate,
+          (report.targets || []).map(target => target.cell).filter(Boolean).sort().join(",") || report.fields.cell].join("|");
         const chosen = group
           ? currentReports.filter((report) => key(report) === key(selected))
           : [selected];
@@ -897,7 +1062,8 @@
         );
         if (missingCustomActivity) $("customActivity" + missingCustomActivity).focus();
         else if (firstMissing) $(firstMissing).focus();
-        else $("actionsBody").querySelector("input").focus();
+        else if (!$('newVisitType').value) $('newVisitType').focus();
+        else $('targetsList').scrollIntoView({ behavior: "smooth", block: "center" });
       }
 
       data.instructions.forEach((text) => {
@@ -907,6 +1073,7 @@
       });
       populateLocations();
       populateGoals();
+      initNewLogic();
       $("visitType").addEventListener("change", updateConditionalPanels);
       $("visitDate").addEventListener("change", updateGoalDetails);
       [1, 2, 3].forEach((slot) => $("goalActivity" + slot).addEventListener("change", () => {

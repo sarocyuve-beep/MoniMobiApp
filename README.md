@@ -11,6 +11,11 @@ Sisitemu y'imihigo n'ibikorwa byo gukangurira, kugenzura no gukurikirana mu Mure
 - Backup nshya itegurwa amasegonda 15 nyuma y'impinduka. Iyo backup yanze, server irongera ikagerageza nyuma y'umunota.
 - Health check ya UptimeRobot: `/api/health`.
 - Amakuru y'imihigo n'ibikorwa biva muri sheets 5 za Excel V3: imihigo 103, ibikorwa 173, utugari 6, imidugudu 40, n'amabwiriza.
+- Raporo imwe ishobora kugira imihigo myinshi. Kuri buri muhigo umukozi ahitamo icyiciro n'umuhigo, akandika abagenerwabikorwa/abafatanyabikorwa benshi, akagena Akagari n'Umudugudu.
+- GROUP II ibika abantu bakoze igikorwa (amazina, inshingano, telephone n'umukono) kandi yemera kongeramo benshi.
+- GROUP III yuzuzwa umuhigo umwe umwe. Ibibazo bihinduka bitewe na Sensitization/Ubukangurambaga, Monitoring/Ubugenzuzi cyangwa Follow-up/Gusubira gusura.
+- Raporo za kera zifite imiterere y'umuhigo umwe ziracyafunguka; iyo zibitswe mu miterere mishya zihuzwa n'umuhigo umwe kugira ngo amakuru yazo atazimira.
+- Word report ikora urutonde rw'imihigo yose, location n'abagenerwabikorwa kuri buri muhigo, urutonde rw'abakoze igikorwa, n'imbonerahamwe y'amakuru yihariye kuri buri muhigo.
 
 ## Gutangiza kuri mudasobwa
 
