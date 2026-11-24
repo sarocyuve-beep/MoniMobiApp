@@ -215,7 +215,81 @@ test("Word report endpoint builds a .docx from saved reports", async () => {
 
   const mixed = await request("/api/reports", { token: staffToken, method: "POST", body: sample("Follow-up") });
   const mixedResponse = await request("/api/reports/docx", { token: staffToken, method: "POST", body: { ids: [created.result.report.id, mixed.result.report.id] } });
-  assert.equal(mixedResponse.response.status, 400);
+  assert.equal(mixedResponse.status ? mixedResponse.status : mixedResponse.response.status, 400);
+
+  // Multi-target report and editable authority / memo test
+  const multiTargetSample = {
+    version: 4,
+    fields: {
+      reportNumber: "R-MULTI-001",
+      visitDate: "2026-11-24",
+      visitType: "Mobilization",
+      staffName: "Staff One",
+      staffRole: "Umukozi ushinzwe Ubworozi"
+    },
+    targets: [
+      {
+        id: "target-1",
+        category: "UBUKUNGU",
+        goal: "12",
+        beneficiaries: "Aborozi bagize itsinda GIRAMATA",
+        sector: "CYUVE",
+        cell: "KABEZA",
+        village: "GASHANGIRO",
+        details: { messageGiven: "Akamaro ko gutera intanga inka", mobilizationAgreement: "Kuzitera mu minsi 7" }
+      },
+      {
+        id: "target-2",
+        category: "UBUKUNGU",
+        goal: "14",
+        beneficiaries: "Koperative Tuzamurane",
+        sector: "CYUVE",
+        cell: "BURUBA",
+        village: "BAZIZANA",
+        details: { messageGiven: "Gukingiza inka", mobilizationAgreement: "Kwitegura urukingo" }
+      }
+    ],
+    staffParticipants: [
+      { name: "Staff One", role: "Umukozi ushinzwe Ubworozi", phone: "0788000001", signature: "S.1" },
+      { name: "Staff Two", role: "Veterinarian", phone: "0788000002", signature: "S.2" }
+    ],
+    authorityName: "MUKESHIMANA Jeanette",
+    authorityTitle: "Acting Executive Secretary/Cyuve Sector",
+    memoText: "Bwana Muyobozi, iyi ni memo yihariye yakozwe na acting ES."
+  };
+
+  const createdMulti = await request("/api/reports", { token: staffToken, method: "POST", body: multiTargetSample });
+  assert.equal(createdMulti.response.status, 201);
+  assert.ok(createdMulti.result.report.beneficiaryName.includes("GIRAMATA"));
+
+  // Download DOCX using saved ID
+  const multiDocxRes = await fetch(baseUrl + "/api/reports/docx", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + staffToken, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      ids: [createdMulti.result.report.id],
+      authorityName: "MUKESHIMANA Jeanette",
+      authorityTitle: "Acting Executive Secretary/Cyuve Sector",
+      memoText: "Bwana Muyobozi, iyi ni memo yihariye yakozwe na acting ES."
+    })
+  });
+  assert.equal(multiDocxRes.status, 200);
+  const multiBytes = Buffer.from(await multiDocxRes.arrayBuffer());
+  assert.equal(multiBytes.subarray(0, 2).toString(), "PK");
+
+  // Download DOCX directly from unsaved report payload
+  const directDocxRes = await fetch(baseUrl + "/api/reports/docx", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + staffToken, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      report: multiTargetSample,
+      authorityName: "MUKESHIMANA Jeanette",
+      authorityTitle: "Acting Executive Secretary/Cyuve Sector"
+    })
+  });
+  assert.equal(directDocxRes.status, 200);
+  const directBytes = Buffer.from(await directDocxRes.arrayBuffer());
+  assert.equal(directBytes.subarray(0, 2).toString(), "PK");
 });
 
 test("employees can request an account and an admin approves or rejects it", async () => {

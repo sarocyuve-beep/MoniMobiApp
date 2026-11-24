@@ -90,6 +90,7 @@ function reportFromRow(row) {
     ...JSON.parse(row.data_json),
     id: row.id,
     reportNumber: row.report_number,
+    beneficiaryName: row.beneficiary_name,
     updatedAt: row.updated_at,
     owner: { id: row.created_by, username: row.owner_username, fullName: row.owner_name }
   };
@@ -312,14 +313,27 @@ app.get("/api/reports", requireAuth, (req, res) => {
 });
 
 app.post("/api/reports/docx", requireAuth, async (req, res) => {
-  const ids = req.body && req.body.ids;
-  if (!Array.isArray(ids) || !ids.length || ids.length > 50 || ids.some((id) => typeof id !== "string")) {
-    return res.status(400).json({ error: "Hitamo raporo kuva kuri 1 kugeza kuri 50." });
+  let reports;
+  if (req.body && Array.isArray(req.body.ids) && req.body.ids.length) {
+    const ids = req.body.ids;
+    if (ids.length > 50 || ids.some((id) => typeof id !== "string")) {
+      return res.status(400).json({ error: "Hitamo raporo kuva kuri 1 kugeza kuri 50." });
+    }
+    reports = ids.map((id) => db.prepare(reportSelect + " WHERE r.id = ?").get(id)).filter(Boolean).map(reportFromRow);
+    if (reports.length !== ids.length) return res.status(404).json({ error: "Hari raporo itabonetse." });
+  } else if (req.body && req.body.report && typeof req.body.report === "object") {
+    reports = [req.body.report];
+  } else {
+    return res.status(400).json({ error: "Hitamo raporo cyangwa ohereza raporo yo gukorera Word." });
   }
-  const reports = ids.map((id) => db.prepare(reportSelect + " WHERE r.id = ?").get(id)).filter(Boolean).map(reportFromRow);
-  if (reports.length !== ids.length) return res.status(404).json({ error: "Hari raporo itabonetse." });
+
   try {
-    const buffer = await buildReportDocx(reports, { staffName: req.user.full_name });
+    const buffer = await buildReportDocx(reports, {
+      staffName: req.user.full_name,
+      authorityName: req.body && req.body.authorityName,
+      authorityTitle: req.body && req.body.authorityTitle,
+      memoText: req.body && req.body.memoText
+    });
     res.set({
       "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "Content-Disposition": 'attachment; filename="' + docxFileName(reports) + '"'
@@ -346,6 +360,12 @@ app.post("/api/reports", requireAuth, (req, res) => {
   if (!reportNumber) return res.status(400).json({ error: "Raporo igomba kugira nomero." });
 
   const now = new Date().toISOString();
+  const beneficiaryName = String(
+    report.fields.beneficiaryName ||
+    (Array.isArray(report.targets) && report.targets.map((t) => (Array.isArray(t.beneficiaries) ? t.beneficiaries.map((b) => b.name).join(", ") : t.beneficiaries || "")).filter(Boolean).join("; ")) ||
+    ""
+  );
+  if (!report.fields.beneficiaryName) report.fields.beneficiaryName = beneficiaryName;
   db.prepare(`
     INSERT INTO reports (id, report_number, visit_date, beneficiary_name, data_json, created_by, updated_by, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -353,7 +373,7 @@ app.post("/api/reports", requireAuth, (req, res) => {
     id,
     reportNumber,
     String(report.fields.visitDate || ""),
-    String(report.fields.beneficiaryName || ""),
+    beneficiaryName,
     JSON.stringify(report),
     req.user.id,
     req.user.id,
@@ -377,13 +397,19 @@ app.put("/api/reports/:id", requireAuth, (req, res) => {
   const reportNumber = String(report.fields.reportNumber || "").trim();
   if (!reportNumber) return res.status(400).json({ error: "Raporo igomba kugira nomero." });
   const now = new Date().toISOString();
+  const beneficiaryName = String(
+    report.fields.beneficiaryName ||
+    (Array.isArray(report.targets) && report.targets.map((t) => (Array.isArray(t.beneficiaries) ? t.beneficiaries.map((b) => b.name).join(", ") : t.beneficiaries || "")).filter(Boolean).join("; ")) ||
+    ""
+  );
+  if (!report.fields.beneficiaryName) report.fields.beneficiaryName = beneficiaryName;
   db.prepare(`
     UPDATE reports SET report_number = ?, visit_date = ?, beneficiary_name = ?, data_json = ?, updated_by = ?, updated_at = ?
     WHERE id = ?
   `).run(
     reportNumber,
     String(report.fields.visitDate || ""),
-    String(report.fields.beneficiaryName || ""),
+    beneficiaryName,
     JSON.stringify(report),
     req.user.id,
     now,

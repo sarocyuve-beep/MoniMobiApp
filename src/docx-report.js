@@ -31,8 +31,9 @@ const TYPES = {
     goalHeader: "UMUHIGO WAGENZUWE",
     whoHeader: "ABAGENZUWE",
     whereHeader: "AHO UBUGENZUZI BWAKOREWE",
-    partII: "II. AMAKURU KU MUHIGO WAGENZUWE",
-    photos: "III. AMAFOTO Y’UBUGENZUZI",
+    partII: "II. ABAKOZE IGIKORWA",
+    partIII: "III. AMAKURU KU MUHIGO WAGENZUWE",
+    photos: "IV. AMAFOTO Y’UBUGENZUZI",
     widths: [400, 1000, 1400, 1600, 2600, 2600, 1700, 2000, 920],
     headers: ["SN", "Umuhigo", "Icyari giteganyijwe", "Icyakozwe", "Ireme ry’igikorwa na Findings",
       "Itandukaniro n’impamvu", "Ingaruka", "Ingamba zo gukosora", "IFOTO"]
@@ -45,8 +46,9 @@ const TYPES = {
     goalHeader: "UMUHIGO WAKOREWE UBUKANGURAMBAGA",
     whoHeader: "ABAGEZWEHO N’UBUKANGURAMBAGA",
     whereHeader: "AHO UBUKANGURAMBAGA BWAKOREWE",
-    partII: "II. AMAKURU KU MIHIGO WAKOREWE UBUKANGURAMBAGA",
-    photos: "III. AMAFOTO Y’UBUKANGURAMBAGA",
+    partII: "II. ABAKOZE IGIKORWA",
+    partIII: "III. AMAKURU KU MIHIGO WAKOREWE UBUKANGURAMBAGA",
+    photos: "IV. AMAFOTO Y’UBUKANGURAMBAGA",
     widths: [465, 1750, 1351, 2681, 1530, 1620, 1440, 1890, 1493],
     headers: ["SN", "Umuhigo", "Ubumenyi basanzwe bafite ku gikorwa", "Ubutumwa/Ibikorwa by’ubukangurambaga",
       "Uko bakiriye ubutumwa n’ubushake bwo kwitabira", "Ibyo basabwa gukora kugira ngo bitabire",
@@ -60,8 +62,9 @@ const TYPES = {
     goalHeader: "UMUHIGO WAKURIKIRANWE",
     whoHeader: "ABASURWE",
     whereHeader: "AHO UBUSURA BWAKOREWE",
-    partII: "II. AMAKURU KU MUHIGO WAKURIKIRANWE",
-    photos: "III. AMAFOTO Y’UBUSURA",
+    partII: "II. ABAKOZE IGIKORWA",
+    partIII: "III. AMAKURU KU MUHIGO WAKURIKIRANWE",
+    photos: "IV. AMAFOTO Y’UBUSURA",
     widths: [400, 1100, 1500, 2100, 1300, 2400, 2400, 1900, 1120],
     headers: ["SN", "Umuhigo", "Raporo y’ubushize", "Inama yatanzwe ubushize", "Yashyizwe mu bikorwa?",
       "Impamvu niba itarakozwe", "Ibyemeranyijweho (igikorwa gishya)", "Ushinzwe na Deadline", "IFOTO"]
@@ -76,7 +79,7 @@ const cellMargins = { top: 50, bottom: 50, left: 80, right: 80 };
 
 const clean = (value) => (typeof value === "string" ? value.trim() : "");
 const noEnd = (value) => clean(value).replace(/[\s.;,:]+$/, "");
-const fieldsOf = (report) => report.fields || {};
+const fieldsOf = (report) => (report && report.fields) || {};
 
 function formatDate(value) {
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(clean(value));
@@ -97,7 +100,7 @@ function goalOf(report) {
   const known = goalsByRef.get(String(fields.goal));
   const activity = (report.selectedActivities || []).find((item) => item.goal);
   return {
-    title: (known && known.title) || (activity && activity.goal) || clean(fields.goal),
+    title: (known && known.title) || (activity && activity.goal) || clean(fields.goalTitle) || clean(fields.goal),
     category: clean(fields.goalCategory) || (known && known.category) || ""
   };
 }
@@ -158,16 +161,19 @@ function footer() {
   });
 }
 
-// Igice cya "Authority" kiri mu memo (nk'uko kiri muri sample).
-function authorityBlock() {
+// Igice cya "Authority" kiri mu memo — cyashyizweho uburyo bwa editing (acting ES n'abandi).
+function authorityBlock(options = {}) {
   const none = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
   const noBorders = { top: none, bottom: none, left: none, right: none };
-  const b = (text, options = {}) => new Paragraph({
-    alignment: options.alignment,
-    spacing: { after: options.after || 0, line: options.line },
-    children: [new TextRun({ text, font: SERIF, size: 24, bold: true, underline: options.underline ? {} : undefined })]
+  const b = (text, opts = {}) => new Paragraph({
+    alignment: opts.alignment,
+    spacing: { after: opts.after || 0, line: opts.line },
+    children: [new TextRun({ text, font: SERIF, size: 24, bold: true, underline: opts.underline ? {} : undefined })]
   });
   const dots = "…………………………………………………";
+  const authorityName = clean(options.authorityName) || "NDAYAMBAJE KARIMA Augustin";
+  const authorityTitle = clean(options.authorityTitle) || "Executive Secretary/Cyuve Sector";
+
   return new Table({
     width: { size: 9026, type: WidthType.DXA },
     columnWidths: [4513, 4513],
@@ -175,7 +181,7 @@ function authorityBlock() {
       cantSplit: true,
       children: [
         new TableCell({ width: { size: 4513, type: WidthType.DXA }, borders: noBorders, children: [b("Authority Comments:", { after: 60 }), b(dots, { line: 360 }), b(dots, { line: 360 }), b(dots, { line: 360 })] }),
-        new TableCell({ width: { size: 4513, type: WidthType.DXA }, borders: noBorders, children: [b("Authority Names, Signature and Stump", { alignment: AlignmentType.CENTER, underline: true, after: 360 }), b("NDAYAMBAJE KARIMA Augustin", { alignment: AlignmentType.CENTER }), b("Executive Secretary/Cyuve Sector", { alignment: AlignmentType.CENTER })] })
+        new TableCell({ width: { size: 4513, type: WidthType.DXA }, borders: noBorders, children: [b("Authority Names, Signature and Stump", { alignment: AlignmentType.CENTER, underline: true, after: 360 }), b(authorityName, { alignment: AlignmentType.CENTER }), b(authorityTitle, { alignment: AlignmentType.CENTER })] })
       ]
     })]
   });
@@ -216,7 +222,7 @@ function photoCell(report) {
   const codes = clean(fields.photoCodes);
   const count = parseInt(fields.photoCount, 10);
   if (codes) return codes;
-  return count > 0 ? "Reba igice III" : "";
+  return count > 0 ? "Reba igice IV" : "";
 }
 
 const MONITORING_EXTRA = [
@@ -297,11 +303,43 @@ function locationTable(config, reports) {
     const goal = goalOf(report);
     rows.push(new TableRow({
       children: [
-        cell(String(index + 1), widths[0]), cell(goal.category, widths[1]), cell(goal.title, widths[2]),
+        cell(String(index + 1), widths[0], { alignment: AlignmentType.CENTER }), cell(goal.category || "UBUKUNGU", widths[1]), cell(goal.title, widths[2]),
         cell(dash(f.beneficiaryName), widths[3]), cell(clean(f.cell).toUpperCase(), widths[4]), cell(clean(f.village).toUpperCase(), widths[5])
       ]
     }));
   });
+  return new Table({ width: { size: 14220, type: WidthType.DXA }, columnWidths: widths, rows });
+}
+
+function staffParticipantsTable(reports, options = {}) {
+  const team = (reports[0] && Array.isArray(reports[0].staffParticipants) && reports[0].staffParticipants.length)
+    ? reports[0].staffParticipants
+    : (options.staffParticipants && options.staffParticipants.length)
+      ? options.staffParticipants
+      : [{
+          name: clean(fieldsOf(reports[0]).staffName) || clean(options.staffName) || "-",
+          role: clean(fieldsOf(reports[0]).staffRole) || "Umukozi ushinzwe Ubworozi",
+          phone: clean(fieldsOf(reports[0]).staffPhone) || "-",
+          signature: "-"
+        }];
+  const widths = [700, 3600, 3300, 2500, 4120];
+  const head = (text, width) => cell(text, width, { bold: true, shaded: true, alignment: AlignmentType.CENTER, size: 16 });
+  const rows = [new TableRow({
+    tableHeader: true,
+    children: [
+      head("SN", widths[0]), head("AMAZINA", widths[1]), head("ICYO ASHINZWE", widths[2]),
+      head("TELEPHONE", widths[3]), head("UMUKONO", widths[4])
+    ]
+  })];
+  team.forEach((person, index) => rows.push(new TableRow({
+    children: [
+      cell(String(index + 1), widths[0], { alignment: AlignmentType.CENTER }),
+      cell(dash(person.name), widths[1]),
+      cell(dash(person.role || person.jobTitle), widths[2]),
+      cell(dash(person.phone), widths[3]),
+      cell(dash(person.signature), widths[4])
+    ]
+  })));
   return new Table({ width: { size: 14220, type: WidthType.DXA }, columnWidths: widths, rows });
 }
 
@@ -348,7 +386,7 @@ function memoBody(type, reports, context) {
   return compact([intro, memoSummary(type, reports), closing]);
 }
 
-function photoSection(config, reports, signature) {
+function photoSection(config, reports) {
   const entries = [];
   reports.forEach((report) => {
     const f = fieldsOf(report);
@@ -380,9 +418,58 @@ function photoSection(config, reports, signature) {
   return children;
 }
 
-async function buildReportDocx(reports, options = {}) {
-  if (!Array.isArray(reports) || !reports.length) throw new Error("Nta raporo zahiswemo.");
-  const type = fieldsOf(reports[0]).visitType;
+// Flatten multi-target reports so that each target becomes an entry in the tables
+function expandReports(reports) {
+  return reports.flatMap((visit) => {
+    if (!Array.isArray(visit.targets) || !visit.targets.length) return [visit];
+    const base = fieldsOf(visit);
+    return visit.targets.map((target) => {
+      const detail = target.details || {};
+      let people = "";
+      if (Array.isArray(target.beneficiaries)) {
+        people = target.beneficiaries
+          .filter((p) => p && p.name)
+          .map((p) => p.name + (p.role === "Partner" ? " (Umufatanyabikorwa)" : ""))
+          .join(", ");
+      } else if (typeof target.beneficiaries === "string") {
+        people = target.beneficiaries;
+      }
+      if (!people && target.beneficiaryName) people = target.beneficiaryName;
+      if (!people && base.beneficiaryName) people = base.beneficiaryName;
+
+      const fields = {
+        ...base,
+        ...detail,
+        goal: String(target.goal || base.goal || ""),
+        goalCategory: target.category || base.goalCategory || "",
+        beneficiaryName: people,
+        cell: target.cell || base.cell || "",
+        village: target.village || base.village || "",
+        visitType: base.visitType
+      };
+      const followups = fields.visitType === "Follow-up" && detail.previousRecommendation ? [{
+        recommendation: detail.previousRecommendation || "",
+        status: detail.implementationStatus || "",
+        reason: detail.notImplementedReason || "",
+        newAction: detail.newAction || "",
+        owner: detail.actionOwner || "",
+        deadline: detail.actionDeadline || ""
+      }] : (target.followups || visit.followups || []);
+      return {
+        ...visit,
+        fields,
+        actions: target.actions || visit.actions || [],
+        followups,
+        selectedActivities: target.selectedActivities || visit.selectedActivities || []
+      };
+    });
+  });
+}
+
+async function buildReportDocx(rawReports, options = {}) {
+  if (!Array.isArray(rawReports) || !rawReports.length) throw new Error("Nta raporo zahiswemo.");
+  const reports = expandReports(rawReports);
+  const type = fieldsOf(reports[0]).visitType || "Monitoring";
   const config = TYPES[type];
   if (!config) throw new Error("Ubwoko bw’uruzinduko ntibuzwi: " + (type || "ntabwo bwahiswemo") + ".");
   if (reports.some((report) => fieldsOf(report).visitType !== type)) {
@@ -395,7 +482,7 @@ async function buildReportDocx(reports, options = {}) {
   const visitDates = unique(reports.map((report) => formatDate(fieldsOf(report).visitDate)));
   const context = {
     goals: unique(reports.map((report) => goalOf(report).title)),
-    who: joinList(unique(reports.map((report) => fieldsOf(report).beneficiaryName))) || "aborozi",
+    who: joinList(unique(reports.map((report) => fieldsOf(report).beneficiaryName))) || "aborozi / abafatanyabikorwa",
     cells: unique(reports.map((report) => fieldsOf(report).cell)),
     villages: unique(reports.map((report) => fieldsOf(report).village)),
     visitDate: joinList(visitDates) || reportDate
@@ -405,7 +492,13 @@ async function buildReportDocx(reports, options = {}) {
   const roleLine = /murenge/i.test(role) ? role : role + " mu Murenge wa CYUVE";
 
   const bold = (text) => run(text, { bold: true });
-  const jp = (children, options = {}) => new Paragraph({ alignment: AlignmentType.JUSTIFIED, spacing: { after: 0, line: options.line }, children });
+  const jp = (children, opts = {}) => new Paragraph({ alignment: AlignmentType.JUSTIFIED, spacing: { after: 0, line: opts.line }, children });
+
+  // Custom memo text if user provided it, or auto-generated memoBody
+  const memoParagraphs = clean(options.memoText)
+    ? options.memoText.split(/\n+/).map(clean).filter(Boolean)
+    : memoBody(type, reports, context);
+
   const memo = [
     ...header(84, 79),
     ...blank(2),
@@ -420,13 +513,13 @@ async function buildReportDocx(reports, options = {}) {
     ...blank(1),
     jp([run("Bwana Muyobozi,")]),
     ...blank(1),
-    ...memoBody(type, reports, context).flatMap((text) => [jp([run(text)], { line: 276 }), ...blank(1)]),
+    ...memoParagraphs.flatMap((text) => [jp([run(text)], { line: 276 }), ...blank(1)]),
     jp([run("Mugire amahoro.")]),
     ...blank(4),
     jp([bold(staffName)]),
     jp([bold(roleLine)]),
     ...blank(1),
-    authorityBlock()
+    authorityBlock(options)
   ];
 
   const report = [
@@ -436,6 +529,9 @@ async function buildReportDocx(reports, options = {}) {
     locationTable(config, reports),
     para("", { after: 160 }),
     para([run(config.partII, { font: SANS, size: 22, bold: true })], { after: 120, keepNext: true }),
+    staffParticipantsTable(rawReports, options),
+    para("", { after: 160 }),
+    para([run(config.partIII, { font: SANS, size: 22, bold: true })], { after: 120, keepNext: true }),
     new Table({
       width: { size: 14220, type: WidthType.DXA },
       columnWidths: config.widths,

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#153f35">
-  <title>Raporo y’Ibikorwa | Musanze</title>
+  <title>Raporo y’Ibikorwa | Musanze — Cyuve</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23153f35'/%3E%3Cpath d='M20 10h17l11 11v32a3 3 0 0 1-3 3H20a3 3 0 0 1-3-3V13a3 3 0 0 1 3-3z' fill='white'/%3E%3Cpath d='M37 10v11h11z' fill='%23b9d6c8'/%3E%3Cpath d='M23 31h20M23 38h20M23 45h12' stroke='%23153f35' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E">
   <style>
     :root {
@@ -44,7 +44,7 @@
     .intro h2 { margin: 0 0 8px; color: var(--green); }
     .intro p { margin: 0; color: #435b4f; line-height: 1.55; }
     .section-heading { display: flex; align-items: start; gap: 12px; padding-bottom: 14px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
-    .section-heading h2 { margin: 0; font-size: 1.1rem; color: var(--green); }
+    .section-heading h2 { margin: 0; font-size: 1.15rem; color: var(--green); }
     .section-heading p { margin: 5px 0 0; color: var(--muted); font-size: .88rem; }
     .letter { display: inline-grid; place-items: center; width: 31px; height: 31px; flex: 0 0 31px; border-radius: 9px; background: var(--green); color: white; font-weight: 700; }
     .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
@@ -56,25 +56,21 @@
     input, select, textarea { width: 100%; color: var(--ink); border: 1px solid #cbd7d0; border-radius: 8px; padding: 10px 11px; background: white; }
     input:focus, select:focus, textarea:focus { outline: 3px solid #286d5220; border-color: var(--green-2); }
     input[readonly] { background: #edf5ef; color: var(--green); font-weight: 650; }
-    textarea { min-height: 90px; resize: vertical; line-height: 1.45; }
-    .compact textarea { min-height: 72px; }
-    .two-textareas { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    textarea { min-height: 85px; resize: vertical; line-height: 1.45; }
+    
     .status-strip { position: sticky; top: 0; z-index: 5; margin-bottom: 16px; padding: 12px 15px; background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 4px 12px #20302b0d; }
     .status-strip strong { color: var(--green); }
     .status-strip p { margin: 4px 0 0; font-size: .86rem; color: var(--muted); }
     .status-strip.has-errors { border-color: #edc6a9; background: #fffaf5; }
     .status-strip.has-errors strong { color: var(--red); }
-    .advice { padding: 11px 13px; border-radius: 9px; background: var(--pale); color: var(--green); font-size: .88rem; line-height: 1.45; }
+    
     .actions-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     .actions-table th, .actions-table td { text-align: left; vertical-align: top; border: 1px solid var(--line); padding: 8px; }
     .actions-table th { background: #f4f8f5; font-size: .82rem; }
     .actions-table td:first-child { width: 42px; text-align: center; font-weight: 700; padding-top: 17px; }
     .actions-table input, .actions-table select { min-width: 110px; }
     .table-wrap { width: 100%; overflow-x: auto; }
-    .conditional { display: none; }
-    .conditional.active { display: block; }
-    .disabled-panel { background: #f3f4f4; color: #7d8581; border-color: #e0e4e1; }
-    .disabled-panel input, .disabled-panel select, .disabled-panel textarea { background: #ecefed; color: #737d78; }
+    
     .btn { border: 1px solid transparent; border-radius: 8px; padding: 10px 14px; font-weight: 650; }
     .btn.primary { color: white; background: var(--green); }
     .btn.primary:hover { background: #205744; }
@@ -88,12 +84,10 @@
     .notice.warning { background: var(--yellow); border-color: #ebdcaa; }
     .notice ul { margin: 7px 0 0; padding-left: 20px; }
     .hidden { display: none !important; }
-    .signature-box { border: 1px solid var(--line); border-radius: 10px; padding: 14px; background: #fbfcfb; }
-    .signature-box h3 { margin: 0 0 12px; font-size: .94rem; color: var(--green); }
     .muted-note { margin: 10px 0 0; color: var(--muted); font-size: .82rem; }
     .toast { position: fixed; right: 20px; bottom: 20px; z-index: 10; max-width: min(420px, calc(100% - 40px)); padding: 13px 17px; border-radius: 10px; background: var(--green); color: #fff; box-shadow: 0 8px 26px #0002; }
     .toast.error { background: #8e3028; }
-    .print-only { display: none; }
+    
     .login-shell { width: min(440px, calc(100% - 32px)); margin: 56px auto; }
     .login-card { background: white; border: 1px solid var(--line); border-radius: 14px; padding: 26px; box-shadow: 0 8px 26px #153f3510; }
     .login-card h2 { margin: 0 0 8px; color: var(--green); }
@@ -106,7 +100,6 @@
     .report-icon { display: inline-flex; align-items: center; gap: 6px; color: var(--green); font-weight: 700; }
     .report-icon svg { width: 26px; height: 26px; }
     .count-badge { min-width: 22px; padding: 1px 7px; border-radius: 999px; background: var(--green); color: #fff; font-size: .76rem; text-align: center; }
-    .count-badge.alert { background: #8e3028; }
     .sub-heading { margin: 18px 0 8px; color: var(--green); font-size: 1rem; }
     .connection-state { color: #d1e2d9; font-size: .78rem; }
     .user-table { width: 100%; border-collapse: collapse; }
@@ -114,8 +107,26 @@
     .user-table th { background: #f4f8f5; font-size: .84rem; }
     .account-form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-items: end; }
 
+    /* Custom Repeatable & Form Styles */
+    .report-header-banner { background: linear-gradient(135deg, #153f35, #286d52); color: white; padding: 20px 24px; border-radius: 12px; margin-bottom: 20px; }
+    .report-header-banner h1 { margin: 0; font-size: clamp(1.2rem, 3.2vw, 1.7rem); letter-spacing: 0.02em; }
+    .report-header-banner p { margin: 6px 0 0; color: #d1e2d9; font-size: .92rem; }
+    
+    .repeat-card { border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin: 14px 0; background: #fcfdfc; box-shadow: 0 2px 8px #153f3506; }
+    .repeat-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 10px; margin-bottom: 14px; }
+    .repeat-card-header h3 { margin: 0; color: var(--green); font-size: 1.05rem; }
+    
+    .search-box-wrap { position: relative; margin-bottom: 8px; }
+    .search-box-wrap input { padding-left: 30px; font-size: 0.88rem; }
+    .search-box-wrap .search-icon { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.85rem; pointer-events: none; }
+    
+    .memo-preview-box { background: #fbfdfc; border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+    .memo-meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; font-size: 0.92rem; border-bottom: 1px solid var(--line); padding-bottom: 14px; margin-bottom: 16px; }
+    .authority-edit-panel { margin-top: 20px; padding-top: 16px; border-top: 1px dashed #b6c9be; }
+    .authority-edit-panel h3 { margin: 0 0 6px; font-size: 0.98rem; color: var(--green); }
+
     @media (max-width: 700px) {
-      .grid, .grid.three, .two-textareas { grid-template-columns: 1fr; }
+      .grid, .grid.three { grid-template-columns: 1fr; }
       .field.wide { grid-column: auto; }
       .brand { align-items: flex-start; }
       .tag { display: none; }
@@ -132,13 +143,7 @@
       main { width: 100%; margin: 12px 0; }
       .toolbar, .status-strip, .footer-actions, .no-print, .btn { display: none !important; }
       .card { box-shadow: none; break-inside: avoid; padding: 14px 0; border: 0; border-bottom: 1px solid #aaa; border-radius: 0; }
-      .conditional.active { display: block !important; }
-      .conditional:not(.active) { display: none !important; }
       input, select, textarea { border: 0; border-bottom: 1px solid #bbb; border-radius: 0; padding: 4px 0; background: white !important; color: #111 !important; }
-      textarea { min-height: 45px; }
-      .letter { border: 1px solid var(--green); color: var(--green); background: white; }
-      .intro { background: white; }
-      .actions-table th, .advice { background: #f1f1f1; }
     }
   </style>
 </head>
@@ -149,10 +154,10 @@
         <h1>Raporo y’Ibikorwa</h1>
         <p>Imihigo y’Umurenge wa Cyuve 2026–2027 · Akarere ka Musanze</p>
       </div>
-      <span class="tag">Mobilization · Monitoring · Follow-up</span>
+      <span class="tag">Integrated Reporting System</span>
       <div class="user-session hidden" id="userSession">
         <span id="sessionUser"></span>
-        <span class="connection-state" id="connectionState">Nta murongo uhari</span>
+        <span class="connection-state" id="connectionState">Server ihari</span>
         <button class="btn secondary small" type="button" id="logoutButton">Sohoka</button>
       </div>
     </div>
@@ -195,7 +200,7 @@
   <section class="login-shell hidden" id="forgotView">
     <div class="login-card">
       <h2>Wibagiwe ijambo ry’ibanga?</h2>
-      <p>Andika username yawe n’ijambo ry’ibanga rishya wifuza. Admin azemeza ubusabe bwawe (ashobora kukuvugisha mbere); nyuma yaho uzinjira ukoresheje iryo jambo rishya.</p>
+      <p>Andika username yawe n’ijambo ry’ibanga rishya wifuza. Admin azemeza ubusabe bwawe; nyuma yaho uzinjira ukoresheje iryo jambo rishya.</p>
       <form id="forgotForm">
         <div class="field"><label for="forgotUsername">Username</label><input id="forgotUsername" autocomplete="username" required></div>
         <div class="field"><label for="forgotPassword">Ijambo ry’ibanga rishya (inyuguti 12+)</label><input id="forgotPassword" type="password" minlength="12" autocomplete="new-password" required></div>
@@ -226,21 +231,19 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5h8.5L19 7v13.5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-17a1 1 0 0 1 1-1z"/><path d="M14 2.5V7h5"/><path d="M8.5 12h7M8.5 15.5h7M8.5 19h4"/></svg>
         <span class="count-badge" id="reportCount">0</span>
       </span>
-      <select id="savedReports" aria-label="Hitamo raporo wabitswe">
-        <option value="">Raporo zabitswe kuri iki gikoresho…</option>
+      <select id="savedReports" aria-label="Hitamo raporo yabitswe">
+        <option value="">Raporo zabitswe kuri server…</option>
       </select>
       <button class="btn secondary" id="loadReport" type="button">Fungura</button>
       <button class="btn danger" id="deleteReport" type="button">Siba</button>
-      <button class="btn secondary" id="importLocal" type="button">Himura raporo zo kuri iki gikoresho</button>
       <button class="btn secondary hidden" id="manageUsers" type="button">Genzura konti z’abakozi</button>
       <span class="spacer"></span>
       <button class="btn secondary" id="newReport" type="button">Raporo nshya</button>
-      <button class="btn" id="downloadDocx" type="button" title="Memo + raporo + amafoto, mu miterere ya Cyuve">Pakura Word (raporo iri hejuru)</button>
-      <button class="btn secondary" id="downloadDocxGroup" type="button" title="Raporo zose z’ubwoko bumwe, itariki n’akagari bimwe">Pakura Word (zose z’uwo munsi)</button>
-      <button class="btn secondary" id="exportJson" type="button">Manura JSON</button>
-      <button class="btn secondary" id="printReport" type="button">Sohora / Bika PDF</button>
+      <button class="btn primary" id="downloadDocx" type="button" title="Memo + raporo + amafoto, mu miterere ya Cyuve">📄 Pakura Word (.docx)</button>
+      <button class="btn secondary" id="printReport" type="button">🖨️ Print / PDF</button>
     </div>
 
+    <!-- ADMIN PANEL -->
     <section class="card hidden no-print" id="usersPanel">
       <div class="section-heading"><span class="letter">U</span><div><h2>Konti z’abakozi</h2><p>Admin ashobora gukora cyangwa guhagarika konti z’abakozi.</p></div></div>
       <div id="requestsBlock" class="hidden">
@@ -263,188 +266,155 @@
       <div class="table-wrap"><table class="user-table"><thead><tr><th>Amazina</th><th>Username</th><th>Urwego</th><th>Icyo ashinzwe</th><th>Uruhare</th><th>Imimerere</th><th>Igikorwa</th></tr></thead><tbody id="usersBody"></tbody></table></div>
     </section>
 
-    <section class="card intro">
-      <h2>Uzuza raporo y’ibikorwa</h2>
-      <p>Ibice A–G na K byuzuzwa kuri buri ruzinduko; hitamo ubwoko bw’uruzinduko kugira ngo wuzuze H, I cyangwa J. Raporo zibikwa kuri server, zisangirwa n’abakoresha bafite konti. Gukora backup kuri GitHub private bisaba ko umuyobozi ashyiraho ibanga ryayo muri Render.</p>
-    </section>
-
     <div id="validationSummary" class="status-strip" role="status" aria-live="polite">
-      <strong id="validationTitle">Ibyuzuzwa bisigaye bizagaragara hano.</strong>
-      <p id="validationText">Raporo irabika nka Draft; ushobora kuyikomeza nyuma kuri iki gikoresho.</p>
+      <strong id="validationTitle">Ibisabwa by’ingenzi byujujwe.</strong>
+      <p id="validationText">Ushobora kubika cyangwa gusohora raporo.</p>
     </div>
     <div id="readOnlyNotice" class="notice warning hidden no-print" role="status">Ureba raporo yakozwe n’undi mukozi. Abakozi bose bashobora kureba raporo, ariko uyikoze na admin ni bo bashobora kuyihindura cyangwa kuyisiba.</div>
 
     <form id="reportForm" novalidate>
+      <!-- HEADER BANNER & SECTION A -->
       <section class="card">
-        <div class="section-heading"><span class="letter">A</span><div><h2>Amakuru y’ubuyobozi</h2><p>Administrative</p></div></div>
+        <div class="report-header-banner">
+          <h1 id="dynamicReportTitle">RAPORO Y’UBUKANGURAMBAGA</h1>
+          <p id="dynamicReportSubtitle">Umutwe wa raporo wihindura mu buryo bwikora hashingiwe ku bwoko bw’uruzinduko wahisemo.</p>
+        </div>
+        <div class="section-heading"><span class="letter">A</span><div><h2>Amakuru y’Uruzinduko n’Ubutegetsi</h2><p>Administrative Details</p></div></div>
         <div class="grid three">
           <div class="field"><label for="reportNumber">Nomero ya raporo</label><input id="reportNumber" name="reportNumber" readonly></div>
-          <div class="field"><label for="pageDate">Itariki y’urupapuro</label><input id="pageDate" name="pageDate" type="date"></div>
+          <div class="field"><label for="pageDate">Itariki y’inyandiko</label><input id="pageDate" name="pageDate" type="date"></div>
           <div class="field"><label for="visitDate">Itariki y’uruzinduko <span class="hint">Ibisabwa</span></label><input id="visitDate" name="visitDate" type="date"></div>
-          <div class="field"><label for="district">Akarere</label><input id="district" name="district" value="Musanze" readonly></div>
-          <div class="field"><label for="sector">Umurenge</label><input id="sector" name="sector" value="Cyuve" readonly></div>
-          <div class="field"><label for="cell">Akagari</label><select id="cell" name="cell"><option value="">Hitamo akagari</option></select></div>
-          <div class="field"><label for="village">Umudugudu</label><select id="village" name="village" disabled><option value="">Banza uhitemo akagari</option></select></div>
+        </div>
+        <div class="grid two" style="margin-top:14px;">
           <div class="field"><label for="staffName">Umukozi wakoze uruzinduko <span class="hint">Ibisabwa</span></label><input id="staffName" name="staffName" autocomplete="name"></div>
           <div class="field"><label for="staffRole">Umwanya / Inshingano y’umukozi</label><input id="staffRole" name="staffRole"></div>
         </div>
-      </section>
-
-      <section class="card">
-        <div class="section-heading"><span class="letter">B</span><div><h2>Umugenerwabikorwa — Umworozi</h2><p>Beneficiary</p></div></div>
-        <div class="grid">
-          <div class="field"><label for="beneficiaryName">Amazina yombi <span class="hint">Ibisabwa</span></label><input id="beneficiaryName" name="beneficiaryName" autocomplete="name"></div>
-          <div class="field"><label for="phone">Telefoni</label><input id="phone" name="phone" type="tel" autocomplete="tel"></div>
-          <div class="field"><label for="nationalId">Indangamuntu</label><input id="nationalId" name="nationalId"></div>
-          <div class="field"><label for="address">Aho atuye</label><input id="address" name="address"></div>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="section-heading"><span class="letter">C</span><div><h2>Ubwoko bw’uruzinduko</h2><p>Hitamo kimwe; ni cyo kigaragaza igice cyihariye wuzuza.</p></div></div>
-        <div class="grid">
-          <div class="field"><label for="visitType">Ubwoko bw’uruzinduko <span class="hint">Ibisabwa</span></label>
+        <div class="grid" style="margin-top:14px;">
+          <div class="field wide">
+            <label for="visitType">Ubwoko bw’uruzinduko <span class="hint">Ibisabwa (Ubukangurambaga / Ubugenzuzi / Gusubira gukurikirana)</span></label>
             <select id="visitType" name="visitType">
-              <option value="">Hitamo ubwoko</option>
-              <option value="Mobilization">Mobilization — Gukangurira</option>
-              <option value="Monitoring">Monitoring — Gukurikirana</option>
-              <option value="Follow-up">Follow-up — Gusubira gusura</option>
+              <option value="Mobilization">Mobilization — Ubukangurambaga / Sensitization</option>
+              <option value="Monitoring">Monitoring — Ubugenzuzi / Gukurikirana</option>
+              <option value="Follow-up">Follow-up — Gusubira gukurikirana / Gusubira gusura</option>
             </select>
           </div>
-          <div class="field"><div class="field-label">Ubwoko bw’uruzinduko bukwiye</div><div class="advice" id="visitAdvice">Hitamo umuhigo kugira ngo ubone inama iri ku rupapuro rw’Imihigo.</div></div>
         </div>
       </section>
 
-      <section class="card">
-        <div class="section-heading"><span class="letter">D</span><div><h2>Intego n’igikorwa kigenzurwa</h2><p>Purpose · Hitamo mu mihigo yo muri dosiye watanze.</p></div></div>
-        <div class="grid">
-          <div class="field wide"><label for="purpose">Intego y’uruzinduko</label><textarea id="purpose" name="purpose"></textarea></div>
-          <div class="field wide"><label for="goal">Igikorwa kigenzurwa <span class="hint">Ibisabwa · imihigo 15 ifite ibikorwa byanditse ishyirwa imbere</span></label><select id="goal" name="goal"><option value="">Hitamo umuhigo</option></select></div>
-          <div class="field"><label for="goalCategory">Icyiciro cy’umuhigo</label><input id="goalCategory" name="goalCategory" readonly></div>
-          <div class="field"><label for="goalTargets">Baseline na intego y’umwaka</label><input id="goalTargets" name="goalTargets" readonly></div>
-          <div class="field wide"><label for="goalQuarterTarget" id="quarterTargetLabel">Intego ku gihembwe</label><input id="goalQuarterTarget" name="goalQuarterTarget" readonly><span class="hint">Umwaka w’imihigo utangira muri Nyakanga: Q1 Nyakanga–Nzeri, Q2 Ukwakira–Ukuboza, Q3 Mutarama–Werurwe, Q4 Mata–Kamena.</span></div>
-          <div class="field wide"><div class="field-label">Ibikorwa by’umuhigo byakozwe / bigenzurwa</div><span class="hint">Hitamo ibikorwa bijyanye n’umuhigo n’ubwoko bw’uruzinduko; “Byongeweho” bigufasha kwandika ikindi gikorwa.</span></div>
-          <div class="field"><label for="goalActivity1">Igikorwa 1</label><select id="goalActivity1" name="goalActivity1"><option value="">Banza uhitemo umuhigo n’ubwoko bw’uruzinduko</option></select><span class="hint" id="activityHint1"></span><input id="customActivity1" name="customActivity1" class="hidden" placeholder="Andika igikorwa cyongeweho" aria-label="Igikorwa cyongeweho 1"></div>
-          <div class="field"><label for="goalActivity2">Igikorwa 2</label><select id="goalActivity2" name="goalActivity2"><option value="">Banza uhitemo umuhigo n’ubwoko bw’uruzinduko</option></select><span class="hint" id="activityHint2"></span><input id="customActivity2" name="customActivity2" class="hidden" placeholder="Andika igikorwa cyongeweho" aria-label="Igikorwa cyongeweho 2"></div>
-          <div class="field"><label for="goalActivity3">Igikorwa 3</label><select id="goalActivity3" name="goalActivity3"><option value="">Banza uhitemo umuhigo n’ubwoko bw’uruzinduko</option></select><span class="hint" id="activityHint3"></span><input id="customActivity3" name="customActivity3" class="hidden" placeholder="Andika igikorwa cyongeweho" aria-label="Igikorwa cyongeweho 3"></div>
+      <!-- GROUP I: IMIHIGO, ABO MWAKORANYE N'AHO BYAKOREWE -->
+      <section class="card" id="group1Section">
+        <div class="section-heading"><span class="letter">I</span>
+          <div>
+            <h2>GROUP I: Imihigo, Abo Mwakoranye n’Aho Byakorewe</h2>
+            <p id="group1Sub">Hitamo icyiciro n’umuhigo, wandike abagezweho/abagenzuwe/abasurwe n’aho byakorewe. Ushobora kongeramo imihigo myinshi.</p>
+          </div>
+        </div>
+        <div id="targetsContainer"></div>
+        <div class="repeat-actions no-print">
+          <button type="button" class="btn secondary" id="addTargetBtn">+ Ongeramo undi muhigo</button>
         </div>
       </section>
 
-      <section class="card">
-        <div class="section-heading"><span class="letter">E</span><div><h2>Imbogamizi n’ibitekerezo by’umworozi</h2><p>Challenges & Feedback</p></div></div>
-        <div class="grid">
-          <div class="field"><label for="challenges">Imbogamizi zagaragaye</label><textarea id="challenges" name="challenges"></textarea></div>
-          <div class="field"><label for="rootCause">Impamvu nyayo</label><textarea id="rootCause" name="rootCause"></textarea></div>
-          <div class="field wide"><label for="feedback">Icyo umworozi avuga</label><textarea id="feedback" name="feedback"></textarea></div>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="section-heading"><span class="letter">F</span><div><h2>Inama n’ibyemeranyijweho</h2><p>Recommendation nibura imwe igomba kugira ushinzwe n’itariki ntarengwa.</p></div></div>
-        <div class="field"><label for="recommendations">Inama zatanzwe</label><textarea id="recommendations" name="recommendations"></textarea></div>
-        <div class="table-wrap">
-          <table class="actions-table">
-            <thead><tr><th>#</th><th>Igikorwa cyemeranyijweho <span class="hint">Nibura kimwe kirakenewe</span></th><th>Ushinzwe</th><th>Deadline</th><th class="no-print">Igikorwa</th></tr></thead>
-            <tbody id="actionsBody"></tbody>
-          </table>
-        </div>
-        <button class="btn secondary small no-print" type="button" id="addAction">+ Ongeramo igikorwa</button>
-      </section>
-
-      <section class="card">
-        <div class="section-heading"><span class="letter">G</span><div><h2>Ibimenyetso n’umwanzuro</h2><p>Evidence & Conclusion</p></div></div>
-        <div class="grid">
-          <div class="field"><label for="photoCount">Umubare w’amafoto <span class="hint" id="photoHint">Monitoring isaba nibura ifoto imwe.</span></label><input id="photoCount" name="photoCount" type="number" min="0" step="1" value="0"></div>
-          <div class="field"><label for="photoCodes">Kode / Nomero z’amafoto</label><input id="photoCodes" name="photoCodes" placeholder="Urugero: IMG_0101–IMG_0103"></div>
-          <div class="field wide"><label for="notes">Inyandiko / Notes</label><textarea id="notes" name="notes"></textarea></div>
-          <div class="field wide"><label for="conclusion">Umwanzuro</label><textarea id="conclusion" name="conclusion"></textarea></div>
-          <div class="field"><label for="nextVisitDate">Itariki yo gusura bwa nyuma</label><input id="nextVisitDate" name="nextVisitDate" type="date"></div>
-          <div class="field"><label for="followupOwner">Ushinzwe gusura</label><input id="followupOwner" name="followupOwner"></div>
-        </div>
-      </section>
-
-      <section class="card conditional" id="mobilizationPanel">
-        <div class="section-heading"><span class="letter">H</span><div><h2>Igice cyihariye: MOBILIZATION</h2><p>Gukangurira</p></div></div>
-        <div class="grid">
-          <div class="field"><label for="priorKnowledge">Ubumenyi yari afite mbere</label><textarea id="priorKnowledge" name="priorKnowledge"></textarea></div>
-          <div class="field"><label for="motivation">Ubushake (1 = buke cyane, 5 = bwinshi cyane)</label><select id="motivation" name="motivation"><option value="">Hitamo</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
-          <div class="field"><label for="messageGiven">Ubutumwa yahawe</label><textarea id="messageGiven" name="messageGiven"></textarea></div>
-          <div class="field"><label for="messageReception">Uko yabwakiriye</label><textarea id="messageReception" name="messageReception"></textarea></div>
-          <div class="field"><label for="expectedActions">Ibyo asabwa gukora</label><textarea id="expectedActions" name="expectedActions"></textarea></div>
-          <div class="field"><label for="participationBarriers">Impamvu zishobora gutuma atitabira</label><textarea id="participationBarriers" name="participationBarriers"></textarea></div>
-          <div class="field wide"><label for="mobilizationAgreement">Ibyemeranyijweho</label><textarea id="mobilizationAgreement" name="mobilizationAgreement"></textarea></div>
-        </div>
-      </section>
-
-      <section class="card conditional" id="monitoringPanel">
-        <div class="section-heading"><span class="letter">I</span><div><h2>Igice cyihariye: MONITORING</h2><p>Gukurikirana</p></div></div>
-        <div class="grid">
-          <div class="field"><label for="expected">Icyari giteganyijwe</label><textarea id="expected" name="expected"></textarea></div>
-          <div class="field"><label for="performed">Icyakozwe</label><textarea id="performed" name="performed"></textarea></div>
-          <div class="field"><label for="quality">Ireme ry’igikorwa</label><select id="quality" name="quality"><option value="">Hitamo</option><option>Riri hejuru</option><option>Rirashimishije</option><option>Rikeneye kunozwa</option><option>Riri hasi</option></select></div>
-          <div class="field"><label for="findings">Findings — ibyagaragaye <span class="hint">Ibisabwa: andika ibisobanutse kandi byihariye.</span></label><textarea id="findings" name="findings"></textarea></div>
-          <div class="field"><label for="discrepancy">Itandukaniro hagati y’icyari giteganyijwe n’icyakozwe</label><textarea id="discrepancy" name="discrepancy"></textarea></div>
-          <div class="field"><label for="monitoringCause">Impamvu</label><textarea id="monitoringCause" name="monitoringCause"></textarea></div>
-          <div class="field"><label for="impact">Ingaruka</label><textarea id="impact" name="impact"></textarea></div>
-          <div class="field"><label for="correctiveAction">Ingamba zo gukosora</label><textarea id="correctiveAction" name="correctiveAction"></textarea></div>
-        </div>
-        <h3>Ibipimo by’ubworozi</h3>
-        <div class="grid three">
-          <div class="field"><label for="inseminationDate">Itariki y’intanga</label><input id="inseminationDate" name="inseminationDate" type="date"></div>
-          <div class="field"><label for="semenType">Ubwoko bw’intanga</label><input id="semenType" name="semenType"></div>
-          <div class="field"><label for="inspectionDate">Itariki y’isuzuma</label><input id="inspectionDate" name="inspectionDate" type="date"></div>
-          <div class="field"><label for="inspectionResult">Ibyavuye mu isuzuma</label><input id="inspectionResult" name="inspectionResult"></div>
-          <div class="field"><label for="birthDate">Itariki yo kubyara</label><input id="birthDate" name="birthDate" type="date"></div>
-          <div class="field"><label for="animalNumber">Nomero y’itungo / inyana</label><input id="animalNumber" name="animalNumber"></div>
-          <div class="field"><label for="calfRegistered">Inyana yamenyekanishijwe</label><select id="calfRegistered" name="calfRegistered"><option value="">Hitamo</option><option>Yego</option><option>Oya</option><option>Ntabwo bireba</option></select></div>
-          <div class="field"><label for="vaccinations">Inkingo (izakozwe n’itariki)</label><textarea id="vaccinations" name="vaccinations"></textarea></div>
-          <div class="field"><label for="records">Ububiko bw’amakuru (records)</label><select id="records" name="records"><option value="">Hitamo</option><option>Burahari kandi bunoze</option><option>Burahari ariko ntibunoze</option><option>Ntabwo buhari</option><option>Ntabwo bireba</option></select></div>
-          <div class="field"><label for="water">Amazi</label><select id="water" name="water"><option value="">Hitamo</option><option>Ahari</option><option>Ntahari</option><option>Ntabwo bireba</option></select></div>
-          <div class="field"><label for="shelter">Ikiraro</label><select id="shelter" name="shelter"><option value="">Hitamo</option><option>Kirahari kandi kimeze neza</option><option>Kirahari ariko gikeneye gusanwa</option><option>Nta kiraro</option><option>Ntabwo bireba</option></select></div>
-          <div class="field"><label for="hygiene">Isuku</label><select id="hygiene" name="hygiene"><option value="">Hitamo</option><option>Ni nziza</option><option>Ikeneye kunozwa</option><option>Ntabwo ireba</option></select></div>
-        </div>
-      </section>
-
-      <section class="card conditional" id="followupPanel">
-        <div class="section-heading"><span class="letter">J</span><div><h2>Igice cyihariye: FOLLOW-UP</h2><p>Gusubira gusura · buri nama ikurikiranwa ukwayo.</p></div></div>
-        <div class="grid">
-          <div class="field"><label for="previousReport">Raporo y’ubushize (nomero)</label><input id="previousReport" name="previousReport"></div>
-          <div class="field"><label for="lastVisitDate">Itariki y’uruzinduko rwa nyuma</label><input id="lastVisitDate" name="lastVisitDate" type="date"></div>
+      <!-- GROUP II: ABAKOZE IGIKORWA -->
+      <section class="card" id="group2Section">
+        <div class="section-heading"><span class="letter">II</span>
+          <div>
+            <h2 id="group2Title">GROUP II: ABAKOZE IGIKORWA CY'UBUKANGURAMBAGA</h2>
+            <p>Andika abakozi bose bakoze igikorwa (amazina, icyo bashinzwe, telefone, umukono).</p>
+          </div>
         </div>
         <div class="table-wrap">
-          <table class="actions-table">
-            <thead><tr><th>#</th><th>Inama yatanzwe ubushize</th><th>Yashyizwe mu bikorwa?</th><th>Impamvu niba itarakozwe</th><th>Igikorwa gishya cyemeranyijweho</th><th>Ushinzwe</th><th>Deadline</th><th class="no-print">Igikorwa</th></tr></thead>
-            <tbody id="followupsBody"></tbody>
+          <table class="actions-table" id="staffTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Amazina y’umukozi</th>
+                <th>Icyo ashinzwe</th>
+                <th>Telefoni</th>
+                <th>Umukono</th>
+                <th class="no-print">Igikorwa</th>
+              </tr>
+            </thead>
+            <tbody id="staffBody"></tbody>
           </table>
         </div>
-        <button class="btn secondary small no-print" type="button" id="addFollowup">+ Ongeramo inama yo gukurikirana</button>
+        <div class="repeat-actions no-print" style="margin-top:12px;">
+          <button type="button" class="btn secondary small" id="addStaffBtn">+ Ongeramo uwakoze igikorwa</button>
+        </div>
       </section>
 
+      <!-- GROUP III: AMAKURU YIHARIYE KURI BURI MUHIGO -->
+      <section class="card" id="group3Section">
+        <div class="section-heading"><span class="letter">III</span>
+          <div>
+            <h2 id="group3Title">GROUP III: AMAKURU KU MIHIGO WAKOREWE UBUKANGURAMBAGA</h2>
+            <p id="group3Sub">Buri muhigo wuzuzwa ukwawo. Amakuru ahinduka bitewe n'ubwoko bw'uruzinduko wahisemo muri Form A.</p>
+          </div>
+        </div>
+        <div id="goalDetailsContainer"></div>
+      </section>
+
+      <!-- AUTOMATIC MEMO INTERNE -->
+      <section class="card" id="memoSection">
+        <div class="section-heading"><span class="letter">M</span>
+          <div>
+            <h2>MEMO INTERNE (Incamake Yikora)</h2>
+            <p>Memo yikora hashingiwe ku makuru y’uruzinduko. Ushobora kuyihindura mbere yo gusohora Word.</p>
+          </div>
+        </div>
+        <div class="memo-preview-box">
+          <div class="memo-meta-grid">
+            <div><strong>REF:</strong> <span id="memoRef">SARO</span></div>
+            <div><strong>ITARIKI:</strong> <span id="memoDate">--/--/----</span></div>
+            <div class="wide"><strong>KUVA KURI:</strong> <span id="memoFrom">--</span></div>
+            <div class="wide"><strong>KUJYA KURI:</strong> Bwana Umunyamabanga Nshingwabikorwa w’Umurenge wa CYUVE</div>
+            <div class="wide"><strong>IMPAMVU:</strong> <span id="memoSubject">--</span></div>
+          </div>
+          <div class="field" style="margin-top: 14px;">
+            <label for="memoBodyInput">Umubiri wa Memo (Ushobora kuwuhindura / Editable):</label>
+            <textarea id="memoBodyInput" rows="6" style="font-family: inherit; line-height: 1.5;"></textarea>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;" class="no-print">
+            <button type="button" class="btn secondary small" id="resetMemoBtn">🔄 Subiza kuri iyikora (Reset to Auto)</button>
+          </div>
+          
+          <!-- AUTHORITY EDITING BOX -->
+          <div class="authority-edit-panel">
+            <h3>Agasanduku k'Umuyobozi (Authority Box — Default/Editable)</h3>
+            <p class="hint">Ibi bishyirwa mu gasanduku k'umukono n'ikimenyetso (Stamp) muri Word. Niba hari Acting ES cyangwa undi muyobozi, hano urahindura:</p>
+            <div class="grid two" style="margin-top:10px;">
+              <div class="field">
+                <label for="authorityName">Amazina y'Umuyobozi (Authority Name)</label>
+                <input id="authorityName" value="NDAYAMBAJE KARIMA Augustin">
+              </div>
+              <div class="field">
+                <label for="authorityTitle">Umwanya w'Umuyobozi (Authority Title)</label>
+                <input id="authorityTitle" value="Executive Secretary/Cyuve Sector">
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- KWEMEZA NO KUBIKA -->
       <section class="card">
-        <div class="section-heading"><span class="letter">K</span><div><h2>Kwemeza no gusinya</h2><p>Status</p></div></div>
-        <div class="grid">
+        <div class="section-heading"><span class="letter">S</span>
+          <div><h2>Kwemeza no kubika raporo</h2><p>Hitamo status hanyuma ubike cyangwa usohore Word.</p></div>
+        </div>
+        <div class="grid two">
           <div class="field"><label for="reportStatus">Status ya raporo</label><select id="reportStatus" name="reportStatus"><option>Draft</option><option>Yujujwe</option><option>Yoherejwe ngo yemezwe</option><option>Yemejwe</option></select></div>
         </div>
-        <div class="grid three" style="margin-top:16px">
-          <div class="signature-box"><h3>Umukozi wakoze uruzinduko</h3><div class="field"><label for="staffSigner">Izina</label><input id="staffSigner" name="staffSigner"></div><div class="field"><label for="staffSignature">Umukono</label><input id="staffSignature" name="staffSignature" placeholder="Andika izina cyangwa usinye ku rupapuro"></div><div class="field"><label for="staffSignDate">Itariki</label><input id="staffSignDate" name="staffSignDate" type="date"></div></div>
-          <div class="signature-box"><h3>Umugenerwabikorwa</h3><div class="field"><label for="beneficiarySigner">Izina</label><input id="beneficiarySigner" name="beneficiarySigner"></div><div class="field"><label for="beneficiarySignature">Umukono</label><input id="beneficiarySignature" name="beneficiarySignature" placeholder="Andika izina cyangwa usinye ku rupapuro"></div><div class="field"><label for="beneficiarySignDate">Itariki</label><input id="beneficiarySignDate" name="beneficiarySignDate" type="date"></div></div>
-          <div class="signature-box"><h3>ES w’Umurenge (Sector Approval)</h3><div class="field"><label for="sectorSigner">Izina</label><input id="sectorSigner" name="sectorSigner"></div><div class="field"><label for="sectorSignature">Umukono</label><input id="sectorSignature" name="sectorSignature" placeholder="Andika izina cyangwa usinye ku rupapuro"></div><div class="field"><label for="sectorSignDate">Itariki</label><input id="sectorSignDate" name="sectorSignDate" type="date"></div></div>
+        <div class="footer-actions no-print" style="margin-top:20px;">
+          <button class="btn primary" type="button" id="saveReport">💾 Bika raporo</button>
+          <button class="btn secondary" type="button" id="downloadDocxBottom">📄 Pakurura Word (.docx)</button>
+          <button class="btn secondary" type="button" id="printBottom">🖨️ Sohora / Bika PDF</button>
+          <span class="spacer"></span>
+          <button class="btn secondary small" type="button" id="resetFormBtn">Ihanagure byose (Draft nshya)</button>
         </div>
-        <p class="muted-note">Ibyangombwa bishobora gusinywa ku rupapuro rwa PDF rwasohowe, iyo gukoresha umukono wa elegitoroniki bitari ngombwa.</p>
       </section>
-
-      <div class="footer-actions no-print">
-        <button class="btn primary" type="button" id="saveReport">Bika raporo</button>
-        <button class="btn secondary" type="button" id="validateReport">Reba ibibura</button>
-        <span class="spacer"></span>
-        <button class="btn secondary" type="button" id="printBottom">Sohora / Bika PDF</button>
-      </div>
-      <div class="notice warning">
-        <strong>Amabwiriza y’ingenzi</strong>
-        <ul id="instructionsList"></ul>
-      </div>
     </form>
   </main>
+
   <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
   <script src="data.js"></script>
@@ -454,21 +424,42 @@
       const data = window.REPORT_DATA;
       const form = document.getElementById("reportForm");
       const $ = (id) => document.getElementById(id);
-      const storageKey = "musanze-visit-reports-v1";
       const tokenKey = "musanze-session-token";
       const today = new Date();
       const dateString = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      
       let toastTimer;
       let authToken = sessionStorage.getItem(tokenKey) || "";
       let currentUser = null;
       let currentReports = [];
       let currentReportId = null;
       let currentUpdatedAt = null;
-      let pollTimer = null;
+
+      // Repeatable state:
+      // targetDrafts: array of { id, category, goal, customGoal, beneficiaries, sector, cell, village, customVillage, details }
+      let targetDrafts = [];
+      // staffDrafts: array of { name, role, phone, signature }
+      let staffDrafts = [];
+      let customMemoEdited = false;
+
+      const categoriesList = ["UBUKUNGU", "IMIBEREHO MYIZA", "IMIYOBERERE MYIZA"];
 
       function makeReportNumber() {
         const suffix = crypto.randomUUID().replaceAll("-", "").slice(0, 6).toUpperCase();
         return "MUS-CYU-" + dateString.replaceAll("-", "") + "-" + suffix;
+      }
+
+      function esc(v) {
+        return String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+      }
+
+      function cleanStr(v) {
+        return typeof v === "string" ? v.trim() : "";
+      }
+
+      function formatDate(value) {
+        const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(cleanStr(value));
+        return match ? match[3] + "/" + match[2] + "/" + match[1] : cleanStr(value);
       }
 
       async function api(url, options = {}) {
@@ -503,313 +494,635 @@
         $("connectionState").style.color = connected ? "#d1e2d9" : "#ffd5cc";
       }
 
-      function populateLocations() {
-        const cell = $("cell");
-        data.locations.forEach((item) => {
-          const option = document.createElement("option");
-          option.value = item.name;
-          option.textContent = item.name;
-          cell.append(option);
-        });
-        cell.addEventListener("change", () => populateVillages(cell.value));
+      function getGoalTitle(target) {
+        if (target.goal === "__custom__") return target.customGoal || "Umuhigo wiyongereye";
+        const found = data.goals.find((g) => String(g.refNo) === String(target.goal));
+        return found ? found.title : (target.customGoal || target.goal || "Hitamo umuhigo");
       }
 
-      function populateVillages(cellName, selected) {
-        const village = $("village");
-        village.replaceChildren(new Option(cellName ? "Hitamo umudugudu" : "Banza uhitemo akagari", ""));
-        const cell = data.locations.find((item) => item.name === cellName);
-        (cell ? cell.villages : []).forEach((name) => village.add(new Option(name, name)));
-        village.add(new Option("Undi (wandike muri Aho atuye)", "__other__"));
-        village.disabled = !cellName;
-        if (selected && [...village.options].some((option) => option.value === selected)) village.value = selected;
-        else if (selected) {
-          village.value = "__other__";
-          $("address").value = $("address").value || selected;
-        }
-      }
-
-      function populateGoals() {
-        const goal = $("goal");
-        const activityRefs = new Set(data.activities.map((item) => item.refNo));
-        const groups = [
-          { label: "Imihigo ifite ibikorwa byanditse", goals: data.goals.filter((item) => activityRefs.has(item.refNo)) },
-          { label: "Indi mihigo", goals: data.goals.filter((item) => !activityRefs.has(item.refNo)) }
-        ];
-        groups.forEach((group) => {
-          if (!group.goals.length) return;
-          const optgroup = document.createElement("optgroup");
-          optgroup.label = group.label;
-          group.goals.forEach((item) => {
-            const option = new Option(item.title, String(item.refNo));
-            optgroup.append(option);
-          });
-          goal.append(optgroup);
-        });
-        goal.addEventListener("change", updateGoalDetails);
-      }
-
-      function quarterForDate(value) {
-        if (!value) return null;
-        const year = Number(value.slice(0, 4));
-        const month = Number(value.slice(5, 7));
-        if (!((year === 2026 && month >= 7) || (year === 2027 && month <= 6))) return -1;
-        if (month >= 7 && month <= 9) return 1;
-        if (month >= 10) return 2;
-        if (month <= 3) return 3;
-        return 4;
-      }
-
-      function formatTarget(value) {
-        return value === null || value === undefined || value === "" ? "Ntabwo yatanzwe" : String(value);
-      }
-
-      function updateActivityCustomFields() {
-        for (let slot = 1; slot <= 3; slot++) {
-          const selection = $("goalActivity" + slot).value;
-          const custom = selection === "__custom__";
-          $("customActivity" + slot).classList.toggle("hidden", !custom);
-          const activity = data.activities.find((item) => String(item.row) === selection);
-          $("activityHint" + slot).textContent = activity
-            ? "Urwego rushinzwe: " + activity.responsibleLevel + (activity.source ? " · Inkomoko: " + activity.source : "")
-            : custom ? "Andika igikorwa kitari mu rutonde." : "";
-        }
-      }
-
-      function updateActivities() {
-        const selectedGoal = data.goals.find((item) => String(item.refNo) === $("goal").value);
-        const visitType = $("visitType").value;
-        for (let slot = 1; slot <= 3; slot++) {
-          const select = $("goalActivity" + slot);
-          const previous = select.value;
-          select.replaceChildren();
-          select.add(new Option(selectedGoal && visitType ? "Hitamo igikorwa (" + slot + ")" : "Banza uhitemo umuhigo n’ubwoko bw’uruzinduko", ""));
-          const matches = selectedGoal && visitType
-            ? data.activities.filter((item) => item.refNo === selectedGoal.refNo && item.visitType === visitType)
-            : [];
-          matches.forEach((item) => {
-            const option = new Option(item.description, String(item.row));
-            option.title = "Urwego rushinzwe: " + item.responsibleLevel + (item.source ? " · Inkomoko: " + item.source : "");
-            select.add(option);
-          });
-          if (selectedGoal && visitType) select.add(new Option("Byongeweho (wandike igikorwa)", "__custom__"));
-          select.disabled = !selectedGoal || !visitType;
-          if ([...select.options].some((option) => option.value === previous)) select.value = previous;
-        }
-        updateActivityCustomFields();
-      }
-
-      function updateGoalDetails() {
-        const selected = data.goals.find((item) => String(item.refNo) === $("goal").value);
-        $("goalCategory").value = selected ? selected.category : "";
-        $("goalTargets").value = selected
-          ? "Baseline: " + formatTarget(selected.baseline) + " · Intego y’umwaka: " + formatTarget(selected.annualTarget)
-          : "";
-        const quarter = quarterForDate($("visitDate").value);
-        $("quarterTargetLabel").textContent = quarter === null ? "Intego ku gihembwe"
-          : quarter < 0 ? "Intego ku gihembwe (itariki iri hanze y’umwaka wa 2026–2027)"
-            : "Intego ku gihembwe (Q" + quarter + ")";
-        $("goalQuarterTarget").value = selected
-          ? quarter === null ? "Banza uhitemo itariki y’uruzinduko"
-            : quarter < 0 ? "Itariki iri hanze y’umwaka w’imihigo wa 2026–2027"
-              : "Q" + quarter + ": " + formatTarget(selected.quarterlyTargets[quarter - 1])
-          : "";
-        $("visitAdvice").textContent = selected && selected.visitTypes.length
-          ? "Ubwoko bw’uruzinduko bukwiye kuri uyu muhigo: " + selected.visitTypes.join(", ") + ". Inama, si itegeko."
-          : "Nta bwoko bw’uruzinduko bwatanzwe kuri uyu muhigo.";
-        updateActivities();
-        updateValidation();
-      }
-
-      function updateConditionalPanels() {
+      function getWhoLabel() {
         const type = $("visitType").value;
-        const mapping = { Mobilization: "mobilizationPanel", Monitoring: "monitoringPanel", "Follow-up": "followupPanel" };
-        Object.entries(mapping).forEach(([name, id]) => {
-          const panel = $(id);
-          const enabled = type === name;
-          panel.classList.toggle("active", enabled);
-          panel.classList.toggle("disabled-panel", Boolean(type) && !enabled);
-          panel.setAttribute("aria-hidden", String(!enabled));
+        if (type === "Mobilization") return "ABAGEZWEHO N’UBUKANGURAMBAGA";
+        if (type === "Monitoring") return "ABAGENZUWE";
+        return "ABASURWE";
+      }
+
+      function updateDynamicHeaders() {
+        const type = $("visitType").value;
+        if (type === "Mobilization") {
+          $("dynamicReportTitle").textContent = "RAPORO Y’UBUKANGURAMBAGA";
+          $("group2Title").textContent = "GROUP II: ABAKOZE IGIKORWA CY’UBUKANGURAMBAGA";
+          $("group3Title").textContent = "GROUP III: AMAKURU KU MIHIGO WAKOREWE UBUKANGURAMBAGA";
+        } else if (type === "Monitoring") {
+          $("dynamicReportTitle").textContent = "RAPORO YO GUKURIKIRANA / UBUGENZUZI (MONITORING)";
+          $("group2Title").textContent = "GROUP II: ABAKOZE IGIKORWA CY’UBUGENZUZI";
+          $("group3Title").textContent = "GROUP III: AMAKURU KU MUHIGO WAGENZUWE";
+        } else {
+          $("dynamicReportTitle").textContent = "RAPORO YO GUSUBIRA GUKURIKIRANA (FOLLOW-UP)";
+          $("group2Title").textContent = "GROUP II: ABAKOZE IGIKORWA CYO GUSUBIRA GUKURIKIRANA";
+          $("group3Title").textContent = "GROUP III: AMAKURU KU MUHIGO WAKURIKIRANYWE";
+        }
+      }
+
+      // --- GROUP I: TARGETS MANAGEMENT ---
+      function makeTargetDraft() {
+        const ownCell = currentUser && currentUser.level === "Akagari" && data.locations.some((item) => item.name === currentUser.cell) ? currentUser.cell : "KABEZA";
+        return {
+          id: crypto.randomUUID(),
+          category: "UBUKUNGU",
+          goal: "",
+          customGoal: "",
+          searchQuery: "",
+          beneficiaries: "",
+          sector: "CYUVE",
+          cell: ownCell,
+          village: "",
+          customVillage: "",
+          details: {}
+        };
+      }
+
+      function renderTargets() {
+        const container = $("targetsContainer");
+        container.replaceChildren();
+        const whoLabel = getWhoLabel();
+
+        targetDrafts.forEach((target, index) => {
+          const card = document.createElement("div");
+          card.className = "repeat-card";
+          card.dataset.id = target.id;
+
+          // Filter goals by Category AND Search Query
+          const selectedCat = target.category || "UBUKUNGU";
+          const query = cleanStr(target.searchQuery).toLowerCase();
+          const catGoals = data.goals.filter((g) => {
+            const matchCat = (g.category || "").toUpperCase() === selectedCat.toUpperCase();
+            if (!matchCat) return false;
+            if (!query) return true;
+            return g.title.toLowerCase().includes(query) || String(g.refNo).includes(query);
+          });
+
+          // Cell villages
+          const cellObj = data.locations.find((l) => l.name === target.cell);
+          const villages = cellObj ? cellObj.villages : [];
+
+          card.innerHTML = `
+            <div class="repeat-card-header">
+              <h3>Umuhigo #${index + 1}: <span style="font-weight:normal;color:#435b4f;">${esc(getGoalTitle(target))}</span></h3>
+              ${targetDrafts.length > 1 ? `<button type="button" class="btn danger small remove-target-btn" title="Siba uyu muhigo">Siba uyu muhigo</button>` : ''}
+            </div>
+            <div class="grid">
+              <div class="field">
+                <label>Icyiciro cy’umuhigo (Pillar/Category)</label>
+                <select class="target-category">
+                  ${categoriesList.map((c) => `<option value="${esc(c)}" ${c === selectedCat ? 'selected' : ''}>${esc(c)}</option>`).join('')}
+                </select>
+              </div>
+              <div class="field">
+                <label>Guhitamo Umuhigo (hamwe na Search)</label>
+                <div class="search-box-wrap">
+                  <span class="search-icon">🔍</span>
+                  <input type="text" class="target-search" placeholder="Andika ijambo ushaka hano (urugero: intanga)..." value="${esc(target.searchQuery || '')}">
+                </div>
+                <select class="target-goal">
+                  <option value="">Hitamo umuhigo (${catGoals.length} ibonetse)...</option>
+                  ${catGoals.map((g) => `<option value="${g.refNo}" ${String(g.refNo) === String(target.goal) ? 'selected' : ''}>${g.refNo}. ${esc(g.title)}</option>`).join('')}
+                  <option value="__custom__" ${target.goal === '__custom__' ? 'selected' : ''}>+ Ikindi (andika umuhigo utari ku rutonde)</option>
+                </select>
+                <input class="target-custom-goal ${target.goal === '__custom__' ? '' : 'hidden'}" style="margin-top:6px;" placeholder="Andika umuhigo utari ku rutonde hano..." value="${esc(target.customGoal || '')}">
+              </div>
+            </div>
+
+            <div class="grid" style="margin-top:14px;">
+              <div class="field wide">
+                <label class="who-label">${esc(whoLabel)} <span class="hint">Abo umuhigo ugenewe, abafatanyabikorwa, cyangwa izina ry'itsinda (urugero: Aborozi bagize itsinda GIRAMATA)</span></label>
+                <textarea class="target-beneficiaries" rows="2" placeholder="Andika izina ry'itsinda cyangwa abantu">${esc(target.beneficiaries || '')}</textarea>
+              </div>
+            </div>
+
+            <div class="grid three" style="margin-top:14px;">
+              <div class="field">
+                <label>Umurenge</label>
+                <input class="target-sector" value="${esc(target.sector || 'CYUVE')}">
+              </div>
+              <div class="field">
+                <label>Akagari</label>
+                <select class="target-cell">
+                  ${data.locations.map((loc) => `<option value="${esc(loc.name)}" ${loc.name === target.cell ? 'selected' : ''}>${esc(loc.name)}</option>`).join('')}
+                </select>
+              </div>
+              <div class="field">
+                <label>Umudugudu</label>
+                <select class="target-village">
+                  <option value="">Hitamo umudugudu...</option>
+                  ${villages.map((v) => `<option value="${esc(v)}" ${v === target.village ? 'selected' : ''}>${esc(v)}</option>`).join('')}
+                  <option value="__other__" ${target.village === '__other__' ? 'selected' : ''}>Undi mudugudu (wandike)</option>
+                </select>
+                <input class="target-custom-village ${target.village === '__other__' ? '' : 'hidden'}" style="margin-top:6px;" placeholder="Andika izina ry'umudugudu" value="${esc(target.customVillage || '')}">
+              </div>
+            </div>
+          `;
+
+          // Event handlers on this card
+          const catSelect = card.querySelector(".target-category");
+          const searchInput = card.querySelector(".target-search");
+          const goalSelect = card.querySelector(".target-goal");
+          const customGoalInput = card.querySelector(".target-custom-goal");
+          const beneficiariesInput = card.querySelector(".target-beneficiaries");
+          const sectorInput = card.querySelector(".target-sector");
+          const cellSelect = card.querySelector(".target-cell");
+          const villageSelect = card.querySelector(".target-village");
+          const customVillageInput = card.querySelector(".target-custom-village");
+          const removeBtn = card.querySelector(".remove-target-btn");
+
+          catSelect.addEventListener("change", () => {
+            target.category = catSelect.value;
+            target.goal = "";
+            renderTargets();
+            renderGoalDetails();
+            updateMemoAuto();
+            updateValidation();
+          });
+
+          searchInput.addEventListener("input", () => {
+            target.searchQuery = searchInput.value;
+            // update options in goalSelect without redrawing entire card
+            const q = cleanStr(target.searchQuery).toLowerCase();
+            const filtered = data.goals.filter((g) => {
+              const matchCat = (g.category || "").toUpperCase() === target.category.toUpperCase();
+              if (!matchCat) return false;
+              if (!q) return true;
+              return g.title.toLowerCase().includes(q) || String(g.refNo).includes(q);
+            });
+            goalSelect.replaceChildren(new Option(`Hitamo umuhigo (${filtered.length} ibonetse)...`, ""));
+            filtered.forEach((g) => {
+              goalSelect.add(new Option(`${g.refNo}. ${g.title}`, String(g.refNo)));
+            });
+            goalSelect.add(new Option("+ Ikindi (andika umuhigo utari ku rutonde)", "__custom__"));
+            if (target.goal) goalSelect.value = target.goal;
+          });
+
+          goalSelect.addEventListener("change", () => {
+            target.goal = goalSelect.value;
+            customGoalInput.classList.toggle("hidden", target.goal !== "__custom__");
+            card.querySelector(".repeat-card-header h3 span").textContent = getGoalTitle(target);
+            renderGoalDetails();
+            updateMemoAuto();
+            updateValidation();
+          });
+
+          customGoalInput.addEventListener("input", () => {
+            target.customGoal = customGoalInput.value;
+            card.querySelector(".repeat-card-header h3 span").textContent = getGoalTitle(target);
+            renderGoalDetails();
+            updateMemoAuto();
+            updateValidation();
+          });
+
+          beneficiariesInput.addEventListener("input", () => {
+            target.beneficiaries = beneficiariesInput.value;
+            updateMemoAuto();
+            updateValidation();
+          });
+
+          sectorInput.addEventListener("input", () => {
+            target.sector = sectorInput.value;
+            updateMemoAuto();
+          });
+
+          cellSelect.addEventListener("change", () => {
+            target.cell = cellSelect.value;
+            target.village = "";
+            const cObj = data.locations.find((l) => l.name === target.cell);
+            const vList = cObj ? cObj.villages : [];
+            villageSelect.replaceChildren(new Option("Hitamo umudugudu...", ""));
+            vList.forEach((v) => villageSelect.add(new Option(v, v)));
+            villageSelect.add(new Option("Undi mudugudu (wandike)", "__other__"));
+            updateMemoAuto();
+            updateValidation();
+          });
+
+          villageSelect.addEventListener("change", () => {
+            target.village = villageSelect.value;
+            customVillageInput.classList.toggle("hidden", target.village !== "__other__");
+            updateMemoAuto();
+            updateValidation();
+          });
+
+          customVillageInput.addEventListener("input", () => {
+            target.customVillage = customVillageInput.value;
+            updateMemoAuto();
+            updateValidation();
+          });
+
+          if (removeBtn) {
+            removeBtn.addEventListener("click", () => {
+              targetDrafts = targetDrafts.filter((t) => t.id !== target.id);
+              renderTargets();
+              renderGoalDetails();
+              updateMemoAuto();
+              updateValidation();
+            });
+          }
+
+          container.append(card);
         });
-        updateActivities();
-        $("photoHint").textContent = type === "Monitoring" ? "Monitoring isaba nibura ifoto imwe." : "Amafoto y’uruzinduko niba ahari.";
-        updateValidation();
       }
 
-      function addActionRow(item = {}) {
-        const row = $("actionsBody").insertRow();
-        row.innerHTML = '<td class="row-number"></td><td><input aria-label="Igikorwa cyemeranyijweho"></td><td><input aria-label="Ushinzwe"></td><td><input aria-label="Deadline" type="date"></td><td class="no-print"><button type="button" class="btn danger small remove-row" aria-label="Siba umurongo">Siba</button></td>';
-        const inputs = row.querySelectorAll("input");
-        inputs[0].value = item.action || "";
-        inputs[1].value = item.owner || "";
-        inputs[2].value = item.deadline || "";
-        row.querySelector(".remove-row").addEventListener("click", () => { row.remove(); renumberRows(); updateValidation(); });
-        row.addEventListener("input", updateValidation);
-        renumberRows();
-      }
+      // --- GROUP II: STAFF PARTICIPANTS ---
+      function renderStaff() {
+        const body = $("staffBody");
+        body.replaceChildren();
 
-      function addFollowupRow(item = {}) {
-        const row = $("followupsBody").insertRow();
-        row.innerHTML = '<td class="row-number"></td><td><textarea aria-label="Inama yatanzwe ubushize" rows="2"></textarea></td><td><select aria-label="Yashyizwe mu bikorwa?"><option value="">Hitamo</option><option>Yego</option><option>Igice</option><option>Oya</option></select></td><td><textarea aria-label="Impamvu niba itarakozwe" rows="2"></textarea></td><td><textarea aria-label="Igikorwa gishya cyemeranyijweho" rows="2"></textarea></td><td><input aria-label="Ushinzwe"></td><td><input aria-label="Deadline" type="date"></td><td class="no-print"><button type="button" class="btn danger small remove-row" aria-label="Siba umurongo">Siba</button></td>';
-        const inputs = row.querySelectorAll("input, select, textarea");
-        inputs[0].value = item.recommendation || "";
-        inputs[1].value = item.status || "";
-        inputs[2].value = item.reason || "";
-        inputs[3].value = item.newAction || "";
-        inputs[4].value = item.owner || "";
-        inputs[5].value = item.deadline || "";
-        row.querySelector(".remove-row").addEventListener("click", () => { row.remove(); renumberRows(); updateValidation(); });
-        row.addEventListener("input", updateValidation);
-        row.addEventListener("change", updateValidation);
-        renumberRows();
-      }
+        staffDrafts.forEach((staff, index) => {
+          const row = body.insertRow();
+          row.dataset.index = index;
+          row.innerHTML = `
+            <td style="text-align:center;font-weight:bold;">${index + 1}</td>
+            <td><input class="staff-name" placeholder="Amazina y'umukozi" value="${esc(staff.name || '')}"></td>
+            <td><input class="staff-role" placeholder="Icyo ashinzwe" value="${esc(staff.role || staff.jobTitle || '')}"></td>
+            <td><input class="staff-phone" placeholder="Telefoni" value="${esc(staff.phone || '')}"></td>
+            <td><input class="staff-signature" placeholder="Umukono / initials" value="${esc(staff.signature || '')}"></td>
+            <td class="no-print" style="text-align:center;">
+              ${staffDrafts.length > 1 ? '<button type="button" class="btn danger small remove-staff-btn">Siba</button>' : '—'}
+            </td>
+          `;
 
-      function renumberRows() {
-        document.querySelectorAll("#actionsBody tr, #followupsBody tr").forEach((row) => {
-          const number = [...row.parentElement.rows].indexOf(row) + 1;
-          row.querySelector(".row-number").textContent = number;
+          row.querySelector(".staff-name").addEventListener("input", (e) => {
+            staff.name = e.target.value;
+            if (index === 0 && !$("staffName").value) $("staffName").value = staff.name;
+            updateMemoAuto();
+            updateValidation();
+          });
+          row.querySelector(".staff-role").addEventListener("input", (e) => {
+            staff.role = e.target.value;
+            if (index === 0 && !$("staffRole").value) $("staffRole").value = staff.role;
+            updateMemoAuto();
+          });
+          row.querySelector(".staff-phone").addEventListener("input", (e) => { staff.phone = e.target.value; });
+          row.querySelector(".staff-signature").addEventListener("input", (e) => { staff.signature = e.target.value; });
+
+          const delBtn = row.querySelector(".remove-staff-btn");
+          if (delBtn) {
+            delBtn.addEventListener("click", () => {
+              staffDrafts.splice(index, 1);
+              renderStaff();
+              updateMemoAuto();
+              updateValidation();
+            });
+          }
         });
       }
 
-      function getRows(selector, kind) {
-        return [...document.querySelectorAll(selector)].map((row) => {
-          const values = [...row.querySelectorAll("input, select")].map((input) => input.value.trim());
-          return kind === "action"
-            ? { action: values[0], owner: values[1], deadline: values[2] }
-            : { recommendation: values[0], status: values[1], reason: values[2], newAction: values[3], owner: values[4], deadline: values[5] };
+      // --- GROUP III: PER-GOAL DETAILS ---
+      function renderGoalDetails() {
+        const container = $("goalDetailsContainer");
+        container.replaceChildren();
+        const type = $("visitType").value;
+
+        targetDrafts.forEach((target, index) => {
+          const title = getGoalTitle(target);
+          const d = target.details || {};
+          const card = document.createElement("div");
+          card.className = "repeat-card";
+          card.dataset.id = target.id;
+
+          let formFieldsHtml = "";
+          if (type === "Mobilization") {
+            formFieldsHtml = `
+              <div class="grid">
+                <div class="field"><label>Ubumenyi basanzwe bafite ku gikorwa</label><textarea data-key="priorKnowledge">${esc(d.priorKnowledge || '')}</textarea></div>
+                <div class="field"><label>Ubutumwa / Ibikorwa by’ubukangurambaga</label><textarea data-key="messageGiven">${esc(d.messageGiven || '')}</textarea></div>
+                <div class="field"><label>Uko bakiriye ubutumwa</label><textarea data-key="messageReception">${esc(d.messageReception || '')}</textarea></div>
+                <div class="field"><label>Ubushake bwo kwitabira (1 - 5)</label>
+                  <select data-key="motivation">
+                    <option value="">Hitamo ubushake</option>
+                    <option value="5" ${d.motivation === '5' ? 'selected' : ''}>5 — Bwinshi cyane</option>
+                    <option value="4" ${d.motivation === '4' ? 'selected' : ''}>4 — Bwinshi</option>
+                    <option value="3" ${d.motivation === '3' ? 'selected' : ''}>3 — Biringaniye</option>
+                    <option value="2" ${d.motivation === '2' ? 'selected' : ''}>2 — Buke</option>
+                    <option value="1" ${d.motivation === '1' ? 'selected' : ''}>1 — Buke cyane</option>
+                  </select>
+                </div>
+                <div class="field"><label>Ibyo basabwa gukora kugira ngo bitabire</label><textarea data-key="expectedActions">${esc(d.expectedActions || '')}</textarea></div>
+                <div class="field"><label>Impamvu zishobora gutuma batitabira (imbogamizi)</label><textarea data-key="participationBarriers">${esc(d.participationBarriers || '')}</textarea></div>
+                <div class="field wide"><label>Ibyo bemeranyijweho nyuma ya mobilization</label><textarea data-key="mobilizationAgreement">${esc(d.mobilizationAgreement || '')}</textarea></div>
+              </div>
+            `;
+          } else if (type === "Monitoring") {
+            formFieldsHtml = `
+              <div class="grid">
+                <div class="field"><label>Icyari giteganyijwe</label><textarea data-key="expected">${esc(d.expected || '')}</textarea></div>
+                <div class="field"><label>Icyakozwe</label><textarea data-key="performed">${esc(d.performed || '')}</textarea></div>
+                <div class="field"><label>Ireme ry’igikorwa</label>
+                  <select data-key="quality">
+                    <option value="">Hitamo ireme</option>
+                    <option value="Riri hejuru" ${d.quality === 'Riri hejuru' ? 'selected' : ''}>Riri hejuru</option>
+                    <option value="Biringaniye" ${d.quality === 'Biringaniye' || d.quality === 'Rirashimishije' ? 'selected' : ''}>Biringaniye</option>
+                    <option value="Rikeneye kunozwa" ${d.quality === 'Rikeneye kunozwa' ? 'selected' : ''}>Rikeneye kunozwa</option>
+                    <option value="Riri hasi" ${d.quality === 'Riri hasi' ? 'selected' : ''}>Riri hasi</option>
+                  </select>
+                </div>
+                <div class="field"><label>Findings — Ibyagaragaye <span class="hint">Ibisabwa na sample: ibisobanutse kandi byihariye</span></label><textarea data-key="findings">${esc(d.findings || '')}</textarea></div>
+                <div class="field"><label>Itandukaniro n’impamvu</label><textarea data-key="discrepancy">${esc(d.discrepancy || '')}</textarea></div>
+                <div class="field"><label>Ingaruka</label><textarea data-key="impact">${esc(d.impact || '')}</textarea></div>
+                <div class="field wide"><label>Ingamba zo gukosora (na deadline n'ushinzwe)</label><textarea data-key="correctiveAction">${esc(d.correctiveAction || '')}</textarea></div>
+              </div>
+              <h4 style="margin:16px 0 8px;color:var(--green);">Ibipimo by'ubworozi (niba bihura n'uyu muhigo)</h4>
+              <div class="grid three">
+                <div class="field"><label>Itariki y’intanga</label><input type="date" data-key="inseminationDate" value="${esc(d.inseminationDate || '')}"></div>
+                <div class="field"><label>Ubwoko bw’intanga</label><input data-key="semenType" value="${esc(d.semenType || '')}"></div>
+                <div class="field"><label>Itariki y’isuzuma</label><input type="date" data-key="inspectionDate" value="${esc(d.inspectionDate || '')}"></div>
+                <div class="field"><label>Ibyavuye mu isuzuma</label><input data-key="inspectionResult" value="${esc(d.inspectionResult || '')}"></div>
+                <div class="field"><label>Itariki yo kubyara</label><input type="date" data-key="birthDate" value="${esc(d.birthDate || '')}"></div>
+                <div class="field"><label>Nomero y’itungo/inyana</label><input data-key="animalNumber" value="${esc(d.animalNumber || '')}"></div>
+                <div class="field"><label>Inkingo zakozwe</label><input data-key="vaccinations" value="${esc(d.vaccinations || '')}"></div>
+                <div class="field"><label>Ububiko bw’amakuru (records)</label><input data-key="records" value="${esc(d.records || '')}"></div>
+                <div class="field"><label>Isuku n'ikiraro</label><input data-key="hygiene" value="${esc(d.hygiene || '')}"></div>
+              </div>
+            `;
+          } else {
+            // Follow-up
+            formFieldsHtml = `
+              <div class="grid">
+                <div class="field"><label>Raporo y’ubushize (No n’itariki)</label><input data-key="previousReport" placeholder="Urugero: Monitoring No 12 yo ku wa 15/10/2026" value="${esc(d.previousReport || '')}"></div>
+                <div class="field"><label>Yashyizwe mu bikorwa? (Yego / Igice / Oya)</label>
+                  <select data-key="implementationStatus">
+                    <option value="">Hitamo imimerere</option>
+                    <option value="Yego" ${d.implementationStatus === 'Yego' ? 'selected' : ''}>Yego (Yashyizwe mu bikorwa)</option>
+                    <option value="Igice" ${d.implementationStatus === 'Igice' ? 'selected' : ''}>Igice (Yashyizwe mu bikorwa igice)</option>
+                    <option value="Oya" ${d.implementationStatus === 'Oya' ? 'selected' : ''}>Oya (Ntiyashyizwe mu bikorwa)</option>
+                  </select>
+                </div>
+                <div class="field wide"><label>Inama yatanzwe ubushize</label><textarea data-key="previousRecommendation">${esc(d.previousRecommendation || '')}</textarea></div>
+                <div class="field wide"><label>Impamvu niba itarakozwe cyangwa yakozwe igice</label><textarea data-key="notImplementedReason">${esc(d.notImplementedReason || '')}</textarea></div>
+                <div class="field wide"><label>Ibyemeranyijweho bishya (igikorwa gishya)</label><textarea data-key="newAction">${esc(d.newAction || '')}</textarea></div>
+                <div class="field"><label>Ushinzwe</label><input data-key="actionOwner" value="${esc(d.actionOwner || '')}"></div>
+                <div class="field"><label>Deadline (Igihe ntarengwa)</label><input type="date" data-key="actionDeadline" value="${esc(d.actionDeadline || '')}"></div>
+              </div>
+            `;
+          }
+
+          card.innerHTML = `
+            <div class="repeat-card-header">
+              <h3>Amakuru y'Umuhigo #${index + 1}: <span style="font-weight:normal;color:#435b4f;">${esc(title)}</span></h3>
+            </div>
+            ${formFieldsHtml}
+            <div class="grid two" style="margin-top:14px;border-top:1px dashed #d8e0dc;padding-top:12px;">
+              <div class="field"><label>Umubare w’amafoto yafashwe</label><input type="number" min="0" data-key="photoCount" value="${esc(d.photoCount ?? '0')}"></div>
+              <div class="field"><label>Kode / Ibisobanuro by’ifoto</label><input data-key="photoCodes" placeholder="Urugero: Ifoto 1 — Ikiraro, Ifoto 2 — Intanga" value="${esc(d.photoCodes || '')}"></div>
+            </div>
+          `;
+
+          // Bind inputs to target.details
+          card.querySelectorAll("[data-key]").forEach((input) => {
+            input.addEventListener("input", () => {
+              target.details[input.dataset.key] = input.value;
+              updateMemoAuto();
+              updateValidation();
+            });
+            input.addEventListener("change", () => {
+              target.details[input.dataset.key] = input.value;
+              updateMemoAuto();
+              updateValidation();
+            });
+          });
+
+          container.append(card);
         });
       }
 
+      // --- AUTOMATIC MEMO CALCULATION ---
+      function computeAutoMemo() {
+        const type = $("visitType").value;
+        const vDate = formatDate($("visitDate").value) || formatDate(dateString);
+        const staff = $("staffName").value.trim() || (staffDrafts[0] && staffDrafts[0].name) || "Umukozi";
+        const role = $("staffRole").value.trim() || (staffDrafts[0] && staffDrafts[0].role) || "Umukozi ushinzwe Ubworozi";
+
+        const validGoals = targetDrafts.map((t) => getGoalTitle(t)).filter((t) => t && !t.startsWith("Hitamo"));
+        const goalsStr = validGoals.length ? validGoals.join(" na ") : "imihigo y'ubworozi";
+        
+        const peopleList = targetDrafts.map((t) => t.beneficiaries.trim()).filter(Boolean);
+        const whoStr = peopleList.length ? peopleList.join("; ") : "aborozi";
+
+        const cellsList = [...new Set(targetDrafts.map((t) => t.cell).filter(Boolean))];
+        const villagesList = [...new Set(targetDrafts.map((t) => t.village === '__other__' ? t.customVillage : t.village).filter(Boolean))];
+        const placeStr = (cellsList.length ? "mu kagari ka " + cellsList.join(", ") : "") +
+          (villagesList.length ? " Umudugudu wa " + villagesList.join(", ") : "");
+
+        let subject = "";
+        let body = "";
+
+        if (type === "Mobilization") {
+          subject = "Kugeza raporo y’ubukangurambaga ku muhigo wa " + goalsStr;
+          const messages = targetDrafts.map((t) => t.details && t.details.messageGiven).filter(Boolean);
+          const msgStr = messages.length ? messages.join("; ") : "akamaro n’imikoreshereze myiza y'imihigo";
+          const reception = targetDrafts.map((t) => t.details && (t.details.messageReception || t.details.mobilizationAgreement)).filter(Boolean);
+          const recStr = reception.length ? reception.join("; ") : "babyakiriye neza biyemeza kubyubahiriza";
+
+          body = `Bwana Muyobozi,
+
+Nejejwe no kubagezaho, ku mugereka wayo, raporo y’ubukangurambaga ku muhigo wa ${goalsStr}, bwakorewe kuri ${whoStr}, ${placeStr}, ku wa ${vDate}.
+
+Muri ubu bukangurambaga, abagezweho basobanuriwe ${msgStr}. Uko bakiriye ubutumwa n’ibyo biyemeje gukora ni ${recStr}. Ibisobanuro ku bumenyi bari basanganywe, imbogamizi n’ibyemeranyijweho murabisanga muri raporo iri ku mugereka.
+
+Mbasabye kudushyigikira mu gukurikirana ishyirwa mu bikorwa ry’ibyemeranyijweho.
+
+Mugire amahoro.`;
+        } else if (type === "Monitoring") {
+          subject = "Kugeza raporo y’ubugenzuzi (Monitoring) ku muhigo wa " + goalsStr;
+          const expected = targetDrafts.map((t) => t.details && t.details.expected).filter(Boolean).join("; ") || "ibikorwa byari biteganyijwe";
+          const performed = targetDrafts.map((t) => t.details && t.details.performed).filter(Boolean).join("; ") || "ibyakozwe";
+          const quality = targetDrafts.map((t) => t.details && t.details.quality).filter(Boolean).join("; ") || "Biringaniye";
+
+          body = `Bwana Muyobozi,
+
+Nejejwe no kubagezaho, ku mugereka wayo, raporo y’ubugenzuzi ku muhigo wa ${goalsStr}, yakorewe kuri ${whoStr}, ${placeStr}, ku wa ${vDate}.
+
+Muri ubu bugenzuzi, icyari giteganyijwe ni ${expected}, naho icyakozwe ni ${performed}. Ireme ry’igikorwa ryagaragaye ko ari ${quality}. Ibisobanuro ku byagaragaye, itandukaniro n’impamvu zaryo, ingaruka n’ingamba zo gukosora murabisanga muri raporo iri ku mugereka.
+
+Mbasabye kudushyigikira mu gukurikirana ishyirwa mu bikorwa ry’ingamba zo gukosora.
+
+Mugire amahoro.`;
+        } else {
+          // Follow-up
+          subject = "Kugeza raporo yo gukurikirana ishyirwa mu bikorwa ry’ingamba (Follow-up) ku muhigo wa " + goalsStr;
+          let yego = 0, igice = 0, oya = 0;
+          targetDrafts.forEach((t) => {
+            const st = t.details && t.details.implementationStatus;
+            if (st === "Yego") yego++;
+            else if (st === "Igice") igice++;
+            else if (st === "Oya") oya++;
+          });
+          const total = yego + igice + oya || targetDrafts.length;
+
+          body = `Bwana Muyobozi,
+
+Nejejwe no kubagezaho, ku mugereka wayo, raporo yo gukurikirana ishyirwa mu bikorwa ry’ingamba ku muhigo wa ${goalsStr}, yakorewe kuri ${whoStr}, ${placeStr}, ku wa ${vDate}.
+
+Mu nama ${total} zakurikiranywe, ${yego} zarashyizwe mu bikorwa (Yego), ${igice} zishyirwa mu bikorwa igice (Igice), naho ${oya} ntizashyirwa mu bikorwa (Oya). Ibisobanuro ku mpamvu z’ibitarakozwe n’ibyemeranyijweho bishya murabisanga muri raporo iri ku mugereka.
+
+Mbasabye kudushyigikira mu gukurikirana ishyirwa mu bikorwa ry’ibyemeranyijweho bishya.
+
+Mugire amahoro.`;
+        }
+
+        return { subject, body, vDate, staff, role };
+      }
+
+      function updateMemoAuto() {
+        const auto = computeAutoMemo();
+        $("memoSubject").textContent = auto.subject;
+        $("memoDate").textContent = auto.vDate;
+        $("memoFrom").textContent = auto.staff + " (" + auto.role + ")";
+        if (!customMemoEdited || !$("memoBodyInput").value.trim()) {
+          $("memoBodyInput").value = auto.body;
+        }
+      }
+
+      // --- REPORT DATA COLLECTION ---
       function collectReport() {
         const fields = {};
-        [...form.querySelectorAll("input[name], select[name], textarea[name]")].forEach((field) => {
-          fields[field.name] = field.value;
+        [...form.querySelectorAll("input[name], select[name], textarea[name]")].forEach((f) => {
+          fields[f.name] = f.value;
         });
-        const selectedGoal = data.goals.find((item) => String(item.refNo) === $("goal").value);
-        const selectedActivities = [];
-        for (let slot = 1; slot <= 3; slot++) {
-          const selection = $("goalActivity" + slot).value;
-          if (selection === "__custom__" && $("customActivity" + slot).value.trim()) {
-            selectedActivities.push({
-              slot,
-              refNo: selectedGoal ? selectedGoal.refNo : null,
-              goal: selectedGoal ? selectedGoal.title : "",
-              visitType: $("visitType").value,
-              description: $("customActivity" + slot).value.trim(),
-              responsibleLevel: "Byongeweho",
-              source: "Byongeweho"
-            });
-          } else {
-            const activity = data.activities.find((item) => String(item.row) === selection);
-            if (activity) selectedActivities.push({ slot, ...activity });
-          }
-        }
+
+        // Sync first target into fields for table / list previews and backwards compatibility
+        const first = targetDrafts[0] || {};
+        fields.goal = first.goal || "";
+        fields.goalTitle = getGoalTitle(first);
+        fields.goalCategory = first.category || "";
+        fields.cell = first.cell || "";
+        fields.village = first.village === "__other__" ? first.customVillage : (first.village || "");
+        fields.beneficiaryName = targetDrafts.map((t) => t.beneficiaries).filter(Boolean).join("; ");
+        fields.authorityName = $("authorityName").value.trim();
+        fields.authorityTitle = $("authorityTitle").value.trim();
+        fields.memoText = $("memoBodyInput").value.trim();
+
         return {
-          version: 3,
+          version: 4,
           id: currentReportId,
           updatedAt: currentUpdatedAt,
           fields,
-          selectedActivities,
-          actions: getRows("#actionsBody tr", "action"),
-          followups: getRows("#followupsBody tr", "followup")
+          targets: targetDrafts,
+          staffParticipants: staffDrafts,
+          authorityName: fields.authorityName,
+          authorityTitle: fields.authorityTitle,
+          memoText: fields.memoText
         };
       }
 
       function applyReport(report) {
-        const fields = { ...(report.fields || {}) };
-        if ((!report.version || report.version < 2) && fields.goal && data.legacyGoalRefs[fields.goal]) {
-          fields.goal = String(data.legacyGoalRefs[fields.goal]);
-        }
-        form.reset();
-        [...form.querySelectorAll("input[name], select[name], textarea[name]")].forEach((field) => {
-          if (field.name === "village" || /^goalActivity[123]$/.test(field.name)) return;
-          if (Object.prototype.hasOwnProperty.call(fields, field.name)) field.value = fields[field.name];
-        });
-        $("reportNumber").value = fields.reportNumber || report.id || makeReportNumber();
-        $("pageDate").value = fields.pageDate || dateString;
         currentReportId = report.id || null;
         currentUpdatedAt = report.updatedAt || null;
-        setReportReadOnly(Boolean(currentUser && currentUser.role !== "ADMIN" &&
-          report.owner && report.owner.id !== currentUser.id));
-        populateVillages($("cell").value, fields.village || "");
-        updateGoalDetails();
-        updateConditionalPanels();
-        for (let slot = 1; slot <= 3; slot++) {
-          $("goalActivity" + slot).value = fields["goalActivity" + slot] || "";
+        const f = report.fields || {};
+
+        form.reset();
+        $("reportNumber").value = f.reportNumber || report.id || makeReportNumber();
+        $("pageDate").value = f.pageDate || dateString;
+        $("visitDate").value = f.visitDate || dateString;
+        $("visitType").value = f.visitType || "Mobilization";
+        $("staffName").value = f.staffName || (currentUser ? currentUser.fullName : "");
+        $("staffRole").value = f.staffRole || (currentUser && currentUser.jobTitle ? currentUser.jobTitle : "Umukozi ushinzwe Ubworozi");
+        $("reportStatus").value = f.reportStatus || "Draft";
+        $("authorityName").value = report.authorityName || f.authorityName || "NDAYAMBAJE KARIMA Augustin";
+        $("authorityTitle").value = report.authorityTitle || f.authorityTitle || "Executive Secretary/Cyuve Sector";
+
+        // Load targets
+        if (Array.isArray(report.targets) && report.targets.length) {
+          targetDrafts = report.targets.map((t) => ({
+            id: t.id || crypto.randomUUID(),
+            category: t.category || "UBUKUNGU",
+            goal: t.goal || "",
+            customGoal: t.customGoal || "",
+            searchQuery: "",
+            beneficiaries: Array.isArray(t.beneficiaries) ? t.beneficiaries.map((b) => b.name).join(", ") : (t.beneficiaries || ""),
+            sector: t.sector || "CYUVE",
+            cell: t.cell || "KABEZA",
+            village: t.village || "",
+            customVillage: t.customVillage || "",
+            details: t.details || {}
+          }));
+        } else {
+          // Convert legacy single-goal report
+          targetDrafts = [{
+            id: crypto.randomUUID(),
+            category: f.goalCategory || "UBUKUNGU",
+            goal: f.goal || "",
+            customGoal: f.goalTitle || "",
+            searchQuery: "",
+            beneficiaries: f.beneficiaryName || "",
+            sector: f.sector || "CYUVE",
+            cell: f.cell || "KABEZA",
+            village: f.village || "",
+            customVillage: "",
+            details: { ...f }
+          }];
         }
-        updateActivityCustomFields();
-        $("actionsBody").replaceChildren();
-        $("followupsBody").replaceChildren();
-        (report.actions || []).forEach(addActionRow);
-        (report.followups || []).forEach(addFollowupRow);
-        if (!$("actionsBody").rows.length) for (let i = 0; i < 5; i++) addActionRow();
-        if (!$("followupsBody").rows.length) for (let i = 0; i < 7; i++) addFollowupRow();
+
+        // Load staff participants
+        if (Array.isArray(report.staffParticipants) && report.staffParticipants.length) {
+          staffDrafts = report.staffParticipants;
+        } else {
+          staffDrafts = [{
+            name: f.staffName || (currentUser ? currentUser.fullName : ""),
+            role: f.staffRole || (currentUser && currentUser.jobTitle ? currentUser.jobTitle : "Umukozi ushinzwe Ubworozi"),
+            phone: f.staffPhone || "",
+            signature: ""
+          }];
+        }
+
+        // Load memo
+        if (report.memoText || f.memoText) {
+          customMemoEdited = true;
+          $("memoBodyInput").value = report.memoText || f.memoText;
+        } else {
+          customMemoEdited = false;
+        }
+
+        updateDynamicHeaders();
+        renderTargets();
+        renderStaff();
+        renderGoalDetails();
+        updateMemoAuto();
+        updateValidation();
+        setReportReadOnly(Boolean(currentUser && currentUser.role !== "ADMIN" && report.owner && report.owner.id !== currentUser.id));
         $("savedReports").value = currentReportId || "";
       }
 
-      function missingRequirements() {
-        const missing = [];
-        const required = [
-          ["beneficiaryName", "Amazina y’umworozi"],
-          ["staffName", "Izina ry’umukozi"],
-          ["visitDate", "Itariki y’uruzinduko"],
-          ["visitType", "Ubwoko bw’uruzinduko"],
-          ["goal", "Igikorwa kigenzurwa"]
-        ];
-        required.forEach(([id, label]) => { if (!$(id).value.trim()) missing.push(label); });
-        const activeActions = getRows("#actionsBody tr", "action").filter((row) => row.action || row.owner || row.deadline);
-        if ($("visitType").value !== "Follow-up" && !activeActions.some((row) => row.action && row.owner && row.deadline)) {
-          missing.push("Nibura inama/igikorwa kimwe gifite ushinzwe na deadline");
-        }
-        if ($("visitType").value === "Follow-up") {
-          const followupRows = getRows("#followupsBody tr", "followup").filter((row) => row.recommendation || row.status || row.reason || row.newAction || row.owner || row.deadline);
-          if (!followupRows.some((row) => row.recommendation && row.status)) missing.push("Nibura inama imwe yo mu raporo ibanza n’uko yashyizwe mu bikorwa");
-          followupRows.forEach((row, index) => {
-            if ((row.status === "Igice" || row.status === "Oya") && (!row.newAction || !row.owner || !row.deadline)) {
-              missing.push("Inama ya Follow-up " + (index + 1) + ": igikorwa gishya, ugishinzwe na deadline birakenewe");
-            }
-          });
-        }
-        for (let slot = 1; slot <= 3; slot++) {
-          if ($("goalActivity" + slot).value === "__custom__" && !$("customActivity" + slot).value.trim()) {
-            missing.push("Andika igikorwa cyongeweho " + slot);
-          }
-        }
-        if ($("visitType").value === "Monitoring") {
-          if (!$("findings").value.trim()) missing.push("Findings zihariye za Monitoring");
-          if (Number($("photoCount").value) < 1) missing.push("Nibura ifoto imwe ya Monitoring");
-        }
-        if ($("visitType").value === "Follow-up" && !$("previousReport").value.trim()) missing.push("Nomero ya raporo y’ubushize");
-        return missing;
-      }
+      function resetReport() {
+        setReportReadOnly(false);
+        form.reset();
+        currentReportId = null;
+        currentUpdatedAt = null;
+        customMemoEdited = false;
 
-      function updateValidation() {
-        const missing = missingRequirements();
-        const summary = $("validationSummary");
-        summary.classList.toggle("has-errors", missing.length > 0);
-        $("validationTitle").textContent = missing.length ? "Hari ibisabwa bitaruzuzwa (" + missing.length + ")" : "Ibisabwa by’ingenzi byujujwe.";
-        $("validationText").textContent = missing.length ? missing.join(" · ") : "Ushobora kubika cyangwa gusohora raporo.";
-      }
+        $("reportNumber").value = makeReportNumber();
+        $("pageDate").value = dateString;
+        $("visitDate").value = dateString;
+        $("visitType").value = "Mobilization";
+        $("authorityName").value = "NDAYAMBAJE KARIMA Augustin";
+        $("authorityTitle").value = "Executive Secretary/Cyuve Sector";
 
-      function refreshReportList() {
-        const select = $("savedReports");
-        const previous = select.value;
-        select.replaceChildren(new Option("Raporo zibitswe kuri server…", ""));
-        currentReports.slice().sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt))).forEach((report) => {
-          const person = (report.fields && report.fields.beneficiaryName) || "Nta zina";
-          const date = (report.fields && report.fields.visitDate) || "";
-          const owner = report.owner ? " · " + report.owner.fullName : "";
-          select.add(new Option((report.fields.reportNumber || report.reportNumber || "Raporo") + " · " + person + (date ? " · " + date : "") + owner, report.id));
-        });
-        if ([...select.options].some((option) => option.value === previous)) select.value = previous;
-        $("reportCount").textContent = String(currentReports.length);
-        updateSelectedReportActions();
-      }
+        if (currentUser) {
+          $("staffName").value = currentUser.fullName;
+          $("staffRole").value = currentUser.jobTitle || "Umukozi ushinzwe Ubworozi";
+        }
 
-      function updateSelectedReportActions() {
-        const selected = currentReports.find((report) => report.id === $("savedReports").value);
-        const canEdit = selected && currentUser &&
-          (currentUser.role === "ADMIN" || selected.owner.id === currentUser.id);
-        $("deleteReport").disabled = !canEdit;
+        targetDrafts = [makeTargetDraft()];
+        staffDrafts = [{
+          name: currentUser ? currentUser.fullName : "",
+          role: currentUser && currentUser.jobTitle ? currentUser.jobTitle : "Umukozi ushinzwe Ubworozi",
+          phone: "",
+          signature: ""
+        }];
+
+        updateDynamicHeaders();
+        renderTargets();
+        renderStaff();
+        renderGoalDetails();
+        updateMemoAuto();
+        updateValidation();
       }
 
       function setReportReadOnly(readOnly) {
@@ -817,12 +1130,31 @@
         $("readOnlyNotice").classList.toggle("hidden", !readOnly);
       }
 
-      async function loadReports(showStatus = false) {
-        const result = await api("/api/reports");
-        currentReports = result.reports;
-        refreshReportList();
-        setConnection(true);
-        if (showStatus) showToast("Raporo zasomwe kuri server.");
+      function missingRequirements() {
+        const missing = [];
+        if (!$("visitDate").value) missing.push("Itariki y’uruzinduko");
+        if (!$("staffName").value.trim()) missing.push("Izina ry’umukozi");
+        if (!targetDrafts.length) missing.push("Nibura umuhigo umwe muri GROUP I");
+        
+        targetDrafts.forEach((t, i) => {
+          if (!t.goal && !t.customGoal) missing.push(`Umuhigo #${i + 1}: hitamo umuhigo`);
+          if (!t.beneficiaries.trim()) missing.push(`Umuhigo #${i + 1}: andika abagezweho/abagenzuwe/abasurwe`);
+          if (!t.cell) missing.push(`Umuhigo #${i + 1}: hitamo akagari`);
+        });
+
+        if (!staffDrafts.some((s) => s.name && s.name.trim())) {
+          missing.push("Nibura umukozi umwe muri GROUP II");
+        }
+
+        return missing;
+      }
+
+      function updateValidation() {
+        const missing = missingRequirements();
+        const summary = $("validationSummary");
+        summary.classList.toggle("has-errors", missing.length > 0);
+        $("validationTitle").textContent = missing.length ? `Hari ibisabwa bitaruzuzwa (${missing.length})` : "Ibisabwa by’ingenzi byujujwe.";
+        $("validationText").textContent = missing.length ? missing.join(" · ") : "Ushobora kubika cyangwa gupakurura Word.";
       }
 
       async function saveReport() {
@@ -844,50 +1176,26 @@
           $("savedReports").value = currentReportId;
           updateValidation();
           setConnection(true);
-          showToast("Raporo " + result.report.reportNumber + " yabitswe kandi isangiwe n’ikipe.");
+          showToast("Raporo " + result.report.reportNumber + " yabitswe neza kuri server.");
         } catch (error) {
           setConnection(false, "Ntiyabitswe");
           showToast(error.message, true);
         }
       }
 
-      function resetReport() {
-        setReportReadOnly(false);
-        form.reset();
-        currentReportId = null;
-        currentUpdatedAt = null;
-        $("reportNumber").value = makeReportNumber();
-        $("pageDate").value = dateString;
-        if (currentUser) {
-          $("staffName").value = currentUser.fullName;
-          $("staffSigner").value = currentUser.fullName;
-          if (currentUser.jobTitle) $("staffRole").value = currentUser.jobTitle;
-        }
-        const ownCell = currentUser && currentUser.level === "Akagari" && data.locations.some((item) => item.name === currentUser.cell) ? currentUser.cell : "";
-        $("cell").value = ownCell;
-        populateVillages(ownCell);
-        $("actionsBody").replaceChildren();
-        $("followupsBody").replaceChildren();
-        for (let i = 0; i < 5; i++) addActionRow();
-        for (let i = 0; i < 7; i++) addFollowupRow();
-        updateGoalDetails();
-        updateConditionalPanels();
-        updateValidation();
-      }
-
-      async function downloadDocx(group) {
-        const selected = currentReports.find((report) => report.id === $("savedReports").value);
-        if (!selected) return showToast("Banza uhitemo raporo wabitswe mu rutonde.", true);
-        const key = (report) => [report.fields.visitType, report.fields.visitDate, report.fields.cell].join("|");
-        const chosen = group
-          ? currentReports.filter((report) => key(report) === key(selected))
-          : [selected];
-        chosen.sort((a, b) => String(a.fields.reportNumber).localeCompare(String(b.fields.reportNumber)));
+      async function downloadDocx() {
+        const report = collectReport();
+        showToast("Word irimo gutegurwa...");
         try {
           const response = await fetch("/api/reports/docx", {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: "Bearer " + authToken },
-            body: JSON.stringify({ ids: chosen.map((report) => report.id) })
+            body: JSON.stringify({
+              report,
+              authorityName: $("authorityName").value.trim(),
+              authorityTitle: $("authorityTitle").value.trim(),
+              memoText: $("memoBodyInput").value.trim()
+            })
           });
           if (!response.ok) {
             const body = await response.json().catch(() => ({}));
@@ -897,332 +1205,128 @@
           const match = /filename="([^"]+)"/.exec(response.headers.get("Content-Disposition") || "");
           const link = document.createElement("a");
           link.href = URL.createObjectURL(blob);
-          link.download = match ? match[1] : "Raporo_Imihigo.docx";
+          link.download = match ? match[1] : `Raporo_Imihigo_${$("visitType").value}.docx`;
           link.click();
           URL.revokeObjectURL(link.href);
-          showToast("Word yakozwe (" + chosen.length + (chosen.length > 1 ? " raporo)." : " raporo)."));
+          showToast("Dosiye ya Word (.docx) yamanuwe neza.");
         } catch (error) {
           showToast(error.message, true);
         }
       }
 
-      function exportJson() {
-        const report = collectReport();
-        const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json;charset=utf-8" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = (report.fields.reportNumber || "raporo") + ".json";
-        link.click();
-        URL.revokeObjectURL(url);
-      }
-
-      function validateAndFocus() {
-        updateValidation();
-        const missing = missingRequirements();
-        if (!missing.length) {
-          showToast("Ibisabwa by’ingenzi byujujwe.");
-          return;
-        }
-        const firstMissing = [
-          "beneficiaryName", "staffName", "visitDate", "visitType", "goal", "findings", "photoCount", "previousReport"
-        ].find((id) => {
-          const labels = {
-            beneficiaryName: "Amazina y’umworozi", staffName: "Izina ry’umukozi", visitDate: "Itariki y’uruzinduko",
-            visitType: "Ubwoko bw’uruzinduko", goal: "Igikorwa kigenzurwa", findings: "Findings zihariye za Monitoring",
-            photoCount: "Nibura ifoto imwe ya Monitoring", previousReport: "Nomero ya raporo y’ubushize"
-          };
-          return missing.includes(labels[id]) && !$(id).closest(".conditional:not(.active)");
+      function refreshReportList() {
+        const select = $("savedReports");
+        const previous = select.value;
+        select.replaceChildren(new Option("Raporo zabitswe kuri server…", ""));
+        currentReports.slice().sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt))).forEach((report) => {
+          const who = (report.fields && report.fields.beneficiaryName) || "Nta zina";
+          const date = (report.fields && report.fields.visitDate) || "";
+          const owner = report.owner ? " · " + report.owner.fullName : "";
+          const title = (report.fields && report.fields.goalTitle) || "";
+          select.add(new Option(`${report.fields.reportNumber || report.reportNumber || "Raporo"} · ${who} (${title ? title.slice(0, 25) + '…' : ''}) ${date ? '· ' + date : ''}${owner}`, report.id));
         });
-        const missingCustomActivity = [1, 2, 3].find((slot) =>
-          $("goalActivity" + slot).value === "__custom__" && !$("customActivity" + slot).value.trim()
-        );
-        if (missingCustomActivity) $("customActivity" + missingCustomActivity).focus();
-        else if (firstMissing) $(firstMissing).focus();
-        else $("actionsBody").querySelector("input").focus();
+        if ([...select.options].some((option) => option.value === previous)) select.value = previous;
+        $("reportCount").textContent = String(currentReports.length);
+        updateSelectedReportActions();
       }
 
-      data.instructions.forEach((text) => {
-        const li = document.createElement("li");
-        li.textContent = text;
-        $("instructionsList").append(li);
-      });
-      populateLocations();
-      populateGoals();
-      $("visitType").addEventListener("change", updateConditionalPanels);
-      $("visitDate").addEventListener("change", updateGoalDetails);
-      [1, 2, 3].forEach((slot) => $("goalActivity" + slot).addEventListener("change", () => {
-        updateActivityCustomFields();
-        updateValidation();
-      }));
-      $("addAction").addEventListener("click", () => addActionRow());
-      $("addFollowup").addEventListener("click", () => addFollowupRow());
-      $("saveReport").addEventListener("click", saveReport);
-      $("validateReport").addEventListener("click", validateAndFocus);
-      $("newReport").addEventListener("click", () => {
-        if (!formHasContent() || window.confirm("Fungura raporo nshya? Ibyo utarabika ntibizabikwa.")) resetReport();
-      });
-      $("downloadDocx").addEventListener("click", () => downloadDocx(false));
-      $("downloadDocxGroup").addEventListener("click", () => downloadDocx(true));
-      $("exportJson").addEventListener("click", exportJson);
-      $("printReport").addEventListener("click", () => window.print());
-      $("printBottom").addEventListener("click", () => window.print());
-      form.addEventListener("submit", (event) => { event.preventDefault(); saveReport(); });
-      form.addEventListener("input", updateValidation);
-      form.addEventListener("change", updateValidation);
-
-      function formHasContent() {
-        return [...form.querySelectorAll("input:not([readonly]), select, textarea")].some((field) =>
-          field.name !== "pageDate" && field.name !== "reportStatus" && field.value && field.value !== "0"
-        );
+      function updateSelectedReportActions() {
+        const selected = currentReports.find((report) => report.id === $("savedReports").value);
+        const canEdit = selected && currentUser && (currentUser.role === "ADMIN" || selected.owner.id === currentUser.id);
+        $("deleteReport").disabled = !canEdit;
       }
 
-      function showLogin(message = "") {
-        $("loginView").classList.remove("hidden");
-        $("requestView").classList.add("hidden");
-        $("forgotView").classList.add("hidden");
-        $("passwordView").classList.add("hidden");
+      async function loadReports(showStatus = false) {
+        const result = await api("/api/reports");
+        currentReports = result.reports;
+        refreshReportList();
+        setConnection(true);
+        if (showStatus) showToast("Raporo zasomwe kuri server.");
+      }
+
+      // --- USER & AUTH ---
+      function showLogin() {
         $("appView").classList.add("hidden");
         $("userSession").classList.add("hidden");
-        $("loginMessage").textContent = message;
+        $("loginView").classList.remove("hidden");
       }
 
       async function showApp(user) {
         currentUser = user;
-        if (user.mustChangePassword) {
-          $("loginView").classList.add("hidden");
-          $("appView").classList.add("hidden");
-          $("passwordView").classList.remove("hidden");
-          $("userSession").classList.add("hidden");
-          return;
-        }
-        $("passwordView").classList.add("hidden");
+        sessionStorage.setItem(tokenKey, authToken);
         $("loginView").classList.add("hidden");
         $("requestView").classList.add("hidden");
         $("forgotView").classList.add("hidden");
-        $("appView").classList.remove("hidden");
-        $("userSession").classList.remove("hidden");
-        $("sessionUser").textContent = user.fullName + " · " + (user.role === "ADMIN" ? "Admin" : "Umukozi");
-        $("manageUsers").classList.toggle("hidden", user.role !== "ADMIN");
-        if (user.role === "ADMIN") await loadUsers();
-        await loadReports();
-        resetReport();
-        updateLocalImportButton();
-        clearInterval(pollTimer);
-        pollTimer = setInterval(async () => {
-          try {
-            await loadReports();
-            if (currentUser && currentUser.role === "ADMIN") await loadPendingRequests();
-          } catch {
-            setConnection(false);
-          }
-        }, 15000);
-      }
+        $("passwordView").classList.add("hidden");
 
-      function logout(message = "") {
-        clearInterval(pollTimer);
-        authToken = "";
-        currentUser = null;
-        currentReports = [];
-        currentReportId = null;
-        currentUpdatedAt = null;
-        sessionStorage.removeItem(tokenKey);
-        showLogin(message);
-      }
-
-      function updateLocalImportButton() {
-        try {
-          const oldReports = JSON.parse(localStorage.getItem(storageKey) || "[]");
-          const migrated = localStorage.getItem(storageKey + "-migrated") === "true";
-          $("importLocal").classList.toggle("hidden", migrated || !Array.isArray(oldReports) || oldReports.length === 0);
-          if (!migrated && Array.isArray(oldReports) && oldReports.length) {
-            $("importLocal").textContent = "Himura raporo " + oldReports.length + " zo kuri iki gikoresho";
-          }
-        } catch {
-          $("importLocal").classList.add("hidden");
-        }
-      }
-
-      async function importLocalReports() {
-        let oldReports;
-        try {
-          oldReports = JSON.parse(localStorage.getItem(storageKey) || "[]");
-        } catch {
-          showToast("Raporo za kera ntizisomeka; ntizahinduwe.", true);
+        if (user.mustChangePassword) {
+          $("passwordView").classList.remove("hidden");
           return;
         }
-        if (!Array.isArray(oldReports) || !oldReports.length) return;
-        if (!window.confirm("Himura raporo " + oldReports.length + " za kuri iki gikoresho uzishyire kuri server? Kopi ya browser izasigara.")) return;
-        try {
-          let totalImported = 0;
-          for (let start = 0; start < oldReports.length; start += 10) {
-            const batch = oldReports.slice(start, start + 10).map((report, index) => ({
-              legacyId: String(report.id || (report.fields && report.fields.reportNumber) || (start + index)),
-              report
-            }));
-            const result = await api("/api/reports/import", { method: "POST", body: JSON.stringify({ reports: batch }) });
-            totalImported += result.imported;
-          }
-          localStorage.setItem(storageKey + "-migrated", "true");
-          updateLocalImportButton();
-          await loadReports();
-          showToast("Raporo " + totalImported + " zimuriwe kuri server.");
-        } catch (error) {
-          showToast(error.message, true);
-        }
+
+        $("appView").classList.remove("hidden");
+        $("userSession").classList.remove("hidden");
+        $("sessionUser").textContent = user.fullName + (user.jobTitle ? " (" + user.jobTitle + ")" : "") + (user.role === "ADMIN" ? " · Admin" : "");
+        $("manageUsers").classList.toggle("hidden", user.role !== "ADMIN");
+
+        resetReport();
+        await loadReports();
       }
 
-      const pendingCounts = { accounts: 0, resets: 0 };
-      function updateManageButton() {
-        const total = pendingCounts.accounts + pendingCounts.resets;
-        $("manageUsers").textContent = total ? "Genzura konti z’abakozi (" + total + " zitegereje)" : "Genzura konti z’abakozi";
+      function logout(message) {
+        authToken = "";
+        currentUser = null;
+        sessionStorage.removeItem(tokenKey);
+        showLogin();
+        if (message) showToast(message, true);
       }
 
-      function levelText(item) {
-        return item.level ? item.level + (item.cell ? " · " + item.cell : "") : "—";
-      }
-
-      function addDecisionButtons(cell, basePath, id, name, approveMessage) {
-        const make = (action, label, className, confirmText) => {
-          const button = document.createElement("button");
-          button.type = "button";
-          button.className = "btn " + className + " small";
-          button.textContent = label;
-          button.addEventListener("click", async () => {
-            if (confirmText && !window.confirm(confirmText)) return;
-            try {
-              await api(basePath + "/" + id + "/" + action, { method: "POST" });
-              $("userMessage").textContent = action === "approve" ? approveMessage : "Ubusabe bwa " + name + " bwanzwe.";
-              await loadUsers();
-            } catch (error) {
-              $("userMessage").textContent = error.message;
-            }
-          });
-          cell.append(button, " ");
-        };
-        make("approve", "Emeza", "primary", "");
-        make("reject", "Anga", "danger", "Wange ubusabe bwa " + name + "?");
-      }
-
-      async function loadAccountRequests() {
-        const result = await api("/api/account-requests");
-        const body = $("requestsBody");
-        body.replaceChildren();
-        result.requests.forEach((request) => {
-          const row = body.insertRow();
-          [request.fullName, request.username, levelText(request), request.jobTitle || "—", String(request.createdAt).slice(0, 10)]
-            .forEach((value) => { row.insertCell().textContent = value; });
-          addDecisionButtons(row.insertCell(), "/api/account-requests", request.id, request.fullName, "Konti ya " + request.fullName + " yemejwe.");
-        });
-        $("requestsBlock").classList.toggle("hidden", !result.requests.length);
-        pendingCounts.accounts = result.requests.length;
-        updateManageButton();
-      }
-
-      async function loadPasswordResets() {
-        const result = await api("/api/password-resets");
-        const body = $("resetsBody");
-        body.replaceChildren();
-        result.resets.forEach((reset) => {
-          const row = body.insertRow();
-          [reset.fullName, reset.username, reset.jobTitle || levelText(reset), String(reset.createdAt).slice(0, 10)]
-            .forEach((value) => { row.insertCell().textContent = value; });
-          addDecisionButtons(row.insertCell(), "/api/password-resets", reset.id, reset.fullName, "Ijambo ry’ibanga rya " + reset.fullName + " ryahinduwe.");
-        });
-        $("resetsBlock").classList.toggle("hidden", !result.resets.length);
-        pendingCounts.resets = result.resets.length;
-        updateManageButton();
-      }
-
-      async function loadPendingRequests() {
-        await Promise.all([loadAccountRequests(), loadPasswordResets()]);
-      }
-
-      async function loadUsers() {
-        await loadPendingRequests();
-        const result = await api("/api/users");
-        const body = $("usersBody");
-        body.replaceChildren();
-        result.users.forEach((user) => {
-          const row = body.insertRow();
-          [user.fullName, user.username, levelText(user), user.jobTitle || "—", user.role === "ADMIN" ? "Admin" : "Umukozi", user.isActive ? "Irakora" : "Yahagaritswe"]
-            .forEach((value) => { row.insertCell().textContent = value; });
-          const actionCell = row.insertCell();
-          if (user.id === currentUser.id || user.role === "ADMIN") {
-            actionCell.textContent = "—";
-          } else {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.className = "btn " + (user.isActive ? "danger" : "secondary") + " small";
-            button.textContent = user.isActive ? "Hagarika" : "Ongera ukore";
-            button.addEventListener("click", async () => {
-              try {
-                await api("/api/users/" + user.id + "/status", {
-                  method: "PATCH",
-                  body: JSON.stringify({ isActive: !user.isActive })
-                });
-                await loadUsers();
-              } catch (error) {
-                $("userMessage").textContent = error.message;
-              }
-            });
-            actionCell.append(button);
-          }
-        });
-      }
-
-      $("staffSigner").addEventListener("input", () => { if (!$("staffName").value) $("staffName").value = $("staffSigner").value; });
-      $("beneficiarySigner").addEventListener("input", () => { if (!$("beneficiaryName").value) $("beneficiaryName").value = $("beneficiarySigner").value; });
-      $("village").addEventListener("change", () => {
-        if ($("village").value && $("village").value !== "__other__") $("address").value = $("village").value;
-        else if ($("village").value === "__other__") $("address").value = "";
+      // --- INITIAL EVENT LISTENERS ---
+      $("visitType").addEventListener("change", () => {
+        updateDynamicHeaders();
+        renderTargets();
+        renderGoalDetails();
+        updateMemoAuto();
+        updateValidation();
       });
 
-      populateVillages("");
-      resetReport();
-      $("loginForm").addEventListener("submit", async (event) => {
-        event.preventDefault();
-        $("loginButton").disabled = true;
-        $("loginMessage").textContent = "";
-        try {
-          const result = await api("/api/auth/login", {
-            method: "POST",
-            body: JSON.stringify({
-              username: $("loginUsername").value.trim(),
-              password: $("loginPassword").value
-            })
-          });
-          authToken = result.token;
-          sessionStorage.setItem(tokenKey, authToken);
-          $("loginForm").reset();
-          await showApp(result.user);
-        } catch (error) {
-          $("loginMessage").textContent = error.message;
-        } finally {
-          $("loginButton").disabled = false;
-        }
+      $("visitDate").addEventListener("input", updateMemoAuto);
+      $("staffName").addEventListener("input", updateMemoAuto);
+      $("staffRole").addEventListener("input", updateMemoAuto);
+
+      $("addTargetBtn").addEventListener("click", () => {
+        targetDrafts.push(makeTargetDraft());
+        renderTargets();
+        renderGoalDetails();
+        updateMemoAuto();
+        updateValidation();
       });
-      $("changePasswordForm").addEventListener("submit", async (event) => {
-        event.preventDefault();
-        $("changePasswordButton").disabled = true;
-        $("passwordMessage").textContent = "";
-        try {
-          const result = await api("/api/auth/change-password", {
-            method: "POST",
-            body: JSON.stringify({
-              currentPassword: $("currentPassword").value,
-              newPassword: $("newPassword").value
-            })
-          });
-          $("changePasswordForm").reset();
-          await showApp(result.user);
-        } catch (error) {
-          $("passwordMessage").textContent = error.message;
-        } finally {
-          $("changePasswordButton").disabled = false;
-        }
+
+      $("addStaffBtn").addEventListener("click", () => {
+        staffDrafts.push({ name: "", role: "", phone: "", signature: "" });
+        renderStaff();
       });
-      $("logoutButton").addEventListener("click", () => logout());
+
+      $("memoBodyInput").addEventListener("input", () => {
+        customMemoEdited = true;
+      });
+
+      $("resetMemoBtn").addEventListener("click", () => {
+        customMemoEdited = false;
+        updateMemoAuto();
+        showToast("Memo yasubijwe ku nyandiko yikora.");
+      });
+
+      $("saveReport").addEventListener("click", saveReport);
+      $("downloadDocx").addEventListener("click", downloadDocx);
+      $("downloadDocxBottom").addEventListener("click", downloadDocx);
+      $("printReport").addEventListener("click", () => window.print());
+      $("printBottom").addEventListener("click", () => window.print());
+      $("newReport").addEventListener("click", resetReport);
+      $("resetFormBtn").addEventListener("click", () => {
+        if (window.confirm("Urashaka guhanagura ifishi ugatangira raporo nshya?")) resetReport();
+      });
+
       $("loadReport").addEventListener("click", async () => {
         const id = $("savedReports").value;
         if (!id) return showToast("Banza uhitemo raporo.", true);
@@ -1234,14 +1338,15 @@
           showToast(error.message, true);
         }
       });
+
       $("savedReports").addEventListener("change", updateSelectedReportActions);
       $("deleteReport").addEventListener("click", async () => {
         const id = $("savedReports").value;
-        if (!id) return showToast("Banza uhitemo raporo ushaka gusiba.", true);
-        if (!window.confirm("Urashaka gusiba raporo wahisemo?")) return;
+        if (!id) return showToast("Banza uhitemo raporo.", true);
+        if (!window.confirm("Urashaka gusiba iyi raporo?")) return;
         try {
           await api("/api/reports/" + encodeURIComponent(id), { method: "DELETE" });
-          currentReports = currentReports.filter((report) => report.id !== id);
+          currentReports = currentReports.filter((r) => r.id !== id);
           refreshReportList();
           if (currentReportId === id) resetReport();
           showToast("Raporo yasibwe kuri server.");
@@ -1249,69 +1354,49 @@
           showToast(error.message, true);
         }
       });
-      $("importLocal").addEventListener("click", importLocalReports);
-      $("manageUsers").addEventListener("click", () => $("usersPanel").classList.toggle("hidden"));
-      data.locations.forEach((item) => $("requestCell").add(new Option(item.name, item.name)));
+
+      // Login & Auth events
+      $("loginForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        $("loginButton").disabled = true;
+        $("loginMessage").textContent = "";
+        try {
+          const res = await api("/api/auth/login", {
+            method: "POST",
+            body: JSON.stringify({ username: $("loginUsername").value.trim(), password: $("loginPassword").value })
+          });
+          authToken = res.token;
+          await showApp(res.user);
+        } catch (err) {
+          $("loginMessage").textContent = err.message;
+        } finally {
+          $("loginButton").disabled = false;
+        }
+      });
+
+      $("logoutButton").addEventListener("click", () => logout());
+      $("showForgot").addEventListener("click", () => { $("loginView").classList.add("hidden"); $("forgotView").classList.remove("hidden"); });
+      $("backFromForgot").addEventListener("click", () => { $("forgotView").classList.add("hidden"); $("loginView").classList.remove("hidden"); });
+      $("showRequest").addEventListener("click", () => { $("loginView").classList.add("hidden"); $("requestView").classList.remove("hidden"); });
+      $("backToLogin").addEventListener("click", () => { $("requestView").classList.add("hidden"); $("loginView").classList.remove("hidden"); });
+
       $("requestLevel").addEventListener("change", () => {
         const isCell = $("requestLevel").value === "Akagari";
         $("requestCellField").classList.toggle("hidden", !isCell);
         $("requestCell").required = isCell;
-        if (!isCell) $("requestCell").value = "";
       });
-      $("showForgot").addEventListener("click", () => {
-        $("loginView").classList.add("hidden");
-        $("forgotView").classList.remove("hidden");
-        $("forgotMessage").textContent = "";
-      });
-      $("backFromForgot").addEventListener("click", () => {
-        $("forgotView").classList.add("hidden");
-        $("loginView").classList.remove("hidden");
-      });
-      $("forgotForm").addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const message = $("forgotMessage");
-        message.classList.remove("ok");
-        message.textContent = "";
-        if ($("forgotPassword").value !== $("forgotPassword2").value) {
-          message.textContent = "Amagambo y’ibanga ntabwo ahuye.";
-          return;
-        }
-        $("forgotButton").disabled = true;
-        try {
-          const result = await api("/api/auth/forgot-password", {
-            method: "POST",
-            body: JSON.stringify({ username: $("forgotUsername").value.trim(), newPassword: $("forgotPassword").value })
-          });
-          $("forgotForm").reset();
-          message.classList.add("ok");
-          message.textContent = result.message;
-        } catch (error) {
-          message.textContent = error.message;
-        } finally {
-          $("forgotButton").disabled = false;
-        }
-      });
-      $("showRequest").addEventListener("click", () => {
-        $("loginView").classList.add("hidden");
-        $("requestView").classList.remove("hidden");
-        $("requestMessage").textContent = "";
-      });
-      $("backToLogin").addEventListener("click", () => {
-        $("requestView").classList.add("hidden");
-        $("loginView").classList.remove("hidden");
-      });
-      $("requestForm").addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const message = $("requestMessage");
-        message.classList.remove("ok");
-        message.textContent = "";
+
+      data.locations.forEach((item) => $("requestCell").add(new Option(item.name, item.name)));
+
+      $("requestForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
         if ($("requestPassword").value !== $("requestPassword2").value) {
-          message.textContent = "Amagambo y’ibanga ntabwo ahuye.";
+          $("requestMessage").textContent = "Amagambo y’ibanga ntabwo ahuye.";
           return;
         }
         $("requestButton").disabled = true;
         try {
-          const result = await api("/api/auth/request-account", {
+          const res = await api("/api/auth/request-account", {
             method: "POST",
             body: JSON.stringify({
               fullName: $("requestName").value.trim(),
@@ -1324,47 +1409,47 @@
           });
           $("requestForm").reset();
           $("requestCellField").classList.add("hidden");
-          message.classList.add("ok");
-          message.textContent = result.message;
-        } catch (error) {
-          message.textContent = error.message;
+          $("requestMessage").classList.add("ok");
+          $("requestMessage").textContent = res.message;
+        } catch (err) {
+          $("requestMessage").textContent = err.message;
         } finally {
           $("requestButton").disabled = false;
         }
       });
-      $("createUserForm").addEventListener("submit", async (event) => {
-        event.preventDefault();
-        $("createUserButton").disabled = true;
-        $("userMessage").textContent = "";
+
+      $("forgotForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if ($("forgotPassword").value !== $("forgotPassword2").value) {
+          $("forgotMessage").textContent = "Amagambo y’ibanga ntabwo ahuye.";
+          return;
+        }
+        $("forgotButton").disabled = true;
         try {
-          await api("/api/users", {
+          const res = await api("/api/auth/forgot-password", {
             method: "POST",
             body: JSON.stringify({
-              fullName: $("newUserName").value.trim(),
-              username: $("newUsername").value.trim(),
-              temporaryPassword: $("newUserPassword").value
+              username: $("forgotUsername").value.trim(),
+              newPassword: $("forgotPassword").value
             })
           });
-          $("createUserForm").reset();
-          $("userMessage").textContent = "Konti yakozwe. Ha umukozi username n’ijambo ry’ibanga mu buryo bwizewe.";
-          await loadUsers();
-        } catch (error) {
-          $("userMessage").textContent = error.message;
+          $("forgotForm").reset();
+          $("forgotMessage").classList.add("ok");
+          $("forgotMessage").textContent = res.message;
+        } catch (err) {
+          $("forgotMessage").textContent = err.message;
         } finally {
-          $("createUserButton").disabled = false;
+          $("forgotButton").disabled = false;
         }
       });
-      window.addEventListener("beforeprint", () => {
-        document.querySelectorAll(".conditional").forEach((panel) => {
-          panel.classList.toggle("active", panel.id === ({ Mobilization: "mobilizationPanel", Monitoring: "monitoringPanel", "Follow-up": "followupPanel" })[$("visitType").value]);
-        });
-      });
-      window.addEventListener("afterprint", updateConditionalPanels);
 
+      $("manageUsers").addEventListener("click", () => $("usersPanel").classList.toggle("hidden"));
+
+      // Boot
       if (authToken) {
         api("/api/auth/me")
-          .then((result) => showApp(result.user))
-          .catch(() => logout("Ongera winjire muri konti."));
+          .then((res) => showApp(res.user))
+          .catch(() => logout());
       } else {
         showLogin();
       }
