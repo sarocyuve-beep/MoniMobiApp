@@ -1,13 +1,14 @@
 require("dotenv").config();
 
 const crypto = require("node:crypto");
+const fs = require("node:fs");
 const path = require("node:path");
 const bcrypt = require("bcryptjs");
 const express = require("express");
 const { rateLimit } = require("express-rate-limit");
 const helmet = require("helmet");
 const { db } = require("./db");
-const { login, publicUser, requireAuth, requireAdmin } = require("./auth");
+const { login, publicUser: basePublicUser, requireAuth, requireAdmin } = require("./auth");
 const persistence = require("./persist");
 const { buildReportDocx, docxFileName } = require("./docx-report");
 
@@ -27,7 +28,7 @@ app.use(express.json({ limit: "10mb" }));
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 10,
+  limit: Number(process.env.LOGIN_RATE_LIMIT || 10),
   standardHeaders: "draft-7",
   legacyHeaders: false,
   message: { error: "Wagerageje kwinjira inshuro nyinshi. Ongera ugerageze nyuma." }
@@ -35,11 +36,43 @@ const loginLimiter = rateLimit({
 
 const requestLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  limit: 5,
+  limit: Number(process.env.ACCOUNT_REQUEST_RATE_LIMIT || 5),
   standardHeaders: "draft-7",
   legacyHeaders: false,
   message: { error: "Wasabye inshuro nyinshi. Ongera ugerageze nyuma y’isaha." }
 });
+
+function publicUser(user) {
+  return { ...basePublicUser(user), level: user.level || "", cell: user.cell || "", jobTitle: user.job_title || "" };
+}
+
+let cachedLocationNames;
+function locationNames() {
+  if (!cachedLocationNames) {
+    try {
+      const source = fs.readFileSync(path.join(publicDirectory, "data.js"), "utf8");
+      const json = source.replace(/^\s*window\.REPORT_DATA\s*=\s*/, "").replace(/;\s*$/, "");
+      cachedLocationNames = (JSON.parse(json).locations || []).map((item) => item.name);
+    } catch {
+      cachedLocationNames = [];
+    }
+  }
+  return cachedLocationNames;
+}
+
+// Urwego, akagari n’icyo ashinzwe (bikoreshwa mu kwisaba konti).
+function readProfile(body) {
+  const level = typeof body.level === "string" ? body.level.trim() : "";
+  const cell = typeof body.cell === "string" ? body.cell.trim() : "";
+  const jobTitle = typeof body.jobTitle === "string" ? body.jobTitle.trim().replace(/\s+/g, " ") : "";
+  if (!["Umurenge", "Akagari"].includes(level)) return { error: "Hitamo urwego: Umurenge cyangwa Akagari." };
+  if (level === "Akagari") {
+    const names = locationNames();
+    if (names.length ? !names.includes(cell) : (!cell || cell.length > 60)) return { error: "Hitamo akagari ukoreramo." };
+  }
+  if (jobTitle.length < 3 || jobTitle.length > 100) return { error: "Andika icyo ushinzwe (inyuguti 3–100)." };
+  return { level, cell: level === "Akagari" ? cell : "", jobTitle };
+}
 
 // node:sqlite ntishyiraho `code` imwe muri buri bwoko bwa Node, bityo turebera no kuri errcode n’ubutumwa.
 function isUniqueViolation(error) {
@@ -109,10 +142,16 @@ app.post("/api/auth/login", loginLimiter, (req, res) => {
           : "Ubusabe bwawe bwo gufungura konti ntibwemewe. Vugana n’umuyobozi (admin)."
       });
     }
+    const account = db.prepare("SELECT id FROM users WHERE username = ? COLLATE NOCASE").get(username);
+    const reset = account && db.prepare("SELECT password_hash FROM password_resets WHERE user_id = ? AND status = 'PENDING'").get(account.id);
+    if (reset && bcrypt.compareSync(password, reset.password_hash)) {
+      return res.status(403).json({ error: "Ubusabe bwo guhindura ijambo ry’ibanga buracyategereje kwemezwa n’umuyobozi (admin)." });
+    }
     return res.status(401).json({ error: "Izina rya konti cyangwa ijambo ry’ibanga si byo." });
   }
   logAction(result.user.id, "LOGIN");
-  res.json(result);
+  const loggedIn = db.prepare("SELECT * FROM users WHERE id = ?").get(result.user.id);
+  res.json({ ...result, user: publicUser(loggedIn) });
 });
 
 app.post("/api/auth/request-account", requestLimiter, (req, res) => {
@@ -122,12 +161,14 @@ app.post("/api/auth/request-account", requestLimiter, (req, res) => {
   if (fullName.length < 3 || fullName.length > 100 || !/^[a-zA-Z0-9._-]{3,40}$/.test(username) || password.length < 12 || password.length > 200) {
     return res.status(400).json({ error: "Andika amazina yuzuye, username y’inyuguti 3–40 (inyuguti, imibare, . _ -), n’ijambo ry’ibanga ry’inyuguti 12 nibura." });
   }
+  const profile = readProfile(req.body);
+  if (profile.error) return res.status(400).json({ error: profile.error });
   if (db.prepare("SELECT 1 FROM users WHERE username = ? COLLATE NOCASE").get(username)) {
     return res.status(409).json({ error: "Iyo username isanzwe ikoreshwa. Hitamo indi." });
   }
   try {
-    const result = db.prepare("INSERT INTO account_requests (username, full_name, password_hash) VALUES (?, ?, ?)")
-      .run(username, fullName, bcrypt.hashSync(password, 12));
+    const result = db.prepare("INSERT INTO account_requests (username, full_name, password_hash, level, cell, job_title) VALUES (?, ?, ?, ?, ?, ?)")
+      .run(username, fullName, bcrypt.hashSync(password, 12), profile.level, profile.cell, profile.jobTitle);
     logAction(null, "REQUEST_ACCOUNT", String(result.lastInsertRowid));
     res.status(201).json({ message: "Ubusabe bwoherejwe. Utegereze ko admin abwemeza, hanyuma winjire ukoresheje username n’ijambo ry’ibanga wahisemo." });
   } catch (error) {
@@ -138,7 +179,7 @@ app.post("/api/auth/request-account", requestLimiter, (req, res) => {
 
 app.get("/api/account-requests", requireAuth, requireAdmin, (req, res) => {
   const requests = db.prepare(`
-    SELECT id, username, full_name AS fullName, created_at AS createdAt
+    SELECT id, username, full_name AS fullName, level, cell, job_title AS jobTitle, created_at AS createdAt
     FROM account_requests WHERE status = 'PENDING' ORDER BY id
   `).all();
   res.json({ requests });
@@ -155,9 +196,9 @@ app.post("/api/account-requests/:id/approve", requireAuth, requireAdmin, (req, r
   try {
     // Umukozi yihitiyemo ijambo ry’ibanga, bityo ntasabwa kurihindura.
     userId = db.prepare(`
-      INSERT INTO users (username, full_name, password_hash, role, must_change_password)
-      VALUES (?, ?, ?, 'EMPLOYEE', 0)
-    `).run(request.username, request.full_name, request.password_hash).lastInsertRowid;
+      INSERT INTO users (username, full_name, password_hash, role, must_change_password, level, cell, job_title)
+      VALUES (?, ?, ?, 'EMPLOYEE', 0, ?, ?, ?)
+    `).run(request.username, request.full_name, request.password_hash, request.level || null, request.cell || null, request.job_title || null).lastInsertRowid;
     db.prepare("UPDATE account_requests SET status = 'APPROVED', decided_by = ?, decided_at = datetime('now') WHERE id = ?")
       .run(req.user.id, request.id);
     db.exec("COMMIT");
@@ -174,6 +215,75 @@ app.post("/api/account-requests/:id/reject", requireAuth, requireAdmin, (req, re
     .run(req.user.id, Number(req.params.id));
   if (!result.changes) return res.status(404).json({ error: "Ubusabe ntibwabonetse cyangwa bwamaze gufatwaho icyemezo." });
   logAction(req.user.id, "REJECT_ACCOUNT", req.params.id);
+  res.json({ message: "Ubusabe bwanzwe." });
+});
+
+// Kwibagirwa ijambo ry’ibanga: uwibagiwe yandika irishya, admin akaryemeza.
+const forgotLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: Number(process.env.ACCOUNT_REQUEST_RATE_LIMIT || 5),
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: { error: "Wasabye inshuro nyinshi. Ongera ugerageze nyuma y’isaha." }
+});
+
+app.post("/api/auth/forgot-password", forgotLimiter, (req, res) => {
+  const username = typeof req.body.username === "string" ? req.body.username.trim() : "";
+  const newPassword = typeof req.body.newPassword === "string" ? req.body.newPassword : "";
+  if (!/^[a-zA-Z0-9._-]{3,40}$/.test(username) || newPassword.length < 12 || newPassword.length > 200) {
+    return res.status(400).json({ error: "Andika username n’ijambo ry’ibanga rishya ry’inyuguti 12 nibura." });
+  }
+  const hash = bcrypt.hashSync(newPassword, 12); // buri gihe, kugira ngo igihe gitwara kitagaragaza niba username ibaho
+  const user = db.prepare("SELECT id FROM users WHERE username = ? COLLATE NOCASE AND is_active = 1").get(username);
+  if (user) {
+    db.exec("BEGIN");
+    try {
+      db.prepare("UPDATE password_resets SET status = 'REJECTED', decided_at = datetime('now') WHERE user_id = ? AND status = 'PENDING'").run(user.id);
+      db.prepare("INSERT INTO password_resets (user_id, password_hash) VALUES (?, ?)").run(user.id, hash);
+      db.exec("COMMIT");
+    } catch (error) {
+      db.exec("ROLLBACK");
+      throw error;
+    }
+    logAction(null, "REQUEST_PASSWORD_RESET", String(user.id));
+  }
+  // Igisubizo ni kimwe haba username ibaho cyangwa itabaho.
+  res.status(202).json({ message: "Ubusabe bwoherejwe. Niba username ibaho, admin azabwemeza, hanyuma winjire ukoresheje ijambo ry’ibanga rishya wanditse." });
+});
+
+app.get("/api/password-resets", requireAuth, requireAdmin, (req, res) => {
+  const resets = db.prepare(`
+    SELECT p.id, u.username, u.full_name AS fullName, u.role, u.level, u.cell, u.job_title AS jobTitle, p.created_at AS createdAt
+    FROM password_resets p JOIN users u ON u.id = p.user_id
+    WHERE p.status = 'PENDING' ORDER BY p.id
+  `).all();
+  res.json({ resets });
+});
+
+app.post("/api/password-resets/:id/approve", requireAuth, requireAdmin, (req, res) => {
+  const reset = db.prepare("SELECT * FROM password_resets WHERE id = ? AND status = 'PENDING'").get(Number(req.params.id));
+  if (!reset) return res.status(404).json({ error: "Ubusabe ntibwabonetse cyangwa bwamaze gufatwaho icyemezo." });
+  if (reset.user_id === req.user.id) return res.status(400).json({ error: "Ntushobora kwemeza ubusabe bwawe bwite. Saba undi admin." });
+  const user = db.prepare("SELECT id, is_active FROM users WHERE id = ?").get(reset.user_id);
+  if (!user || !user.is_active) return res.status(409).json({ error: "Iyi konti ntikora. Wange ubu busabe." });
+  db.exec("BEGIN");
+  try {
+    db.prepare("UPDATE users SET password_hash = ?, must_change_password = 0 WHERE id = ?").run(reset.password_hash, reset.user_id);
+    db.prepare("UPDATE password_resets SET status = 'APPROVED', decided_by = ?, decided_at = datetime('now') WHERE id = ?").run(req.user.id, reset.id);
+    db.exec("COMMIT");
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error;
+  }
+  logAction(req.user.id, "APPROVE_PASSWORD_RESET", String(reset.user_id));
+  res.json({ message: "Ijambo ry’ibanga rishya ryemejwe." });
+});
+
+app.post("/api/password-resets/:id/reject", requireAuth, requireAdmin, (req, res) => {
+  const result = db.prepare("UPDATE password_resets SET status = 'REJECTED', decided_by = ?, decided_at = datetime('now') WHERE id = ? AND status = 'PENDING'")
+    .run(req.user.id, Number(req.params.id));
+  if (!result.changes) return res.status(404).json({ error: "Ubusabe ntibwabonetse cyangwa bwamaze gufatwaho icyemezo." });
+  logAction(req.user.id, "REJECT_PASSWORD_RESET", req.params.id);
   res.json({ message: "Ubusabe bwanzwe." });
 });
 
@@ -346,7 +456,7 @@ app.post("/api/reports/import", requireAuth, (req, res) => {
 
 app.get("/api/users", requireAuth, requireAdmin, (req, res) => {
   const users = db.prepare(`
-    SELECT id, username, full_name AS fullName, role, is_active AS isActive, created_at AS createdAt
+    SELECT id, username, full_name AS fullName, role, level, cell, job_title AS jobTitle, is_active AS isActive, created_at AS createdAt
     FROM users ORDER BY full_name COLLATE NOCASE
   `).all();
   res.json({ users });

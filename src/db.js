@@ -52,6 +52,18 @@ db.exec(`
     decided_at TEXT,
     FOREIGN KEY (decided_by) REFERENCES users(id) ON DELETE SET NULL
   );
+  CREATE TABLE IF NOT EXISTS password_resets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    password_hash TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED')),
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    decided_by INTEGER,
+    decided_at TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (decided_by) REFERENCES users(id) ON DELETE SET NULL
+  );
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_password_resets_pending ON password_resets(user_id) WHERE status = 'PENDING';
   CREATE UNIQUE INDEX IF NOT EXISTS idx_account_requests_pending ON account_requests(username) WHERE status = 'PENDING';
   CREATE INDEX IF NOT EXISTS idx_reports_updated_at ON reports(updated_at);
   CREATE INDEX IF NOT EXISTS idx_reports_created_by ON reports(created_by);
@@ -60,6 +72,17 @@ db.exec(`
 const userColumns = db.prepare("PRAGMA table_info(users)").all().map((column) => column.name);
 if (!userColumns.includes("must_change_password")) {
   db.exec("ALTER TABLE users ADD COLUMN must_change_password INTEGER NOT NULL DEFAULT 1");
+}
+
+function addColumn(table, column, definition) {
+  const names = db.prepare("PRAGMA table_info(" + table + ")").all().map((item) => item.name);
+  if (!names.includes(column)) db.exec("ALTER TABLE " + table + " ADD COLUMN " + column + " " + definition);
+}
+// Urwego (Umurenge/Akagari), akagari n’icyo umukozi ashinzwe.
+for (const table of ["users", "account_requests"]) {
+  addColumn(table, "level", "TEXT");
+  addColumn(table, "cell", "TEXT");
+  addColumn(table, "job_title", "TEXT");
 }
 
 function ensureAdmin({ username, password, fullName }) {
@@ -79,4 +102,25 @@ function ensureAdmin({ username, password, fullName }) {
   return true;
 }
 
-module.exports = { db, dbPath, ensureAdmin };
+// Kugarura uburyo bwo kwinjira nka admin (urugero admin wibagiwe ijambo ry’ibanga cyangwa nta admin ukiriho).
+// Bikora gusa iyo ADMIN_RESET_ON_START=true, ADMIN_USERNAME na ADMIN_PASSWORD (12+) byashyizweho muri Render.
+function resetAdmin({ username, password, fullName }) {
+  const name = typeof username === "string" ? username.trim() : "";
+  if (!/^[a-zA-Z0-9._-]{3,40}$/.test(name) || !password || password.length < 12) {
+    throw new Error("ADMIN_RESET_ON_START needs a valid ADMIN_USERNAME and an ADMIN_PASSWORD of at least 12 characters.");
+  }
+  const bcrypt = require("bcryptjs");
+  const hash = bcrypt.hashSync(password, 12);
+  const existing = db.prepare("SELECT id FROM users WHERE username = ? COLLATE NOCASE").get(name);
+  if (existing) {
+    db.prepare("UPDATE users SET password_hash = ?, role = 'ADMIN', is_active = 1, must_change_password = 1 WHERE id = ?").run(hash, existing.id);
+    db.prepare("UPDATE password_resets SET status = 'REJECTED', decided_at = datetime('now') WHERE user_id = ? AND status = 'PENDING'").run(existing.id);
+  } else {
+    db.prepare("INSERT INTO users (username, full_name, password_hash, role, must_change_password) VALUES (?, ?, ?, 'ADMIN', 1)")
+      .run(name, (fullName || name).trim(), hash);
+  }
+  console.warn("ADMIN ACCESS RESET for \"" + name + "\". Set ADMIN_RESET_ON_START back to false now, otherwise the password is reset on every restart.");
+  return true;
+}
+
+module.exports = { db, dbPath, ensureAdmin, resetAdmin };

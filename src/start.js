@@ -10,12 +10,16 @@ async function start() {
   const restoreMode = await persistence.restore();
   console.log("Database source:", restoreMode);
 
-  const { db, ensureAdmin } = require("./db");
+  const { db, ensureAdmin, resetAdmin } = require("./db");
   const adminCreated = ensureAdmin({
     username: process.env.ADMIN_USERNAME,
     password: process.env.ADMIN_PASSWORD,
     fullName: process.env.ADMIN_FULL_NAME
   });
+
+  const adminReset = process.env.ADMIN_RESET_ON_START === "true"
+    ? resetAdmin({ username: process.env.ADMIN_USERNAME, password: process.env.ADMIN_PASSWORD, fullName: process.env.ADMIN_FULL_NAME })
+    : false;
 
   const app = require("./server");
   const port = Number(process.env.PORT || 3000);
@@ -23,7 +27,7 @@ async function start() {
     console.log("MoniMobiApp listening on port", port);
   });
 
-  if (restoreMode === "fresh" || adminCreated) persistence.markDirty();
+  if (restoreMode === "fresh" || adminCreated || adminReset) persistence.markDirty();
 
   let stopping = false;
   async function stop(signal) {

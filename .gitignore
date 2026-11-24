@@ -2,7 +2,9 @@
 .env.*
 !.env.example
 node_modules/
-data/
+[Dd]ata/
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+*.backup
+*.bak

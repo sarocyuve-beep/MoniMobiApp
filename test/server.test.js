@@ -7,6 +7,8 @@ const { after, before, test } = require("node:test");
 
 const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "monimobi-test-"));
 process.env.NODE_ENV = "test";
+process.env.LOGIN_RATE_LIMIT = "1000";
+process.env.ACCOUNT_REQUEST_RATE_LIMIT = "1000";
 process.env.DB_PATH = path.join(temporaryDirectory, "test.sqlite");
 process.env.JWT_SECRET = crypto.randomBytes(32).toString("hex");
 
@@ -217,10 +219,18 @@ test("Word report endpoint builds a .docx from saved reports", async () => {
 });
 
 test("employees can request an account and an admin approves or rejects it", async () => {
-  const payload = { fullName: "Mukamana Jeanne", username: "jeanne.m", password: "jeanne-password-123" };
+  const payload = { fullName: "Mukamana Jeanne", username: "jeanne.m", password: "jeanne-password-123", level: "Akagari", cell: "KABEZA", jobTitle: "Umukozi ushinzwe Ubworozi" };
 
   const weak = await request("/api/auth/request-account", { method: "POST", body: { ...payload, password: "short" } });
   assert.equal(weak.response.status, 400);
+  const noLevel = await request("/api/auth/request-account", { method: "POST", body: { ...payload, level: "" } });
+  assert.equal(noLevel.response.status, 400);
+  const noCell = await request("/api/auth/request-account", { method: "POST", body: { ...payload, cell: "" } });
+  assert.equal(noCell.response.status, 400);
+  const badCell = await request("/api/auth/request-account", { method: "POST", body: { ...payload, cell: "NTIBAHO" } });
+  assert.equal(badCell.response.status, 400);
+  const noJob = await request("/api/auth/request-account", { method: "POST", body: { ...payload, jobTitle: " " } });
+  assert.equal(noJob.response.status, 400);
   const taken = await request("/api/auth/request-account", { method: "POST", body: { ...payload, username: "staff1" } });
   assert.equal(taken.response.status, 409);
 
@@ -244,6 +254,9 @@ test("employees can request an account and an admin approves or rejects it", asy
   const entry = pending.result.requests.find((item) => item.username === "jeanne.m");
   assert.ok(entry);
   assert.equal(entry.password_hash, undefined);
+  assert.equal(entry.level, "Akagari");
+  assert.equal(entry.cell, "KABEZA");
+  assert.equal(entry.jobTitle, "Umukozi ushinzwe Ubworozi");
 
   assert.equal((await request("/api/account-requests/" + entry.id + "/approve", { token: staffToken, method: "POST" })).response.status, 403);
   const approved = await request("/api/account-requests/" + entry.id + "/approve", { token: adminToken, method: "POST" });
@@ -254,12 +267,57 @@ test("employees can request an account and an admin approves or rejects it", asy
   assert.equal(login.response.status, 200);
   assert.equal(login.result.user.role, "EMPLOYEE");
   assert.equal(login.result.user.mustChangePassword, false);
+  assert.equal(login.result.user.level, "Akagari");
+  assert.equal(login.result.user.cell, "KABEZA");
+  assert.equal(login.result.user.jobTitle, "Umukozi ushinzwe Ubworozi");
 
-  const second = await request("/api/auth/request-account", { method: "POST", body: { fullName: "Uwase Alice", username: "alice.u", password: "alice-password-123" } });
+  const second = await request("/api/auth/request-account", { method: "POST", body: { fullName: "Uwase Alice", username: "alice.u", password: "alice-password-123", level: "Umurenge", jobTitle: "Umunyamabanga" } });
   assert.equal(second.response.status, 201);
   const list = await request("/api/account-requests", { token: adminToken });
   const alice = list.result.requests.find((item) => item.username === "alice.u");
   assert.equal((await request("/api/account-requests/" + alice.id + "/reject", { token: adminToken, method: "POST" })).response.status, 200);
   const rejected = await request("/api/auth/login", { method: "POST", body: { username: "alice.u", password: "alice-password-123" } });
   assert.equal(rejected.response.status, 403);
+});
+
+test("a user who forgot the password asks for a new one and an admin approves it", async () => {
+  const same = await request("/api/auth/forgot-password", { method: "POST", body: { username: "staff2", newPassword: "short" } });
+  assert.equal(same.response.status, 400);
+
+  // Igisubizo kiba kimwe haba username ibaho cyangwa itabaho.
+  const unknown = await request("/api/auth/forgot-password", { method: "POST", body: { username: "nobody.here", newPassword: "brand-new-password-1" } });
+  assert.equal(unknown.response.status, 202);
+  const asked = await request("/api/auth/forgot-password", { method: "POST", body: { username: "staff2", newPassword: "brand-new-password-1" } });
+  assert.equal(asked.response.status, 202);
+  assert.equal(asked.result.message, unknown.result.message);
+
+  // Mbere yo kwemezwa ijambo rya kera riracyakora, irishya ntirikora.
+  const stillOld = await request("/api/auth/login", { method: "POST", body: { username: "staff2", password: "other-password-123" } });
+  assert.equal(stillOld.response.status, 200);
+  const early = await request("/api/auth/login", { method: "POST", body: { username: "staff2", password: "brand-new-password-1" } });
+  assert.equal(early.response.status, 403);
+
+  assert.equal((await request("/api/password-resets", { token: staffToken })).response.status, 403);
+  const pending = await request("/api/password-resets", { token: adminToken });
+  const entry = pending.result.resets.find((item) => item.username === "staff2");
+  assert.ok(entry);
+  assert.equal(entry.password_hash, undefined);
+
+  assert.equal((await request("/api/password-resets/" + entry.id + "/approve", { token: staffToken, method: "POST" })).response.status, 403);
+  assert.equal((await request("/api/password-resets/" + entry.id + "/approve", { token: adminToken, method: "POST" })).response.status, 200);
+  assert.equal((await request("/api/password-resets/" + entry.id + "/approve", { token: adminToken, method: "POST" })).response.status, 404);
+
+  const fresh = await request("/api/auth/login", { method: "POST", body: { username: "staff2", password: "brand-new-password-1" } });
+  assert.equal(fresh.response.status, 200);
+  const oldNow = await request("/api/auth/login", { method: "POST", body: { username: "staff2", password: "other-password-123" } });
+  assert.equal(oldNow.response.status, 401);
+
+  // Admin ntiyemeza ubusabe bwe bwite; ubusabe bushya busimbura ubwahozeho; kwanga ntihindura ijambo.
+  const adminAsk = await request("/api/auth/forgot-password", { method: "POST", body: { username: "admin", newPassword: "admin-new-password-1" } });
+  assert.equal(adminAsk.response.status, 202);
+  const adminPending = (await request("/api/password-resets", { token: adminToken })).result.resets.find((item) => item.username === "admin");
+  assert.equal((await request("/api/password-resets/" + adminPending.id + "/approve", { token: adminToken, method: "POST" })).response.status, 400);
+  assert.equal((await request("/api/password-resets/" + adminPending.id + "/reject", { token: adminToken, method: "POST" })).response.status, 200);
+  const adminStill = await request("/api/auth/login", { method: "POST", body: { username: "admin", password: "admin-password-123" } });
+  assert.equal(adminStill.response.status, 200);
 });

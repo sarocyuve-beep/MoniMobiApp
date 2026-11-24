@@ -11,11 +11,6 @@ Sisitemu y'imihigo n'ibikorwa byo gukangurira, kugenzura no gukurikirana mu Mure
 - Backup nshya itegurwa amasegonda 15 nyuma y'impinduka. Iyo backup yanze, server irongera ikagerageza nyuma y'umunota.
 - Health check ya UptimeRobot: `/api/health`.
 - Amakuru y'imihigo n'ibikorwa biva muri sheets 5 za Excel V3: imihigo 103, ibikorwa 173, utugari 6, imidugudu 40, n'amabwiriza.
-- Raporo imwe ishobora kugira imihigo myinshi. Kuri buri muhigo umukozi ahitamo icyiciro n'umuhigo, akandika abagenerwabikorwa/abafatanyabikorwa benshi, akagena Akagari n'Umudugudu.
-- GROUP II ibika abantu bakoze igikorwa (amazina, inshingano, telephone n'umukono) kandi yemera kongeramo benshi.
-- GROUP III yuzuzwa umuhigo umwe umwe. Ibibazo bihinduka bitewe na Sensitization/Ubukangurambaga, Monitoring/Ubugenzuzi cyangwa Follow-up/Gusubira gusura.
-- Raporo za kera zifite imiterere y'umuhigo umwe ziracyafunguka; iyo zibitswe mu miterere mishya zihuzwa n'umuhigo umwe kugira ngo amakuru yazo atazimira.
-- Word report ikora urutonde rw'imihigo yose, location n'abagenerwabikorwa kuri buri muhigo, urutonde rw'abakoze igikorwa, n'imbonerahamwe y'amakuru yihariye kuri buri muhigo.
 
 ## Gutangiza kuri mudasobwa
 
@@ -85,3 +80,9 @@ Hitamo kugenzura buri minota 5. UptimeRobot igenzura ko service isubiza HTTP; **
 ## Tests
 
 Koresha `npm test` kugenzura kwinjira, uburenganzira bwo kureba raporo, kwirinda kwandika hejuru y'impinduka nshya, n'ubuyobozi bwa konti.
+
+## Konti, kwisaba konti no kugarura admin
+
+- **Kwisaba konti:** ku rupapuro rwo kwinjira umukozi akanda «Saba konti», akuzuza amazina, urwego (Umurenge/Akagari, n’akagari iyo ari Akagari), icyo ashinzwe, username n’ijambo ry’ibanga. Admin abona ubusabe muri «Genzura konti z’abakozi» akabwemeza cyangwa akabwanga.
+- **Wibagiwe ijambo ry’ibanga:** umukozi akanda «Wibagiwe ijambo ry’ibanga?», akandika username n’ijambo rishya; admin arimwemeza (ashobora kubanza kumuhamagara). Admin ntiyemeza ubusabe bwe bwite; bisaba undi admin.
+- **Kugarura uburyo bwo kwinjira nka admin** (admin wibagiwe ijambo ry’ibanga, cyangwa nta admin ukiriho): muri Render → Environment shyiraho `ADMIN_USERNAME`, `ADMIN_PASSWORD` (inyuguti 12+), `ADMIN_FULL_NAME` na `ADMIN_RESET_ON_START=true`, hanyuma wongere utangize serivisi. Konti ya admin irasubizwaho ijambo ry’ibanga rishya (iyo itariho irakorwa) kandi isabwa kuryihindura igihe yinjiye. **Nyuma yo kwinjira subiza `ADMIN_RESET_ON_START` kuri `false`**, kuko ubundi ijambo ry’ibanga ryasubizwaho buri gihe serivisi itangiye.
