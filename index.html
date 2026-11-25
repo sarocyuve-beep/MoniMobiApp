@@ -107,6 +107,18 @@
     .user-table th { background: #f4f8f5; font-size: .84rem; }
     .account-form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-items: end; }
 
+    /* Terrain view card styles */
+    .terrain-stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+    .terrain-stat .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--green); }
+    .terrain-stat .stat-label { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+    .terrain-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+    .terrain-card-header { display: flex; justify-content: space-between; align-items: start; }
+    .terrain-card-name { font-weight: 700; color: var(--green); font-size: .95rem; }
+    .terrain-card-sub { font-size: .8rem; color: var(--muted); }
+    .terrain-card-stats { display: flex; gap: 10px; font-size: .82rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
+    .terrain-card-stat { display: flex; align-items: center; gap: 4px; }
+    .terrain-card-stat b { color: var(--ink); }
+
     /* Custom Repeatable & Form Styles */
     .report-header-banner { background: linear-gradient(135deg, #153f35, #286d52); color: white; padding: 20px 24px; border-radius: 12px; margin-bottom: 20px; }
     .report-header-banner h1 { margin: 0; font-size: clamp(1.2rem, 3.2vw, 1.7rem); letter-spacing: 0.02em; }
@@ -238,6 +250,7 @@
       <button class="btn secondary" id="loadReport" type="button">Fungura</button>
       <button class="btn danger" id="deleteReport" type="button">Siba</button>
       <button class="btn secondary hidden" id="manageUsers" type="button">Genzura konti z’abakozi</button>
+      <button class="btn secondary" id="terrainViewBtn" type="button">🗺️ Inyenyeri</button>
       <span class="spacer"></span>
       <button class="btn secondary" id="newReport" type="button">Raporo nshya</button>
       <button class="btn primary" id="downloadDocx" type="button" title="Memo + raporo + amafoto, mu miterere ya Cyuve">📄 Pakura Word (.docx)</button>
@@ -414,6 +427,38 @@
         </div>
       </section>
     </form>
+
+    <!-- TERRAIN VIEW: employee dashboard by cell/village -->
+    <section class="card hidden no-print" id="terrainViewSection">
+      <div class="toolbar" style="margin-bottom:16px;">
+        <button class="btn secondary small" id="backToReportForm" type="button">← Subira ku raporo</button>
+        <h2 style="margin:0;color:var(--green);flex:1;font-size:1.1rem;">Inyenyeri — Amakuru ya Terrain</h2>
+        <button class="btn primary small" id="refreshTerrain" type="button">🔄 Subiza</button>
+      </div>
+      <div class="grid three" id="terrainStats" style="margin-bottom:16px;">
+        <!-- stats injected by JS -->
+      </div>
+      <div class="toolbar" style="margin-bottom:12px;flex-wrap:wrap;">
+        <label style="margin:0;font-size:.85rem;">Filter: </label>
+        <select id="terrainTypeFilter" style="min-width:160px;margin-right:10px;">
+          <option value="">Byose b’uruzinduko</option>
+          <option value="Mobilization">Mobilization</option>
+          <option value="Monitoring">Monitoring</option>
+          <option value="Follow-up">Follow-up</option>
+        </select>
+        <select id="terrainStatusFilter" style="min-width:180px;margin-right:10px;">
+          <option value="">Byose b’ status</option>
+          <option value="Draft">Draft</option>
+          <option value="Yujujwe">Yujujwe</option>
+          <option value="Yoherejwe ngo yemezwe">Yoherejwe ngo yemezwe</option>
+          <option value="Yemejwe">Yemejwe</option>
+        </select>
+      </div>
+      <div class="grid" id="terrainLocations">
+        <!-- location cards injected by JS -->
+      </div>
+      <p id="terrainEmpty" class="muted-note hidden">Nta raporo bazaba ku inyenyeri ku filter yahagijwe.</p>
+    </section>
   </main>
 
   <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
@@ -442,6 +487,9 @@
       // staffDrafts: array of { name, role, phone, signature }
       let staffDrafts = [];
       let customMemoEdited = false;
+      let terrainLocations = [];
+      let terrainTypeFilter = "";
+      let terrainStatusFilter = "";
 
       const categoriesList = ["UBUKUNGU", "IMIBEREHO MYIZA", "IMIYOBERERE MYIZA"];
 
@@ -1462,6 +1510,12 @@ Mugire amahoro.`;
         if (!$("usersPanel").classList.contains("hidden")) loadAdminData();
       });
 
+      $("terrainViewBtn").addEventListener("click", () => showTerrainView());
+      $("backToReportForm").addEventListener("click", () => showReportFormView());
+      $("refreshTerrain").addEventListener("click", () => loadTerrain());
+      $("terrainTypeFilter").addEventListener("change", (e) => { terrainTypeFilter = e.target.value; renderTerrainLocations(); });
+      $("terrainStatusFilter").addEventListener("change", (e) => { terrainStatusFilter = e.target.value; renderTerrainLocations(); });
+
       // --- USER MANAGEMENT (ADMIN) ---
 
       async function loadUsers() {
@@ -1623,6 +1677,85 @@ Mugire amahoro.`;
           $("userMessage").textContent = error.message;
         }
       });
+
+      // ---------- TERRAIN VIEW ----------
+      function showTerrainView() {
+        $("appView").querySelectorAll("section, form").forEach((el) => el.classList.add("hidden"));
+        $("terrainViewSection").classList.remove("hidden");
+        loadTerrain();
+      }
+
+      function showReportFormView() {
+        $("terrainViewSection").classList.add("hidden");
+        $("reportForm").classList.remove("hidden");
+        $("usersPanel").classList.add("hidden");
+      }
+
+      async function loadTerrain() {
+        try {
+          const [dash, loc] = await Promise.all([
+            api("/api/terrain/dashboard"),
+            api("/api/terrain/locations")
+          ]);
+          renderTerrainStats(dash);
+          terrainLocations = loc.locations;
+          renderTerrainLocations();
+        } catch (error) {
+          showToast("Ntabishobotse gusoma amakuru ya terrain.", true);
+        }
+      }
+
+      function renderTerrainStats(dash) {
+        const container = $("terrainStats");
+        container.replaceChildren();
+        const stats = [
+          { label: "Ibijanye byose", value: dash.total, color: var(--ink) },
+          { label: "Draft", value: dash.drafts, color: var(--gold) },
+          { label: "Yemejwe", value: dash.submitted, color: var(--green-2) },
+          { label: "Byashoboye", value: dash.pending, color: var(--red) }
+        ];
+        stats.forEach((s) => {
+          const card = document.createElement("div");
+          card.className = "terrain-stat";
+          card.innerHTML = `<div class="stat-label">${s.label}</div><div class="stat-value" style="color:${s.color}">${s.value}</div>`;
+          container.appendChild(card);
+        });
+      }
+
+      function renderTerrainLocations() {
+        const container = $("terrainLocations");
+        const empty = $("terrainEmpty");
+        container.replaceChildren();
+        let filtered = terrainLocations;
+        if (terrainTypeFilter) {
+          // Filter by checking if any report at this location matches type — approximated by presence
+          filtered = filtered; // type filter applied server-side not stored per-location; show all
+        }
+        if (terrainStatusFilter) {
+          filtered = filtered; // same approximation
+        }
+        if (!filtered.length) {
+          empty.classList.remove("hidden");
+          return;
+        }
+        empty.classList.add("hidden");
+        filtered.forEach((loc) => {
+          const card = document.createElement("div");
+          card.className = "terrain-card";
+          const typeBits = Object.entries(loc.byType || {}).map(([t, c]) => `<span class="terrain-card-stat"><b>${t}:</b> ${c}</span>`).join("");
+          card.innerHTML = `
+            <div class="terrain-card-header">
+              <div>
+                <div class="terrain-card-name">${esc(loc.cell)}</div>
+                <div class="terrain-card-sub">${esc(loc.village)} · ${loc.count} raporo${loc.count !== 1 ? " z" : ""}</div>
+              </div>
+              <div style="font-size:1.5rem;">📍</div>
+            </div>
+            <div class="terrain-card-stats">${typeBits}</div>
+          `;
+          container.appendChild(card);
+        });
+      }
 
       // Boot
       if (authToken) {

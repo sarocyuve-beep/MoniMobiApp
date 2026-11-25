@@ -482,6 +482,66 @@ app.post("/api/reports/import", requireAuth, (req, res) => {
   }
 });
 
+// ---------- TERRAIN VIEW: field activity by cell/village ----------
+function reportStats(rows) {
+  const byType = {};
+  const byStatus = {};
+  const byCell = {};
+  rows.forEach((row) => {
+    const t = row.visit_type || "Ntabwo";
+    byType[t] = (byType[t] || 0) + 1;
+    const s = (row.fields_parsed && row.fields_parsed.reportStatus) || "Draft";
+    byStatus[s] = (byStatus[s] || 0) + 1;
+    const c = (row.fields_parsed && row.fields_parsed.cell) || "Ntabwo";
+    byCell[c] = (byCell[c] || 0) + 1;
+  });
+  return { byType, byStatus, byCell };
+}
+
+app.get("/api/terrain/dashboard", requireAuth, (req, res) => {
+  const rows = db.prepare(reportSelect + " ORDER BY r.updated_at DESC").all().map(reportFromRow);
+  const stats = reportStats(rows);
+  const total = rows.length;
+  const drafts = stats.byStatus.Draft || 0;
+  const submitted = (stats.byStatus["Yujujwe"] || 0) + (stats.byStatus["Yoherejwe ngo yemezwe"] || 0) + (stats.byStatus["Yemejwe"] || 0);
+  const topCells = Object.entries(stats.byCell)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([cell, count]) => ({ cell, count }));
+  res.json({
+    total,
+    drafts,
+    submitted,
+    pending: drafts,
+    byType: stats.byType,
+    byStatus: stats.byStatus,
+    topCells,
+    generatedAt: new Date().toISOString()
+  });
+});
+
+app.get("/api/terrain/locations", requireAuth, (req, res) => {
+  const rows = db.prepare(reportSelect + " ORDER BY r.updated_at DESC").all().map(reportFromRow);
+  const byLocation = {};
+  rows.forEach((row) => {
+    const f = row.fields_parsed || {};
+    const cell = f.cell || "Ntabwo";
+    const village = f.village || "Ntabwo";
+    const key = cell + "||" + village;
+    if (!byLocation[key]) {
+      byLocation[key] = { cell, village, count: 0, byType: {}, latest: null };
+    }
+    byLocation[key].count += 1;
+    const t = row.visit_type || "Ntabwo";
+    byLocation[key].byType[t] = (byLocation[key].byType[t] || 0) + 1;
+    if (!byLocation[key].latest || row.updated_at > byLocation[key].latest) {
+      byLocation[key].latest = row.updated_at;
+    }
+  });
+  const locations = Object.values(byLocation).sort((a, b) => b.count - a.count);
+  res.json({ locations, total: locations.length });
+});
+
 app.get("/api/users", requireAuth, requireAdmin, (req, res) => {
   const users = db.prepare(`
     SELECT id, username, full_name AS fullName, role, level, cell, job_title AS jobTitle, duties, is_active AS isActive, created_at AS createdAt
