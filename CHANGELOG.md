@@ -1,5 +1,14 @@
 # Changelog
 
+## 25/11/2026: ibyitegererezo by'amaraporo ku mihigo (Mobilization / Monitoring)
+
+- Umukozi iyo ahisemo umuhigo, Group III imwereka icyitegererezo kuri buri gice (Igikorwa fatizo, Abagomba kukigiramo uruhare, Ubumenyi basanzwe bafite, Ubutumwa, n'ibindi) gifite buto «Emeza uko kuri» (kibika icyitegererezo uko kiri) na «Hindura» (kigishyira mu kazu ko guhindura).
+- Ibyitegererezo 300 byakuwe muri «Raporo_z_imihigo_Mobilization_Monitoring.docx», bibitswe muri `samples.js` (imihigo 100; imihigo 87, 100 na 101 ni Follow-up gusa, nta cyitegererezo ifite).
+- Iyo umuhigo ufite ibyitegererezo birenze kimwe, umukozi ahitamo «Icyitegererezo 1/2/3».
+- «Ubushake bwo kwitabira» na «Ireme ry'igikorwa» ubu bihitwamo n'utubuto (1 · Buke cyane … 5 · Bwinshi cyane).
+- Ibyabitswe bikomeza kuba muri `details` y'umuhigo (+ `baseActivity`, `involvedParties`, `specificIndicators`, `sampleIndex`), bityo Word na memo bikora nk'ibisanzwe.
+- Seriveri itanga `/samples.js`; test yongeweho.
+- Gukosora: `index.html` yarimo `color: var(--ink)` itari mu magambo (syntax error) yatumaga login itagaragara.
 ## 25/11/2026: imihigo y’ibizakorwa, ibikorwa ku mihigo yose, memo, konti
 
 - Imihigo 103 yanditse mu nshinga y’ibizakorwa (urugero «Gutera inka intanga.») hakurikijwe Sheet1; amazina y’indwara BQ na LSD yahuje na Sheet1.

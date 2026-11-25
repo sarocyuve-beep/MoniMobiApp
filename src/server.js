@@ -601,6 +601,7 @@ app.delete("/api/users/:id", requireAuth, requireAdmin, (req, res) => {
 
 app.get("/", (req, res) => res.sendFile(path.join(publicDirectory, "index.html")));
 app.get("/data.js", (req, res) => res.sendFile(path.join(publicDirectory, "data.js")));
+app.get("/samples.js", (req, res) => res.sendFile(path.join(publicDirectory, "samples.js")));
 app.use("/api", (req, res) => res.status(404).json({ error: "API endpoint ntiyabonetse." }));
 
 app.use((error, req, res, next) => {

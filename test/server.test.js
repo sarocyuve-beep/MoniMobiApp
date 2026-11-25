@@ -70,9 +70,12 @@ test("health endpoint is public and reports the database status", async () => {
 test("only the report app and its public data file are served", async () => {
   const appPage = await fetch(baseUrl + "/");
   const dataFile = await fetch(baseUrl + "/data.js");
+  const samplesFile = await fetch(baseUrl + "/samples.js");
   const serverSource = await fetch(baseUrl + "/src/server.js");
   assert.equal(appPage.status, 200);
   assert.equal(dataFile.status, 200);
+  assert.equal(samplesFile.status, 200);
+  assert.match(await samplesFile.text(), /window\.SAMPLE_REPORTS/);
   assert.equal(serverSource.status, 404);
 });
 

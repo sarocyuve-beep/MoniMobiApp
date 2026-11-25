@@ -134,6 +134,26 @@
     
     .memo-preview-box { background: #fbfdfc; border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
     .memo-meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; font-size: 0.92rem; border-bottom: 1px solid var(--line); padding-bottom: 14px; margin-bottom: 16px; }
+    /* Sample-assisted detail fields */
+    .sample-picker { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 4px 0 10px; font-size: .85rem; color: var(--muted); }
+    .sample-note { margin: 0 0 12px; padding: 9px 12px; background: var(--yellow); border: 1px solid #ecd994; border-radius: 8px; font-size: .82rem; color: #5b4a12; line-height: 1.45; }
+    .sfield { border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 12px; background: white; }
+    .sfield-head { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px; }
+    .sfield-num { flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--pale); color: var(--muted); font-size: .75rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+    .sfield-title { font-weight: 700; font-size: .93rem; }
+    .sfield-sub { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+    .sample-box { border: 1px dashed #b6c9be; background: #f6faf7; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+    .sample-tag { display: inline-flex; align-items: center; gap: 5px; font-size: .68rem; font-weight: 700; letter-spacing: .06em; color: var(--green-2); margin-bottom: 6px; }
+    .sample-text { font-size: .86rem; line-height: 1.55; color: var(--ink); white-space: pre-wrap; margin: 0; }
+    .sfield-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .sfield textarea { min-height: 110px; }
+    .sfield-badge { font-size: .78rem; font-weight: 600; color: var(--green-2); }
+    .sfield-badge.edited { color: #8a6d12; }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { border: 1px solid #b6c9be; background: white; color: var(--ink); border-radius: 999px; padding: 6px 14px; font-size: .84rem; }
+    .chip:hover { background: var(--pale); }
+    .chip.active { background: var(--green); border-color: var(--green); color: white; font-weight: 600; }
+    .card-progress { font-size: .8rem; font-weight: 600; color: var(--green-2); }
     .authority-edit-panel { margin-top: 20px; padding-top: 16px; border-top: 1px dashed #b6c9be; }
     .authority-edit-panel h3 { margin: 0 0 6px; font-size: 0.98rem; color: var(--green); }
 
@@ -464,6 +484,7 @@
   <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
   <script src="data.js"></script>
+  <script src="samples.js"></script>
   <script>
     (() => {
       "use strict";
@@ -824,6 +845,178 @@
       }
 
       // --- GROUP III: PER-GOAL DETAILS ---
+      const SAMPLES = window.SAMPLE_REPORTS || {};
+      const MOTIVATION_OPTIONS = [["1", "1 · Buke cyane"], ["2", "2 · Buke"], ["3", "3 · Buciriritse"], ["4", "4 · Bwinshi"], ["5", "5 · Bwinshi cyane"]];
+      const QUALITY_OPTIONS = [["Riri hejuru", "Riri hejuru"], ["Biringaniye", "Biringaniye"], ["Rikeneye kunozwa", "Rikeneye kunozwa"], ["Riri hasi", "Riri hasi"]];
+      const FIELD_SPECS = {
+        Mobilization: [
+          { key: "baseActivity", title: "Igikorwa fatizo", sub: "Igikorwa umuhigo ushingiyeho." },
+          { key: "involvedParties", title: "Abagomba kukigiramo uruhare", sub: "Inzego n’abantu bagomba kugira uruhare muri iki gikorwa.", short: true },
+          { key: "priorKnowledge", title: "Ubumenyi basanzwe bafite ku gikorwa", sub: "Ibyo abagenerwabikorwa basanzwe bazi ku muhigo." },
+          { key: "messageGiven", title: "Ubutumwa / Ibikorwa by’ubukangurambaga", sub: "Ubutumwa bwatanzwe n’uburyo bwatanzwemo." },
+          { key: "messageReception", title: "Uko bakiriye ubutumwa", sub: "Ibitekerezo n’ibibazo abitabiriye bagaragaje." },
+          { key: "motivation", chips: MOTIVATION_OPTIONS, title: "Ubushake bwo kwitabira (1 · 5)", sub: "1 = buke cyane, 2 = buke, 3 = buciriritse, 4 = bwinshi, 5 = bwinshi cyane." },
+          { key: "expectedActions", title: "Ibyo basabwa gukora kugira ngo bitabire", sub: "Ibyo abagenerwabikorwa basabwa kugira ngo bitabire igikorwa." },
+          { key: "participationBarriers", title: "Impamvu zishobora gutuma batitabira (imbogamizi)", sub: "Andika gusa izagaragajwe n’abaturage." },
+          { key: "mobilizationAgreement", title: "Ibyo bemeranyijweho nyuma ya mobilization", sub: "Intambwe zikurikira, inshingano n’igihe ntarengwa." }
+        ],
+        Monitoring: [
+          { key: "baseActivity", title: "Igikorwa fatizo", sub: "Igikorwa umuhigo ushingiyeho." },
+          { key: "involvedParties", title: "Abagomba kukigiramo uruhare", sub: "Inzego n’abantu bagomba kugira uruhare muri iki gikorwa.", short: true },
+          { key: "expected", title: "Icyari giteganyijwe", sub: "Ibyari biteganyijwe gukorwa." },
+          { key: "performed", title: "Icyakozwe", sub: "Ibyakozwe koko mu igenzura." },
+          { key: "quality", chips: QUALITY_OPTIONS, title: "Ireme ry’igikorwa", sub: "Hitamo ireme rihuye n’ibimenyetso wabonye." },
+          { key: "findings", title: "Findings — Ibyagaragaye", sub: "Ibisobanutse kandi byihariye byagaragaye." },
+          { key: "discrepancy", title: "Itandukaniro n’impamvu", sub: "Itandukaniro hagati y’ibiteganyijwe n’ibyakozwe, n’impamvu yaryo." },
+          { key: "impact", title: "Ingaruka", sub: "Ingaruka z’ibyagaragaye ku muhigo." },
+          { key: "correctiveAction", title: "Ingamba zo gukosora (na deadline n’ushinzwe)", sub: "Ingamba, ushinzwe n’igihe ntarengwa." },
+          { key: "specificIndicators", title: "Ibipimo / ibimenyetso byihariye bijyanye n’umuhigo", sub: "Ibipimo byihariye by’uyu muhigo.", onlyWithSample: true }
+        ]
+      };
+
+      function getSampleList(target, type) {
+        if (!target.goal || target.goal === "__custom__") return null;
+        const entry = SAMPLES[String(target.goal)];
+        const list = entry && entry[type];
+        return list && list.length ? list : null;
+      }
+
+      function mountSampleFields(card, target, type) {
+        const mount = card.querySelector(".rich-mount");
+        const specs = FIELD_SPECS[type];
+        const d = target.details;
+        const samples = getSampleList(target, type);
+        const progress = card.querySelector(".card-progress");
+        let sampleIdx = Math.min(Math.max(parseInt(d.sampleIndex, 10) || 0, 0), samples ? samples.length - 1 : 0);
+        const visible = () => specs.filter((s) => !(s.onlyWithSample && !(samples && samples[sampleIdx][s.key]) && !d[s.key]));
+        const refreshProgress = () => {
+          const list = visible();
+          const done = list.filter((s) => String(d[s.key] ?? "").trim()).length;
+          progress.textContent = done + "/" + list.length + " byujujwe";
+        };
+        const changed = () => { refreshProgress(); updateMemoAuto(); updateValidation(); };
+
+        function buildField(spec, number) {
+          const sample = samples ? (samples[sampleIdx][spec.key] || "") : "";
+          const box = document.createElement("div");
+          box.className = "sfield";
+          box.dataset.field = spec.key;
+          const head = document.createElement("div");
+          head.className = "sfield-head";
+          head.innerHTML = '<span class="sfield-num">' + number + '</span><div><div class="sfield-title">' + esc(spec.title) + '</div><div class="sfield-sub">' + esc(spec.sub) + '</div></div>';
+          const body = document.createElement("div");
+          box.append(head, body);
+
+          if (spec.chips) {
+            const row = document.createElement("div");
+            row.className = "chip-row";
+            const current = () => (spec.key === "quality" && d.quality === "Rirashimishije") ? "Biringaniye" : String(d[spec.key] ?? "");
+            spec.chips.forEach(([value, label]) => {
+              const chip = document.createElement("button");
+              chip.type = "button";
+              chip.className = "chip" + (current() === value ? " active" : "");
+              chip.textContent = label;
+              chip.addEventListener("click", () => {
+                d[spec.key] = current() === value ? "" : value;
+                row.querySelectorAll(".chip").forEach((c, i) => c.classList.toggle("active", spec.chips[i][0] === d[spec.key]));
+                changed();
+              });
+              row.append(chip);
+            });
+            body.append(row);
+            return box;
+          }
+
+          let mode = !String(d[spec.key] ?? "").trim() && sample ? "sample" : (sample && d[spec.key] === sample ? "confirmed" : "edited");
+          if (!sample) mode = "plain";
+
+          function paint() {
+            body.replaceChildren();
+            if (mode === "sample") {
+              const sb = document.createElement("div");
+              sb.className = "sample-box";
+              sb.innerHTML = '<div class="sample-tag">✎ ICYITEGEREREZO</div><p class="sample-text"></p>';
+              sb.querySelector(".sample-text").textContent = sample;
+              const actions = document.createElement("div");
+              actions.className = "sfield-actions";
+              const confirmBtn = document.createElement("button");
+              confirmBtn.type = "button";
+              confirmBtn.className = "btn primary small";
+              confirmBtn.textContent = "✓ Emeza uko kuri";
+              confirmBtn.addEventListener("click", () => { d[spec.key] = sample; mode = "confirmed"; paint(); changed(); });
+              const editBtn = document.createElement("button");
+              editBtn.type = "button";
+              editBtn.className = "btn secondary small";
+              editBtn.textContent = "✎ Hindura";
+              editBtn.addEventListener("click", () => { d[spec.key] = sample; mode = "edit"; paint(); changed(); const ta = body.querySelector("textarea"); ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); });
+              actions.append(confirmBtn, editBtn);
+              body.append(sb, actions);
+              return;
+            }
+            const ta = document.createElement("textarea");
+            ta.value = d[spec.key] || "";
+            if (spec.short) ta.style.minHeight = "64px";
+            const footer = document.createElement("div");
+            footer.className = "sfield-actions";
+            footer.style.marginTop = "8px";
+            const badge = document.createElement("span");
+            badge.className = "sfield-badge";
+            const setBadge = () => {
+              if (mode === "confirmed") { badge.textContent = "✓ Cyemejwe uko kiri"; badge.className = "sfield-badge"; }
+              else if (mode === "edit") { badge.textContent = "✎ Urimo guhindura icyitegererezo"; badge.className = "sfield-badge edited"; }
+              else if (mode === "edited") { badge.textContent = "✎ Cyahinduwe"; badge.className = "sfield-badge edited"; }
+              else badge.textContent = "";
+            };
+            setBadge();
+            ta.addEventListener("input", () => {
+              d[spec.key] = ta.value;
+              if (sample) mode = ta.value === sample ? "confirmed" : "edited";
+              setBadge();
+              changed();
+            });
+            footer.append(badge);
+            if (sample) {
+              const resetBtn = document.createElement("button");
+              resetBtn.type = "button";
+              resetBtn.className = "btn secondary small";
+              resetBtn.textContent = "↺ Subiza icyitegererezo";
+              resetBtn.addEventListener("click", () => { d[spec.key] = sample; mode = "confirmed"; paint(); changed(); });
+              footer.append(resetBtn);
+            }
+            body.append(ta, footer);
+          }
+          paint();
+          return box;
+        }
+
+        function mountAll() {
+          mount.replaceChildren();
+          if (samples) {
+            if (samples.length > 1) {
+              const picker = document.createElement("div");
+              picker.className = "sample-picker";
+              picker.append(document.createTextNode("Hitamo icyitegererezo:"));
+              samples.forEach((_, i) => {
+                const chip = document.createElement("button");
+                chip.type = "button";
+                chip.className = "chip" + (i === sampleIdx ? " active" : "");
+                chip.textContent = "Icyitegererezo " + (i + 1);
+                chip.addEventListener("click", () => { sampleIdx = i; d.sampleIndex = String(i); mountAll(); });
+                picker.append(chip);
+              });
+              mount.append(picker);
+            }
+            const note = document.createElement("div");
+            note.className = "sample-note";
+            note.textContent = "Ibi ni ibitekerezo by’icyitegererezo, si ibimenyetso by’uko igikorwa cyakozwe. Emeza gusa iyo gihuye n’ukuri; niba kitahuye, kanda «Hindura» wongereho amatariki, imibare n’ibyabonetse koko.";
+            mount.append(note);
+          }
+          visible().forEach((spec, i) => mount.append(buildField(spec, i + 1)));
+          refreshProgress();
+        }
+        mountAll();
+      }
+
       function renderGoalDetails() {
         const container = $("goalDetailsContainer");
         container.replaceChildren();
@@ -831,52 +1024,17 @@
 
         targetDrafts.forEach((target, index) => {
           const title = getGoalTitle(target);
-          const d = target.details || {};
+          const d = target.details || (target.details = {});
           const card = document.createElement("div");
           card.className = "repeat-card";
           card.dataset.id = target.id;
 
           let formFieldsHtml = "";
           if (type === "Mobilization") {
-            formFieldsHtml = `
-              <div class="grid">
-                <div class="field"><label>Ubumenyi basanzwe bafite ku gikorwa</label><textarea data-key="priorKnowledge">${esc(d.priorKnowledge || '')}</textarea></div>
-                <div class="field"><label>Ubutumwa / Ibikorwa by’ubukangurambaga</label><textarea data-key="messageGiven">${esc(d.messageGiven || '')}</textarea></div>
-                <div class="field"><label>Uko bakiriye ubutumwa</label><textarea data-key="messageReception">${esc(d.messageReception || '')}</textarea></div>
-                <div class="field"><label>Ubushake bwo kwitabira (1 - 5)</label>
-                  <select data-key="motivation">
-                    <option value="">Hitamo ubushake</option>
-                    <option value="5" ${d.motivation === '5' ? 'selected' : ''}>5 — Bwinshi cyane</option>
-                    <option value="4" ${d.motivation === '4' ? 'selected' : ''}>4 — Bwinshi</option>
-                    <option value="3" ${d.motivation === '3' ? 'selected' : ''}>3 — Biringaniye</option>
-                    <option value="2" ${d.motivation === '2' ? 'selected' : ''}>2 — Buke</option>
-                    <option value="1" ${d.motivation === '1' ? 'selected' : ''}>1 — Buke cyane</option>
-                  </select>
-                </div>
-                <div class="field"><label>Ibyo basabwa gukora kugira ngo bitabire</label><textarea data-key="expectedActions">${esc(d.expectedActions || '')}</textarea></div>
-                <div class="field"><label>Impamvu zishobora gutuma batitabira (imbogamizi)</label><textarea data-key="participationBarriers">${esc(d.participationBarriers || '')}</textarea></div>
-                <div class="field wide"><label>Ibyo bemeranyijweho nyuma ya mobilization</label><textarea data-key="mobilizationAgreement">${esc(d.mobilizationAgreement || '')}</textarea></div>
-              </div>
-            `;
+            formFieldsHtml = `<div class="rich-mount"></div>`;
           } else if (type === "Monitoring") {
             formFieldsHtml = `
-              <div class="grid">
-                <div class="field"><label>Icyari giteganyijwe</label><textarea data-key="expected">${esc(d.expected || '')}</textarea></div>
-                <div class="field"><label>Icyakozwe</label><textarea data-key="performed">${esc(d.performed || '')}</textarea></div>
-                <div class="field"><label>Ireme ry’igikorwa</label>
-                  <select data-key="quality">
-                    <option value="">Hitamo ireme</option>
-                    <option value="Riri hejuru" ${d.quality === 'Riri hejuru' ? 'selected' : ''}>Riri hejuru</option>
-                    <option value="Biringaniye" ${d.quality === 'Biringaniye' || d.quality === 'Rirashimishije' ? 'selected' : ''}>Biringaniye</option>
-                    <option value="Rikeneye kunozwa" ${d.quality === 'Rikeneye kunozwa' ? 'selected' : ''}>Rikeneye kunozwa</option>
-                    <option value="Riri hasi" ${d.quality === 'Riri hasi' ? 'selected' : ''}>Riri hasi</option>
-                  </select>
-                </div>
-                <div class="field"><label>Findings — Ibyagaragaye <span class="hint">Ibisabwa na sample: ibisobanutse kandi byihariye</span></label><textarea data-key="findings">${esc(d.findings || '')}</textarea></div>
-                <div class="field"><label>Itandukaniro n’impamvu</label><textarea data-key="discrepancy">${esc(d.discrepancy || '')}</textarea></div>
-                <div class="field"><label>Ingaruka</label><textarea data-key="impact">${esc(d.impact || '')}</textarea></div>
-                <div class="field wide"><label>Ingamba zo gukosora (na deadline n'ushinzwe)</label><textarea data-key="correctiveAction">${esc(d.correctiveAction || '')}</textarea></div>
-              </div>
+              <div class="rich-mount"></div>
               <h4 style="margin:16px 0 8px;color:var(--green);">Ibipimo by'ubworozi (niba bihura n'uyu muhigo)</h4>
               <div class="grid three">
                 <div class="field"><label>Itariki y’intanga</label><input type="date" data-key="inseminationDate" value="${esc(d.inseminationDate || '')}"></div>
@@ -912,9 +1070,11 @@
             `;
           }
 
+          const hasRich = type === "Mobilization" || type === "Monitoring";
           card.innerHTML = `
             <div class="repeat-card-header">
               <h3>Amakuru y'Umuhigo #${index + 1}: <span style="font-weight:normal;color:#435b4f;">${esc(title)}</span></h3>
+              ${hasRich ? '<span class="card-progress"></span>' : ''}
             </div>
             ${formFieldsHtml}
             <div class="grid two" style="margin-top:14px;border-top:1px dashed #d8e0dc;padding-top:12px;">
@@ -937,6 +1097,7 @@
             });
           });
 
+          if (hasRich) mountSampleFields(card, target, type);
           container.append(card);
         });
       }
