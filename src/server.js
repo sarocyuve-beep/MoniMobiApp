@@ -43,7 +43,7 @@ const requestLimiter = rateLimit({
 });
 
 function publicUser(user) {
-  return { ...basePublicUser(user), level: user.level || "", cell: user.cell || "", jobTitle: user.job_title || "" };
+  return { ...basePublicUser(user), level: user.level || "", cell: user.cell || "", jobTitle: user.job_title || "", duties: user.duties || "" };
 }
 
 let cachedLocationNames;
@@ -60,7 +60,7 @@ function locationNames() {
   return cachedLocationNames;
 }
 
-// Urwego, akagari n’icyo ashinzwe (bikoreshwa mu kwisaba konti).
+// Urwego, akagari, icyo ashinzwe (function) n’icyo ashinzwe mu mpine (bikoreshwa mu kwisaba konti).
 function readProfile(body) {
   const level = typeof body.level === "string" ? body.level.trim() : "";
   const cell = typeof body.cell === "string" ? body.cell.trim() : "";
@@ -71,7 +71,9 @@ function readProfile(body) {
     if (names.length ? !names.includes(cell) : (!cell || cell.length > 60)) return { error: "Hitamo akagari ukoreramo." };
   }
   if (jobTitle.length < 3 || jobTitle.length > 100) return { error: "Andika icyo ushinzwe (inyuguti 3–100)." };
-  return { level, cell: level === "Akagari" ? cell : "", jobTitle };
+  const duties = typeof body.duties === "string" ? body.duties.trim().replace(/\s+/g, " ") : "";
+  if (duties.length < 3 || duties.length > 200) return { error: "Andika icyo ushinzwe mu mpine (inyuguti 3–200)." };
+  return { level, cell: level === "Akagari" ? cell : "", jobTitle, duties };
 }
 
 // node:sqlite ntishyiraho `code` imwe muri buri bwoko bwa Node, bityo turebera no kuri errcode n’ubutumwa.
@@ -168,8 +170,8 @@ app.post("/api/auth/request-account", requestLimiter, (req, res) => {
     return res.status(409).json({ error: "Iyo username isanzwe ikoreshwa. Hitamo indi." });
   }
   try {
-    const result = db.prepare("INSERT INTO account_requests (username, full_name, password_hash, level, cell, job_title) VALUES (?, ?, ?, ?, ?, ?)")
-      .run(username, fullName, bcrypt.hashSync(password, 12), profile.level, profile.cell, profile.jobTitle);
+    const result = db.prepare("INSERT INTO account_requests (username, full_name, password_hash, level, cell, job_title, duties) VALUES (?, ?, ?, ?, ?, ?, ?)")
+      .run(username, fullName, bcrypt.hashSync(password, 12), profile.level, profile.cell, profile.jobTitle, profile.duties);
     logAction(null, "REQUEST_ACCOUNT", String(result.lastInsertRowid));
     res.status(201).json({ message: "Ubusabe bwoherejwe. Utegereze ko admin abwemeza, hanyuma winjire ukoresheje username n’ijambo ry’ibanga wahisemo." });
   } catch (error) {
@@ -180,7 +182,7 @@ app.post("/api/auth/request-account", requestLimiter, (req, res) => {
 
 app.get("/api/account-requests", requireAuth, requireAdmin, (req, res) => {
   const requests = db.prepare(`
-    SELECT id, username, full_name AS fullName, level, cell, job_title AS jobTitle, created_at AS createdAt
+    SELECT id, username, full_name AS fullName, level, cell, job_title AS jobTitle, duties, created_at AS createdAt
     FROM account_requests WHERE status = 'PENDING' ORDER BY id
   `).all();
   res.json({ requests });
@@ -197,9 +199,9 @@ app.post("/api/account-requests/:id/approve", requireAuth, requireAdmin, (req, r
   try {
     // Umukozi yihitiyemo ijambo ry’ibanga, bityo ntasabwa kurihindura.
     userId = db.prepare(`
-      INSERT INTO users (username, full_name, password_hash, role, must_change_password, level, cell, job_title)
-      VALUES (?, ?, ?, 'EMPLOYEE', 0, ?, ?, ?)
-    `).run(request.username, request.full_name, request.password_hash, request.level || null, request.cell || null, request.job_title || null).lastInsertRowid;
+      INSERT INTO users (username, full_name, password_hash, role, must_change_password, level, cell, job_title, duties)
+      VALUES (?, ?, ?, 'EMPLOYEE', 0, ?, ?, ?, ?)
+    `).run(request.username, request.full_name, request.password_hash, request.level || null, request.cell || null, request.job_title || null, request.duties || null).lastInsertRowid;
     db.prepare("UPDATE account_requests SET status = 'APPROVED', decided_by = ?, decided_at = datetime('now') WHERE id = ?")
       .run(req.user.id, request.id);
     db.exec("COMMIT");
@@ -254,7 +256,7 @@ app.post("/api/auth/forgot-password", forgotLimiter, (req, res) => {
 
 app.get("/api/password-resets", requireAuth, requireAdmin, (req, res) => {
   const resets = db.prepare(`
-    SELECT p.id, u.username, u.full_name AS fullName, u.role, u.level, u.cell, u.job_title AS jobTitle, p.created_at AS createdAt
+    SELECT p.id, u.username, u.full_name AS fullName, u.role, u.level, u.cell, u.job_title AS jobTitle, u.duties, p.created_at AS createdAt
     FROM password_resets p JOIN users u ON u.id = p.user_id
     WHERE p.status = 'PENDING' ORDER BY p.id
   `).all();
@@ -482,7 +484,7 @@ app.post("/api/reports/import", requireAuth, (req, res) => {
 
 app.get("/api/users", requireAuth, requireAdmin, (req, res) => {
   const users = db.prepare(`
-    SELECT id, username, full_name AS fullName, role, level, cell, job_title AS jobTitle, is_active AS isActive, created_at AS createdAt
+    SELECT id, username, full_name AS fullName, role, level, cell, job_title AS jobTitle, duties, is_active AS isActive, created_at AS createdAt
     FROM users ORDER BY full_name COLLATE NOCASE
   `).all();
   res.json({ users });

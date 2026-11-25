@@ -78,11 +78,12 @@ function addColumn(table, column, definition) {
   const names = db.prepare("PRAGMA table_info(" + table + ")").all().map((item) => item.name);
   if (!names.includes(column)) db.exec("ALTER TABLE " + table + " ADD COLUMN " + column + " " + definition);
 }
-// Urwego (Umurenge/Akagari), akagari n’icyo umukozi ashinzwe.
+// Urwego (Umurenge/Akagari), akagari, icyo umukozi ashinzwe (function) n’icyo ashinzwe mu mpine.
 for (const table of ["users", "account_requests"]) {
   addColumn(table, "level", "TEXT");
   addColumn(table, "cell", "TEXT");
   addColumn(table, "job_title", "TEXT");
+  addColumn(table, "duties", "TEXT"); // icyo ashinzwe mu mpine (inshingano mu magambo make)
 }
 
 function ensureAdmin({ username, password, fullName }) {

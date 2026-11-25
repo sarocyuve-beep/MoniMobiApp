@@ -10,7 +10,7 @@ Sisitemu y'imihigo n'ibikorwa byo gukangurira, kugenzura no gukurikirana mu Mure
 - Raporo zibikwa muri SQLite kuri server. GitHub private ibika kopi ya SQLite **isobanuwe (encrypted)**; iyo server itangiye, isubiza kopi iheruka.
 - Backup nshya itegurwa amasegonda 15 nyuma y'impinduka. Iyo backup yanze, server irongera ikagerageza nyuma y'umunota.
 - Health check ya UptimeRobot: `/api/health`.
-- Amakuru y'imihigo n'ibikorwa biva muri sheets 5 za Excel V3: imihigo 103, ibikorwa 173, utugari 6, imidugudu 40, n'amabwiriza.
+- Amakuru y'imihigo n'ibikorwa biva muri sheets 5 za Excel V3: imihigo 103 (yanditse mu nshinga y’ibizakorwa), ibikorwa 889, utugari 6, imidugudu 40, n'amabwiriza.
 
 ## Gutangiza kuri mudasobwa
 
@@ -83,6 +83,6 @@ Koresha `npm test` kugenzura kwinjira, uburenganzira bwo kureba raporo, kwirinda
 
 ## Konti, kwisaba konti no kugarura admin
 
-- **Kwisaba konti:** ku rupapuro rwo kwinjira umukozi akanda «Saba konti», akuzuza amazina, urwego (Umurenge/Akagari, n’akagari iyo ari Akagari), icyo ashinzwe, username n’ijambo ry’ibanga. Admin abona ubusabe muri «Genzura konti z’abakozi» akabwemeza cyangwa akabwanga.
+- **Kwisaba konti:** ku rupapuro rwo kwinjira umukozi akanda «Saba konti», akuzuza amazina, urwego (Umurenge/Akagari, n’akagari iyo ari Akagari), icyo ashinzwe (function), icyo ashinzwe mu mpine, username n’ijambo ry’ibanga. Admin abona ubusabe muri «Genzura konti z’abakozi» akabwemeza cyangwa akabwanga.
 - **Wibagiwe ijambo ry’ibanga:** umukozi akanda «Wibagiwe ijambo ry’ibanga?», akandika username n’ijambo rishya; admin arimwemeza (ashobora kubanza kumuhamagara). Admin ntiyemeza ubusabe bwe bwite; bisaba undi admin.
 - **Kugarura uburyo bwo kwinjira nka admin** (admin wibagiwe ijambo ry’ibanga, cyangwa nta admin ukiriho): muri Render → Environment shyiraho `ADMIN_USERNAME`, `ADMIN_PASSWORD` (inyuguti 12+), `ADMIN_FULL_NAME` na `ADMIN_RESET_ON_START=true`, hanyuma wongere utangize serivisi. Konti ya admin irasubizwaho ijambo ry’ibanga rishya (iyo itariho irakorwa) kandi isabwa kuryihindura igihe yinjiye. **Nyuma yo kwinjira subiza `ADMIN_RESET_ON_START` kuri `false`**, kuko ubundi ijambo ry’ibanga ryasubizwaho buri gihe serivisi itangiye.

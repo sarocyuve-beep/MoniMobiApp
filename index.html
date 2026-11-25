@@ -187,6 +187,7 @@
         <div class="field"><label for="requestLevel">Urwego ukoreraho</label><select id="requestLevel" required><option value="">Hitamo urwego</option><option value="Umurenge">Umurenge</option><option value="Akagari">Akagari</option></select></div>
         <div class="field hidden" id="requestCellField"><label for="requestCell">Akagari ukoreramo</label><select id="requestCell"><option value="">Hitamo akagari</option></select></div>
         <div class="field"><label for="requestJob">Icyo ushinzwe (function)</label><input id="requestJob" minlength="3" maxlength="100" placeholder="Urugero: Umukozi ushinzwe Ubworozi" required></div>
+        <div class="field"><label for="requestDuties">Icyo ushinzwe mu mpine (inshingano zawe mu magambo make)</label><input id="requestDuties" minlength="3" maxlength="200" placeholder="Urugero: Gukurikirana ubuhinzi, ubworozi n’ubuzima bw’amatungo mu Murenge" required></div>
         <div class="field"><label for="requestUsername">Username wifuza (inyuguti, imibare, . _ -)</label><input id="requestUsername" autocomplete="username" pattern="[a-zA-Z0-9._-]{3,40}" required></div>
         <div class="field"><label for="requestPassword">Ijambo ry’ibanga (inyuguti 12+)</label><input id="requestPassword" type="password" minlength="12" autocomplete="new-password" required></div>
         <div class="field"><label for="requestPassword2">Subiramo ijambo ry’ibanga</label><input id="requestPassword2" type="password" minlength="12" autocomplete="new-password" required></div>
@@ -893,6 +894,18 @@
       }
 
       // --- AUTOMATIC MEMO CALCULATION ---
+      // Umuhigo wanditse mu nshinga y’ibizakorwa (urugero «Gutera inka intanga.») ukoreshwa mu nteruro nka «umuhigo wo gutera inka intanga».
+      function goalPhrase(title) {
+        const text = String(title || "").trim().replace(/[\s.;,:]+$/, "");
+        return /^[A-ZÀ-Ý][a-zà-ÿ]/.test(text) ? text.charAt(0).toLowerCase() + text.slice(1) : text;
+      }
+      // Impamvu ya memo = umutwe wa raporo + itariki (umutwe umwe n’uwa Word).
+      const MEMO_REPORT_TITLES = {
+        Mobilization: "RAPORO Y’UBUKANGURAMBAGA",
+        Monitoring: "RAPORO Y’UBUGENZUZI (MONITORING)",
+        "Follow-up": "RAPORO YO GUSUBIRA GUSURA (FOLLOW-UP)"
+      };
+
       function computeAutoMemo() {
         const type = $("visitType").value;
         const vDate = formatDate($("visitDate").value) || formatDate(dateString);
@@ -900,7 +913,7 @@
         const role = $("staffRole").value.trim() || (staffDrafts[0] && staffDrafts[0].role) || "Umukozi ushinzwe Ubworozi";
 
         const validGoals = targetDrafts.map((t) => getGoalTitle(t)).filter((t) => t && !t.startsWith("Hitamo"));
-        const goalsStr = validGoals.length ? validGoals.join(" na ") : "imihigo y'ubworozi";
+        const goalsStr = validGoals.length ? validGoals.map(goalPhrase).join(" na ") : "imihigo y'ubworozi";
         
         const peopleList = targetDrafts.map((t) => t.beneficiaries.trim()).filter(Boolean);
         const whoStr = peopleList.length ? peopleList.join("; ") : "aborozi";
@@ -914,7 +927,7 @@
         let body = "";
 
         if (type === "Mobilization") {
-          subject = "Kugeza raporo y’ubukangurambaga ku muhigo wa " + goalsStr;
+          subject = (MEMO_REPORT_TITLES[type] || MEMO_REPORT_TITLES.Monitoring) + " YO KU WA " + vDate;
           const messages = targetDrafts.map((t) => t.details && t.details.messageGiven).filter(Boolean);
           const msgStr = messages.length ? messages.join("; ") : "akamaro n’imikoreshereze myiza y'imihigo";
           const reception = targetDrafts.map((t) => t.details && (t.details.messageReception || t.details.mobilizationAgreement)).filter(Boolean);
@@ -922,7 +935,7 @@
 
           body = `Bwana Muyobozi,
 
-Nejejwe no kubagezaho, ku mugereka wayo, raporo y’ubukangurambaga ku muhigo wa ${goalsStr}, bwakorewe kuri ${whoStr}, ${placeStr}, ku wa ${vDate}.
+Nejejwe no kubagezaho, ku mugereka wayo, raporo y’ubukangurambaga ku muhigo wo ${goalsStr}, bwakorewe kuri ${whoStr}, ${placeStr}, ku wa ${vDate}.
 
 Muri ubu bukangurambaga, abagezweho basobanuriwe ${msgStr}. Uko bakiriye ubutumwa n’ibyo biyemeje gukora ni ${recStr}. Ibisobanuro ku bumenyi bari basanganywe, imbogamizi n’ibyemeranyijweho murabisanga muri raporo iri ku mugereka.
 
@@ -930,14 +943,14 @@ Mbasabye kudushyigikira mu gukurikirana ishyirwa mu bikorwa ry’ibyemeranyijweh
 
 Mugire amahoro.`;
         } else if (type === "Monitoring") {
-          subject = "Kugeza raporo y’ubugenzuzi (Monitoring) ku muhigo wa " + goalsStr;
+          subject = (MEMO_REPORT_TITLES[type] || MEMO_REPORT_TITLES.Monitoring) + " YO KU WA " + vDate;
           const expected = targetDrafts.map((t) => t.details && t.details.expected).filter(Boolean).join("; ") || "ibikorwa byari biteganyijwe";
           const performed = targetDrafts.map((t) => t.details && t.details.performed).filter(Boolean).join("; ") || "ibyakozwe";
           const quality = targetDrafts.map((t) => t.details && t.details.quality).filter(Boolean).join("; ") || "Biringaniye";
 
           body = `Bwana Muyobozi,
 
-Nejejwe no kubagezaho, ku mugereka wayo, raporo y’ubugenzuzi ku muhigo wa ${goalsStr}, yakorewe kuri ${whoStr}, ${placeStr}, ku wa ${vDate}.
+Nejejwe no kubagezaho, ku mugereka wayo, raporo y’ubugenzuzi ku muhigo wo ${goalsStr}, yakorewe kuri ${whoStr}, ${placeStr}, ku wa ${vDate}.
 
 Muri ubu bugenzuzi, icyari giteganyijwe ni ${expected}, naho icyakozwe ni ${performed}. Ireme ry’igikorwa ryagaragaye ko ari ${quality}. Ibisobanuro ku byagaragaye, itandukaniro n’impamvu zaryo, ingaruka n’ingamba zo gukosora murabisanga muri raporo iri ku mugereka.
 
@@ -946,7 +959,7 @@ Mbasabye kudushyigikira mu gukurikirana ishyirwa mu bikorwa ry’ingamba zo guko
 Mugire amahoro.`;
         } else {
           // Follow-up
-          subject = "Kugeza raporo yo gukurikirana ishyirwa mu bikorwa ry’ingamba (Follow-up) ku muhigo wa " + goalsStr;
+          subject = (MEMO_REPORT_TITLES[type] || MEMO_REPORT_TITLES.Monitoring) + " YO KU WA " + vDate;
           let yego = 0, igice = 0, oya = 0;
           targetDrafts.forEach((t) => {
             const st = t.details && t.details.implementationStatus;
@@ -958,7 +971,7 @@ Mugire amahoro.`;
 
           body = `Bwana Muyobozi,
 
-Nejejwe no kubagezaho, ku mugereka wayo, raporo yo gukurikirana ishyirwa mu bikorwa ry’ingamba ku muhigo wa ${goalsStr}, yakorewe kuri ${whoStr}, ${placeStr}, ku wa ${vDate}.
+Nejejwe no kubagezaho, ku mugereka wayo, raporo yo gukurikirana ishyirwa mu bikorwa ry’ingamba ku muhigo wo ${goalsStr}, yakorewe kuri ${whoStr}, ${placeStr}, ku wa ${vDate}.
 
 Mu nama ${total} zakurikiranywe, ${yego} zarashyizwe mu bikorwa (Yego), ${igice} zishyirwa mu bikorwa igice (Igice), naho ${oya} ntizashyirwa mu bikorwa (Oya). Ibisobanuro ku mpamvu z’ibitarakozwe n’ibyemeranyijweho bishya murabisanga muri raporo iri ku mugereka.
 
@@ -1403,6 +1416,7 @@ Mugire amahoro.`;
               level: $("requestLevel").value,
               cell: $("requestCell").value,
               jobTitle: $("requestJob").value.trim(),
+              duties: $("requestDuties").value.trim(),
               username: $("requestUsername").value.trim(),
               password: $("requestPassword").value
             })

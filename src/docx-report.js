@@ -79,6 +79,11 @@ const cellMargins = { top: 50, bottom: 50, left: 80, right: 80 };
 
 const clean = (value) => (typeof value === "string" ? value.trim() : "");
 const noEnd = (value) => clean(value).replace(/[\s.;,:]+$/, "");
+// Imihigo ubu yanditse mu nshinga y’ibizakorwa (urugero: «Gutera inka intanga.»): mu nteruro ikoreshwa nka «umuhigo wo gutera inka intanga».
+const goalPhrase = (title) => {
+  const text = noEnd(title);
+  return /^[A-ZÀ-Ý][a-zà-ÿ]/.test(text) ? text[0].toLowerCase() + text.slice(1) : text;
+};
 const fieldsOf = (report) => (report && report.fields) || {};
 
 function formatDate(value) {
@@ -374,9 +379,9 @@ function memoBody(type, reports, context) {
   const { goals, who, cells, villages, visitDate } = context;
   const place = "mu kagari ka " + joinList(cells.map((value) => value.toUpperCase())) +
     (villages.length ? " Umudugudu wa " + joinList(villages.map((value) => value.toUpperCase())) : "");
-  const what = { Monitoring: "raporo y’ubugenzuzi (monitoring) ku muhigo wa ", Mobilization: "raporo y’ubukangurambaga ku muhigo wa ", "Follow-up": "raporo yo gusubira gusura (follow-up) ku muhigo wa " }[type];
+  const what = { Monitoring: "raporo y’ubugenzuzi (monitoring) ku muhigo wo ", Mobilization: "raporo y’ubukangurambaga ku muhigo wo ", "Follow-up": "raporo yo gusubira gusura (follow-up) ku muhigo wo " }[type];
   const verb = type === "Follow-up" ? "yakozwe" : "bwakozwe";
-  const intro = "Nejejwe no kubandikira iyi memo interne ngira ngo mbagezeho ku mugereka wayo " + what + joinList(goals) +
+  const intro = "Nejejwe no kubandikira iyi memo interne ngira ngo mbagezeho ku mugereka wayo " + what + joinList(goals.map(goalPhrase)) +
     " " + verb + " kuwa " + visitDate + " ku " + who + " " + place + ".";
   const closing = type === "Monitoring"
     ? "Ibindi bijyanye n’icyari giteganyijwe, icyakozwe, findings, itandukaniro n’impamvu zaryo, ingaruka n’ingamba zo gukosora, murabisanga muri raporo iri ku mugereka. Mbasabye kudushyigikira mu gukurikirana ko izo ngamba zishyirwa mu bikorwa."
@@ -509,7 +514,7 @@ async function buildReportDocx(rawReports, options = {}) {
     jp([bold("KUJYA KURI: "), run("Bwana Umunyamabanga Nshingwabikorwa w’Umurenge wa CYUVE")], { line: 276 }),
     jp([bold("ITARIKI: "), run(reportDate)], { line: 276 }),
     ...blank(1),
-    jp([run("IMPAMVU:", { bold: true, underline: true }), bold(" " + config.reason + " ku " + context.who)]),
+    jp([run("IMPAMVU:", { bold: true, underline: true }), bold(" " + config.reportTitle + " YO KU WA " + context.visitDate)]),
     ...blank(1),
     jp([run("Bwana Muyobozi,")]),
     ...blank(1),

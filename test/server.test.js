@@ -293,7 +293,7 @@ test("Word report endpoint builds a .docx from saved reports", async () => {
 });
 
 test("employees can request an account and an admin approves or rejects it", async () => {
-  const payload = { fullName: "Mukamana Jeanne", username: "jeanne.m", password: "jeanne-password-123", level: "Akagari", cell: "KABEZA", jobTitle: "Umukozi ushinzwe Ubworozi" };
+  const payload = { fullName: "Mukamana Jeanne", username: "jeanne.m", password: "jeanne-password-123", level: "Akagari", cell: "KABEZA", jobTitle: "Umukozi ushinzwe Ubworozi", duties: "Gukurikirana ubworozi n’ubuzima bw’amatungo mu Kagari" };
 
   const weak = await request("/api/auth/request-account", { method: "POST", body: { ...payload, password: "short" } });
   assert.equal(weak.response.status, 400);
@@ -305,6 +305,10 @@ test("employees can request an account and an admin approves or rejects it", asy
   assert.equal(badCell.response.status, 400);
   const noJob = await request("/api/auth/request-account", { method: "POST", body: { ...payload, jobTitle: " " } });
   assert.equal(noJob.response.status, 400);
+  const noDuties = await request("/api/auth/request-account", { method: "POST", body: { ...payload, duties: " " } });
+  assert.equal(noDuties.response.status, 400);
+  const longDuties = await request("/api/auth/request-account", { method: "POST", body: { ...payload, duties: "a".repeat(201) } });
+  assert.equal(longDuties.response.status, 400);
   const taken = await request("/api/auth/request-account", { method: "POST", body: { ...payload, username: "staff1" } });
   assert.equal(taken.response.status, 409);
 
@@ -331,6 +335,7 @@ test("employees can request an account and an admin approves or rejects it", asy
   assert.equal(entry.level, "Akagari");
   assert.equal(entry.cell, "KABEZA");
   assert.equal(entry.jobTitle, "Umukozi ushinzwe Ubworozi");
+  assert.equal(entry.duties, payload.duties);
 
   assert.equal((await request("/api/account-requests/" + entry.id + "/approve", { token: staffToken, method: "POST" })).response.status, 403);
   const approved = await request("/api/account-requests/" + entry.id + "/approve", { token: adminToken, method: "POST" });
@@ -344,8 +349,9 @@ test("employees can request an account and an admin approves or rejects it", asy
   assert.equal(login.result.user.level, "Akagari");
   assert.equal(login.result.user.cell, "KABEZA");
   assert.equal(login.result.user.jobTitle, "Umukozi ushinzwe Ubworozi");
+  assert.equal(login.result.user.duties, payload.duties);
 
-  const second = await request("/api/auth/request-account", { method: "POST", body: { fullName: "Uwase Alice", username: "alice.u", password: "alice-password-123", level: "Umurenge", jobTitle: "Umunyamabanga" } });
+  const second = await request("/api/auth/request-account", { method: "POST", body: { fullName: "Uwase Alice", username: "alice.u", password: "alice-password-123", level: "Umurenge", jobTitle: "Umunyamabanga", duties: "Gukurikirana imirimo y’Umurenge" } });
   assert.equal(second.response.status, 201);
   const list = await request("/api/account-requests", { token: adminToken });
   const alice = list.result.requests.find((item) => item.username === "alice.u");
