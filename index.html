@@ -1457,7 +1457,172 @@ Mugire amahoro.`;
         }
       });
 
-      $("manageUsers").addEventListener("click", () => $("usersPanel").classList.toggle("hidden"));
+      $("manageUsers").addEventListener("click", () => {
+        $("usersPanel").classList.toggle("hidden");
+        if (!$("usersPanel").classList.contains("hidden")) loadAdminData();
+      });
+
+      // --- USER MANAGEMENT (ADMIN) ---
+
+      async function loadUsers() {
+        try {
+          const result = await api("/api/users");
+          const body = $("usersBody");
+          body.replaceChildren();
+          result.users.forEach((user) => {
+            const row = body.insertRow();
+            const active = user.isActive === 1 || user.isActive === true;
+            row.innerHTML = `
+              <td>${esc(user.fullName)}</td>
+              <td>${esc(user.username)}</td>
+              <td>${esc(user.level || "-")}</td>
+              <td>${esc(user.jobTitle || "-")}</td>
+              <td>${esc(user.role)}</td>
+              <td>${active ? "Ariko" : "Dufite"}</td>
+              <td class="no-print" style="text-align:center;">
+                <button class="btn secondary small toggle-user-btn" data-id="${user.id}" data-active="${active}">${active ? "Hagarika" : "Komeza"}</button>
+                <button class="btn danger small delete-user-btn" data-id="${user.id}" data-username="${esc(user.username)}">Siba</button>
+              </td>
+            `;
+          });
+        } catch (error) {
+          $("userMessage").textContent = error.message;
+        }
+      }
+
+      async function loadRequests() {
+        try {
+          const result = await api("/api/account-requests");
+          const body = $("requestsBody");
+          body.replaceChildren();
+          result.requests.forEach((r) => {
+            const row = body.insertRow();
+            row.innerHTML = `
+              <td>${esc(r.fullName)}</td>
+              <td>${esc(r.username)}</td>
+              <td>${esc(r.level || "-")}</td>
+              <td>${esc(r.jobTitle || "-")}</td>
+              <td>${esc(r.createdAt || "-")}</td>
+              <td class="no-print" style="text-align:center;">
+                <button class="btn secondary small approve-request-btn" data-id="${r.id}">Bwemeza</button>
+                <button class="btn danger small reject-request-btn" data-id="${r.id}">Siba</button>
+              </td>
+            `;
+          });
+          $("requestsBlock").classList.toggle("hidden", result.requests.length === 0);
+        } catch (error) {
+          $("userMessage").textContent = error.message;
+        }
+      }
+
+      async function loadResets() {
+        try {
+          const result = await api("/api/password-resets");
+          const body = $("resetsBody");
+          body.replaceChildren();
+          result.resets.forEach((r) => {
+            const row = body.insertRow();
+            row.innerHTML = `
+              <td>${esc(r.fullName)}</td>
+              <td>${esc(r.username)}</td>
+              <td>${esc(r.jobTitle || "-")}</td>
+              <td>${esc(r.createdAt || "-")}</td>
+              <td class="no-print" style="text-align:center;">
+                <button class="btn secondary small approve-reset-btn" data-id="${r.id}">Bwemeza</button>
+                <button class="btn danger small reject-reset-btn" data-id="${r.id}">Siba</button>
+              </td>
+            `;
+          });
+          $("resetsBlock").classList.toggle("hidden", result.resets.length === 0);
+        } catch (error) {
+          $("userMessage").textContent = error.message;
+        }
+      }
+
+      async function loadAdminData() {
+        await loadUsers();
+        await loadRequests();
+        await loadResets();
+      }
+
+      $("usersBody").addEventListener("click", async (e) => {
+        const btn = e.target.closest(".toggle-user-btn");
+        if (!btn) return;
+        const id = Number(btn.dataset.id);
+        const active = btn.dataset.active === "true";
+        try {
+          await api("/api/users/" + id + "/status", { method: "PATCH", body: JSON.stringify({ isActive: !active }) });
+          await loadUsers();
+          showToast("Imiterere ya konti yahinduwe neza.");
+        } catch (error) {
+          showToast(error.message, true);
+        }
+      });
+
+      $("usersBody").addEventListener("click", async (e) => {
+        const btn = e.target.closest(".delete-user-btn");
+        if (!btn) return;
+        const id = Number(btn.dataset.id);
+        const username = btn.dataset.username;
+        if (!window.confirm("Urashaka gusuba konti ya " + username + "?")) return;
+        try {
+          await api("/api/users/" + id, { method: "DELETE" });
+          await loadUsers();
+          showToast("Konti yasibwe neza.");
+        } catch (error) {
+          showToast(error.message, true);
+        }
+      });
+
+      $("requestsBody").addEventListener("click", async (e) => {
+        const approve = e.target.closest(".approve-request-btn");
+        const reject = e.target.closest(".reject-request-btn");
+        const btn = approve || reject;
+        if (!btn) return;
+        const id = Number(btn.dataset.id);
+        try {
+          await api("/api/account-requests/" + id + "/" + (approve ? "approve" : "reject"), { method: "POST" });
+          await loadRequests();
+          showToast(approve ? "Konti yemejwe neza." : "Ubusabe bwanzwe neza.");
+        } catch (error) {
+          showToast(error.message, true);
+        }
+      });
+
+      $("resetsBody").addEventListener("click", async (e) => {
+        const approve = e.target.closest(".approve-reset-btn");
+        const reject = e.target.closest(".reject-reset-btn");
+        const btn = approve || reject;
+        if (!btn) return;
+        const id = Number(btn.dataset.id);
+        try {
+          await api("/api/password-resets/" + id + "/" + (approve ? "approve" : "reject"), { method: "POST" });
+          await loadResets();
+          showToast(approve ? "Ijambo ry’ibanga ryemejwe neza." : "Ubusabe bwanzwe neza.");
+        } catch (error) {
+          showToast(error.message, true);
+        }
+      });
+
+      $("createUserForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        $("userMessage").textContent = "";
+        try {
+          await api("/api/users", {
+            method: "POST",
+            body: JSON.stringify({
+              fullName: $("newUserName").value.trim(),
+              username: $("newUsername").value.trim(),
+              temporaryPassword: $("newUserPassword").value
+            })
+          });
+          $("createUserForm").reset();
+          await loadUsers();
+          showToast("Konti y’umukozi yakozwe neza.");
+        } catch (error) {
+          $("userMessage").textContent = error.message;
+        }
+      });
 
       // Boot
       if (authToken) {

@@ -525,6 +525,20 @@ app.patch("/api/users/:id/status", requireAuth, requireAdmin, (req, res) => {
   res.json({ message: "Imiterere ya konti yahinduwe." });
 });
 
+app.delete("/api/users/:id", requireAuth, requireAdmin, (req, res) => {
+  const id = Number(req.params.id);
+  if (id === req.user.id) return res.status(400).json({ error: "Ntushobora gusuba konti winjiyemo." });
+  const user = db.prepare("SELECT id, role, is_active FROM users WHERE id = ?").get(id);
+  if (!user) return res.status(404).json({ error: "Konti ntiyabonetse." });
+  if (user.role === "ADMIN") {
+    const activeAdmins = db.prepare("SELECT COUNT(*) AS count FROM users WHERE role = 'ADMIN' AND is_active = 1").get().count;
+    if (activeAdmins <= 1) return res.status(400).json({ error: "Sisitemu igomba kugira admin nibura umwe ukora." });
+  }
+  db.prepare("DELETE FROM users WHERE id = ?").run(id);
+  logAction(req.user.id, "DELETE_USER", String(id));
+  res.status(204).end();
+});
+
 app.get("/", (req, res) => res.sendFile(path.join(publicDirectory, "index.html")));
 app.get("/data.js", (req, res) => res.sendFile(path.join(publicDirectory, "data.js")));
 app.use("/api", (req, res) => res.status(404).json({ error: "API endpoint ntiyabonetse." }));
