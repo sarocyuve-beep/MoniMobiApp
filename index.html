@@ -1709,10 +1709,10 @@ Mugire amahoro.`;
         const container = $("terrainStats");
         container.replaceChildren();
         const stats = [
-          { label: "Ibijanye byose", value: dash.total, color: var(--ink) },
-          { label: "Draft", value: dash.drafts, color: var(--gold) },
-          { label: "Yemejwe", value: dash.submitted, color: var(--green-2) },
-          { label: "Byashoboye", value: dash.pending, color: var(--red) }
+          { label: "Ibijanye byose", value: dash.total, color: "var(--ink)" },
+          { label: "Draft", value: dash.drafts, color: "var(--gold)" },
+          { label: "Yemejwe", value: dash.submitted, color: "var(--green-2)" },
+          { label: "Byashoboye", value: dash.pending, color: "var(--red)" }
         ];
         stats.forEach((s) => {
           const card = document.createElement("div");
