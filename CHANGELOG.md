@@ -1,5 +1,12 @@
 # Changelog
 
+## 26/11/2026: memo ngufi (ubukangurambaga, ubugenzuzi, follow-up)
+
+- Memo ubu igizwe n'intangiriro (umutwe wa raporo, itariki, akagari n'umudugudu), urutonde rw'umuhigo/imihigo (ikurikira «umuhigo ukurikira» cyangwa «imihigo ikurikira»), n'umwanzuro uhamye ku buryo bwa buri bwoko.
+- Imihigo isa ikurwamo (duplicate); aho byakorewe bihuzwa ku kagari (urugero «mu kagari ka X, imidugudu ya A na B no mu kagari ka Y, umudugudu wa C»).
+- Ubutumwa, uko bakiriye n'ibyemeranyijweho ntibikiri mu mubiri wa memo (biri muri raporo iri ku mugereka).
+- «Bwana Muyobozi,» na «Mugire amahoro.» bishyirwa na Word gusa; ibisanzwe muri memoText ya kera ntibisubirwamo kabiri.
+
 ## 26/11/2026: amafoto abikwa kuri Cloudflare R2
 
 - Iyo `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` na `R2_BUCKET` bishyizweho, ifoto ijya muri bucket ya R2 (private); SQLite ibika amakuru make gusa (id, ingano, raporo), bityo snapshot ya GitHub ntiyiyongera.

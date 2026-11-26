@@ -348,47 +348,59 @@ function staffParticipantsTable(reports, options = {}) {
   return new Table({ width: { size: 14220, type: WidthType.DXA }, columnWidths: widths, rows });
 }
 
-function memoSummary(type, reports) {
-  if (type === "Follow-up") {
-    const rows = reports.flatMap((report) => report.followups || []).filter((item) => item && (item.recommendation || item.status));
-    if (!rows.length) return "";
-    const count = (status) => rows.filter((item) => item.status === status).length;
-    const uncompleted = rows.filter((item) => item.status === "Igice" || item.status === "Oya").length;
-    return "Mu nama " + rows.length + " zakurikiranywe, " + count("Yego") + " zarashyizwe mu bikorwa, " +
-      count("Igice") + " zishyirwa mu bikorwa igice, naho " + count("Oya") + " ntizishyirwa mu bikorwa. " +
-      (uncompleted ? "Ibitararangira byahawe ibikorwa bishya, ababishinzwe n’igihe ntarengwa muri raporo." : "Inama zose zakurikiranywe zashyizwe mu bikorwa.");
-  }
-  if (type === "Monitoring") {
-    const parts = reports.map((report) => {
-      const f = fieldsOf(report);
-      return compact([labelled("Icyari giteganyijwe", noEnd(f.expected)), labelled("icyakozwe", noEnd(f.performed)), labelled("ireme ry’igikorwa", noEnd(f.quality))]).join("; ");
-    }).filter(Boolean);
-    return parts.length ? "Muri ubu bugenzuzi: " + parts.join(" | ") + "." : "";
-  }
-  const messages = unique(reports.map((report) => noEnd(fieldsOf(report).messageGiven)));
-  const reception = unique(reports.map((report) => noEnd(fieldsOf(report).messageReception)));
-  const agreements = unique(reports.map((report) => noEnd(fieldsOf(report).mobilizationAgreement)));
-  return compact([
-    messages.length ? "Ubutumwa bwibanze bwatanzwe: " + messages.join(" | ") + "." : "",
-    reception.length ? "Abagezweho babwakiriye batya: " + reception.join(" | ") + "." : "",
-    agreements.length ? "Ibyemeranyijweho: " + agreements.join(" | ") + "." : ""
-  ]).join(" ");
+// Memo ngufi: umutwe wa raporo, itariki, aho byakorewe, urutonde rw’imihigo (nta duplicate) n’umwanzuro uhamye.
+const MEMO_TITLES = {
+  Mobilization: "raporo y’ubukangurambaga",
+  Monitoring: "raporo y’ubugenzuzi (monitoring)",
+  "Follow-up": "raporo yo gusubira gusura (follow-up)"
+};
+const MEMO_GOAL_LEAD = {
+  Mobilization: ["Ubukangurambaga bwakozwe ku muhigo ukurikira:", "Ubukangurambaga bwakozwe ku mihigo ikurikira:"],
+  Monitoring: ["Ubugenzuzi bwakozwe ku muhigo ukurikira:", "Ubugenzuzi bwakozwe ku mihigo ikurikira:"],
+  "Follow-up": ["Muri uru ruzinduko hakurikiranywe umuhigo ukurikira:", "Muri uru ruzinduko hakurikiranywe imihigo ikurikira:"]
+};
+const MEMO_CLOSING = {
+  Mobilization: "Mbasabye kudushyigikira mu gukurikirana ishyirwa mu bikorwa ry’ibyemeranyijweho.",
+  Monitoring: "Mbasabye kudushyigikira mu gukurikirana ishyirwa mu bikorwa ry’ingamba zo gukosora, kugira ngo ibibazo byagaragaye bikemurwe kandi tugere ku ntego twihaye.",
+  "Follow-up": "Mbasabye kudushyigikira mu gukurikirana ibyemeranyijweho bishya."
+};
+
+function uniqueCaseless(values) {
+  const seen = new Set();
+  return values.map(clean).filter((value) => {
+    const key = value.toUpperCase();
+    if (!value || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+// Urugero: «mu kagari ka X, umudugudu wa A na B no mu kagari ka Y, umudugudu wa C».
+function placePhrase(reports) {
+  const byCell = new Map();
+  reports.forEach((report) => {
+    const f = fieldsOf(report);
+    const cell = clean(f.cell).toUpperCase();
+    const village = clean(f.village).toUpperCase();
+    if (!cell && !village) return;
+    if (!byCell.has(cell)) byCell.set(cell, []);
+    if (village && !byCell.get(cell).includes(village)) byCell.get(cell).push(village);
+  });
+  const parts = [...byCell].map(([cell, villages]) => {
+    const village = villages.length === 1 ? "umudugudu wa " + villages[0] : villages.length > 1 ? "imidugudu ya " + joinList(villages) : "";
+    return compact([cell ? "mu kagari ka " + cell : "", village]).join(", ");
+  });
+  return parts.join(" no ");
 }
 
 function memoBody(type, reports, context) {
-  const { goals, who, cells, villages, visitDate } = context;
-  const place = "mu kagari ka " + joinList(cells.map((value) => value.toUpperCase())) +
-    (villages.length ? " Umudugudu wa " + joinList(villages.map((value) => value.toUpperCase())) : "");
-  const what = { Monitoring: "raporo y’ubugenzuzi (monitoring) ku muhigo wo ", Mobilization: "raporo y’ubukangurambaga ku muhigo wo ", "Follow-up": "raporo yo gusubira gusura (follow-up) ku muhigo wo " }[type];
-  const verb = type === "Follow-up" ? "yakozwe" : "bwakozwe";
-  const intro = "Nejejwe no kubandikira iyi memo interne ngira ngo mbagezeho ku mugereka wayo " + what + joinList(goals.map(goalPhrase)) +
-    " " + verb + " kuwa " + visitDate + " ku " + who + " " + place + ".";
-  const closing = type === "Monitoring"
-    ? "Ibindi bijyanye n’icyari giteganyijwe, icyakozwe, findings, itandukaniro n’impamvu zaryo, ingaruka n’ingamba zo gukosora, murabisanga muri raporo iri ku mugereka. Mbasabye kudushyigikira mu gukurikirana ko izo ngamba zishyirwa mu bikorwa."
-    : type === "Mobilization"
-      ? "Ibindi bijyanye n’ubumenyi abagezweho bari basanganywe, uko bakiriye ubutumwa, imbogamizi n’ibyemeranyijweho, murabisanga muri raporo iri ku mugereka. Mbasabye kudushyigikira mu gukurikirana ishyirwa mu bikorwa ry’ibyemeranyijweho."
-      : "Ibindi bijyanye n’inama zatanzwe ubushize, uko zashyizwe mu bikorwa, impamvu z’ibitarakozwe n’ibyemeranyijweho bishya, murabisanga muri raporo iri ku mugereka. Mbasabye kudushyigikira mu gukurikirana ibyemeranyijweho bishya.";
-  return compact([intro, memoSummary(type, reports), closing]);
+  const goals = uniqueCaseless(context.goals);
+  const place = placePhrase(reports);
+  const intro = "Nejejwe no kubandikira iyi memo ngira ngo mbagezeho, ku mugereka wayo, " + MEMO_TITLES[type] +
+    " yo kuwa " + context.visitDate + (place ? " bwakorewe " + place : "") + ".";
+  const lead = MEMO_GOAL_LEAD[type][goals.length > 1 ? 1 : 0];
+  const list = goals.length > 1 ? goals.map((goal, index) => (index + 1) + ". " + goal) : goals;
+  return compact([intro, goals.length ? lead : "", ...list, MEMO_CLOSING[type]]);
 }
 
 // Scales a photo to fit inside a box (pixels) while keeping its proportions.
@@ -522,9 +534,17 @@ async function buildReportDocx(rawReports, options = {}) {
   const jp = (children, opts = {}) => new Paragraph({ alignment: AlignmentType.JUSTIFIED, spacing: { after: 0, line: opts.line }, children });
 
   // Custom memo text if user provided it, or auto-generated memoBody
-  const memoParagraphs = clean(options.memoText)
+  // «Bwana Muyobozi,» na «Mugire amahoro.» bishyirwamo na Word ubwayo; ibyanditswe kera muri memoText ntibigomba kubisubiramo.
+  const memoParagraphs = (clean(options.memoText)
     ? options.memoText.split(/\n+/).map(clean).filter(Boolean)
-    : memoBody(type, reports, context);
+    : memoBody(type, reports, context)
+  ).filter((text) => !/^(bwana muyobozi|mugire amahoro)[,.!\s]*$/i.test(text));
+  const isItem = (text) => /^\d+\.\s/.test(text);
+  const memoBlocks = memoParagraphs.flatMap((text, index) => {
+    const next = memoParagraphs[index + 1];
+    const tight = text.endsWith(":") || (isItem(text) && next && isItem(next));
+    return [jp([run(text)], { line: 276 }), ...(tight ? [] : blank(1))];
+  });
 
   const memo = [
     ...header(84, 79),
@@ -540,7 +560,7 @@ async function buildReportDocx(rawReports, options = {}) {
     ...blank(1),
     jp([run("Bwana Muyobozi,")]),
     ...blank(1),
-    ...memoParagraphs.flatMap((text) => [jp([run(text)], { line: 276 }), ...blank(1)]),
+    ...memoBlocks,
     jp([run("Mugire amahoro.")]),
     ...blank(4),
     jp([bold(staffName)]),

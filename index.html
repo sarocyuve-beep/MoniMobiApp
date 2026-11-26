@@ -1318,79 +1318,69 @@
         "Follow-up": "RAPORO YO GUSUBIRA GUSURA (FOLLOW-UP)"
       };
 
+      // Memo ngufi (ihuye na Word): umutwe wa raporo, itariki, aho byakorewe, urutonde rw’imihigo (nta duplicate) n’umwanzuro.
+      // «Bwana Muyobozi,» na «Mugire amahoro.» bishyirwa muri Word ubwayo.
+      const MEMO_TITLES = {
+        Mobilization: "raporo y’ubukangurambaga",
+        Monitoring: "raporo y’ubugenzuzi (monitoring)",
+        "Follow-up": "raporo yo gusubira gusura (follow-up)"
+      };
+      const MEMO_GOAL_LEAD = {
+        Mobilization: ["Ubukangurambaga bwakozwe ku muhigo ukurikira:", "Ubukangurambaga bwakozwe ku mihigo ikurikira:"],
+        Monitoring: ["Ubugenzuzi bwakozwe ku muhigo ukurikira:", "Ubugenzuzi bwakozwe ku mihigo ikurikira:"],
+        "Follow-up": ["Muri uru ruzinduko hakurikiranywe umuhigo ukurikira:", "Muri uru ruzinduko hakurikiranywe imihigo ikurikira:"]
+      };
+      const MEMO_CLOSING = {
+        Mobilization: "Mbasabye kudushyigikira mu gukurikirana ishyirwa mu bikorwa ry’ibyemeranyijweho.",
+        Monitoring: "Mbasabye kudushyigikira mu gukurikirana ishyirwa mu bikorwa ry’ingamba zo gukosora, kugira ngo ibibazo byagaragaye bikemurwe kandi tugere ku ntego twihaye.",
+        "Follow-up": "Mbasabye kudushyigikira mu gukurikirana ibyemeranyijweho bishya."
+      };
+
+      function uniqueCaseless(values) {
+        const seen = new Set();
+        return values.map((v) => String(v || "").trim()).filter((v) => {
+          const key = v.toUpperCase();
+          if (!v || seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      }
+
+      function joinNa(list) {
+        return list.length <= 1 ? list.join("") : list.slice(0, -1).join(", ") + " na " + list[list.length - 1];
+      }
+
+      // Urugero: «mu kagari ka X, umudugudu wa A na B no mu kagari ka Y, umudugudu wa C».
+      function memoPlaceText() {
+        const byCell = new Map();
+        targetDrafts.forEach((t) => {
+          const cell = String(t.cell || "").trim().toUpperCase();
+          const village = String(t.village === "__other__" ? t.customVillage : t.village || "").trim().toUpperCase();
+          if (!cell && !village) return;
+          if (!byCell.has(cell)) byCell.set(cell, []);
+          if (village && !byCell.get(cell).includes(village)) byCell.get(cell).push(village);
+        });
+        return [...byCell].map(([cell, villages]) => {
+          const village = villages.length === 1 ? "umudugudu wa " + villages[0] : villages.length > 1 ? "imidugudu ya " + joinNa(villages) : "";
+          return [cell ? "mu kagari ka " + cell : "", village].filter(Boolean).join(", ");
+        }).join(" no ");
+      }
+
       function computeAutoMemo() {
-        const type = $("visitType").value;
+        const type = MEMO_TITLES[$("visitType").value] ? $("visitType").value : "Monitoring";
         const vDate = formatDate($("visitDate").value) || formatDate(dateString);
         const staff = $("staffName").value.trim() || (staffDrafts[0] && staffDrafts[0].name) || "Umukozi";
         const role = $("staffRole").value.trim() || (staffDrafts[0] && staffDrafts[0].role) || "Umukozi ushinzwe Ubworozi";
 
-        const validGoals = targetDrafts.map((t) => getGoalTitle(t)).filter((t) => t && !t.startsWith("Hitamo"));
-        const goalsStr = validGoals.length ? validGoals.map(goalPhrase).join(" na ") : "imihigo y'ubworozi";
-        
-        const peopleList = targetDrafts.map((t) => t.beneficiaries.trim()).filter(Boolean);
-        const whoStr = peopleList.length ? peopleList.join("; ") : "aborozi";
+        const goals = uniqueCaseless(targetDrafts.map((t) => getGoalTitle(t)).filter((t) => t && !t.startsWith("Hitamo")));
+        const place = memoPlaceText();
+        const subject = (MEMO_REPORT_TITLES[type] || MEMO_REPORT_TITLES.Monitoring) + " YO KU WA " + vDate;
 
-        const cellsList = [...new Set(targetDrafts.map((t) => t.cell).filter(Boolean))];
-        const villagesList = [...new Set(targetDrafts.map((t) => t.village === '__other__' ? t.customVillage : t.village).filter(Boolean))];
-        const placeStr = (cellsList.length ? "mu kagari ka " + cellsList.join(", ") : "") +
-          (villagesList.length ? " Umudugudu wa " + villagesList.join(", ") : "");
-
-        let subject = "";
-        let body = "";
-
-        if (type === "Mobilization") {
-          subject = (MEMO_REPORT_TITLES[type] || MEMO_REPORT_TITLES.Monitoring) + " YO KU WA " + vDate;
-          const messages = targetDrafts.map((t) => t.details && t.details.messageGiven).filter(Boolean);
-          const msgStr = messages.length ? messages.join("; ") : "akamaro n’imikoreshereze myiza y'imihigo";
-          const reception = targetDrafts.map((t) => t.details && (t.details.messageReception || t.details.mobilizationAgreement)).filter(Boolean);
-          const recStr = reception.length ? reception.join("; ") : "babyakiriye neza biyemeza kubyubahiriza";
-
-          body = `Bwana Muyobozi,
-
-Nejejwe no kubagezaho, ku mugereka wayo, raporo y’ubukangurambaga ku muhigo wo ${goalsStr}, bwakorewe kuri ${whoStr}, ${placeStr}, ku wa ${vDate}.
-
-Muri ubu bukangurambaga, abagezweho basobanuriwe ${msgStr}. Uko bakiriye ubutumwa n’ibyo biyemeje gukora ni ${recStr}. Ibisobanuro ku bumenyi bari basanganywe, imbogamizi n’ibyemeranyijweho murabisanga muri raporo iri ku mugereka.
-
-Mbasabye kudushyigikira mu gukurikirana ishyirwa mu bikorwa ry’ibyemeranyijweho.
-
-Mugire amahoro.`;
-        } else if (type === "Monitoring") {
-          subject = (MEMO_REPORT_TITLES[type] || MEMO_REPORT_TITLES.Monitoring) + " YO KU WA " + vDate;
-          const expected = targetDrafts.map((t) => t.details && t.details.expected).filter(Boolean).join("; ") || "ibikorwa byari biteganyijwe";
-          const performed = targetDrafts.map((t) => t.details && t.details.performed).filter(Boolean).join("; ") || "ibyakozwe";
-          const quality = targetDrafts.map((t) => t.details && t.details.quality).filter(Boolean).join("; ") || "Biringaniye";
-
-          body = `Bwana Muyobozi,
-
-Nejejwe no kubagezaho, ku mugereka wayo, raporo y’ubugenzuzi ku muhigo wo ${goalsStr}, yakorewe kuri ${whoStr}, ${placeStr}, ku wa ${vDate}.
-
-Muri ubu bugenzuzi, icyari giteganyijwe ni ${expected}, naho icyakozwe ni ${performed}. Ireme ry’igikorwa ryagaragaye ko ari ${quality}. Ibisobanuro ku byagaragaye, itandukaniro n’impamvu zaryo, ingaruka n’ingamba zo gukosora murabisanga muri raporo iri ku mugereka.
-
-Mbasabye kudushyigikira mu gukurikirana ishyirwa mu bikorwa ry’ingamba zo gukosora.
-
-Mugire amahoro.`;
-        } else {
-          // Follow-up
-          subject = (MEMO_REPORT_TITLES[type] || MEMO_REPORT_TITLES.Monitoring) + " YO KU WA " + vDate;
-          let yego = 0, igice = 0, oya = 0;
-          targetDrafts.forEach((t) => {
-            const st = t.details && t.details.implementationStatus;
-            if (st === "Yego") yego++;
-            else if (st === "Igice") igice++;
-            else if (st === "Oya") oya++;
-          });
-          const total = yego + igice + oya || targetDrafts.length;
-
-          body = `Bwana Muyobozi,
-
-Nejejwe no kubagezaho, ku mugereka wayo, raporo yo gukurikirana ishyirwa mu bikorwa ry’ingamba ku muhigo wo ${goalsStr}, yakorewe kuri ${whoStr}, ${placeStr}, ku wa ${vDate}.
-
-Mu nama ${total} zakurikiranywe, ${yego} zarashyizwe mu bikorwa (Yego), ${igice} zishyirwa mu bikorwa igice (Igice), naho ${oya} ntizashyirwa mu bikorwa (Oya). Ibisobanuro ku mpamvu z’ibitarakozwe n’ibyemeranyijweho bishya murabisanga muri raporo iri ku mugereka.
-
-Mbasabye kudushyigikira mu gukurikirana ishyirwa mu bikorwa ry’ibyemeranyijweho bishya.
-
-Mugire amahoro.`;
-        }
+        const intro = "Nejejwe no kubandikira iyi memo ngira ngo mbagezeho, ku mugereka wayo, " + MEMO_TITLES[type] +
+          " yo kuwa " + vDate + (place ? " bwakorewe " + place : "") + ".";
+        const list = goals.length > 1 ? goals.map((g, i) => (i + 1) + ". " + g) : goals;
+        const body = [intro, goals.length ? MEMO_GOAL_LEAD[type][goals.length > 1 ? 1 : 0] : "", ...list, MEMO_CLOSING[type]]
+          .filter(Boolean).join("\n");
 
         return { subject, body, vDate, staff, role };
       }
