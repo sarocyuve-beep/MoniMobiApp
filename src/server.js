@@ -325,18 +325,24 @@ const photoLimiter = rateLimit({
 });
 
 // Photos arrive already shrunk by the browser as a raw image/jpeg body.
-app.post("/api/photos", requireAuth, photoLimiter, express.raw({ type: "image/jpeg", limit: photos.MAX_BYTES + 1024 }), (req, res) => {
+app.post("/api/photos", requireAuth, photoLimiter, express.raw({ type: "image/jpeg", limit: photos.MAX_BYTES + 1024 }), async (req, res) => {
   if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: "Ohereza ifoto ya JPEG." });
   try {
-    const photo = photos.save({ id: crypto.randomUUID(), userId: req.user.id, buffer: req.body });
+    const photo = await photos.save({ id: crypto.randomUUID(), userId: req.user.id, buffer: req.body });
     res.status(201).json({ photo });
   } catch (error) {
     res.status(error.status || 500).json({ error: error.status ? error.message : "Ifoto ntibashije kubikwa." });
   }
 });
 
-app.get("/api/photos/:id", requireAuth, (req, res) => {
-  const photo = photos.read(req.params.id);
+app.get("/api/photos/:id", requireAuth, async (req, res) => {
+  let photo;
+  try {
+    photo = await photos.read(req.params.id);
+  } catch (error) {
+    console.error("Photo read failed:", error.message);
+    return res.status(502).json({ error: "Ifoto ntishoboye kuboneka ubu. Ongera ugerageze." });
+  }
   if (!photo) return res.status(404).json({ error: "Ifoto ntiyabonetse." });
   res.set({ "Content-Type": "image/jpeg", "Cache-Control": "private, max-age=86400", "X-Content-Type-Options": "nosniff" });
   res.send(photo.data);
@@ -358,12 +364,13 @@ app.post("/api/reports/docx", requireAuth, async (req, res) => {
   }
 
   try {
+    const photoMap = await photos.readMany(reports.flatMap((report) => photos.idsOf(report)));
     const buffer = await buildReportDocx(reports, {
       staffName: req.user.full_name,
       authorityName: req.body && req.body.authorityName,
       authorityTitle: req.body && req.body.authorityTitle,
       memoText: req.body && req.body.memoText,
-      getPhoto: photos.read
+      getPhoto: (id) => photoMap.get(id) || null
     });
     res.set({
       "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -460,6 +467,7 @@ app.delete("/api/reports/:id", requireAuth, (req, res) => {
   const row = db.prepare("SELECT * FROM reports WHERE id = ?").get(req.params.id);
   if (!row) return res.status(404).json({ error: "Raporo ntiyabonetse." });
   if (!mayEditReport(req.user, row)) return res.status(403).json({ error: "Nta burenganzira ufite kuri iyi raporo." });
+  photos.releaseReport(req.params.id);
   db.prepare("DELETE FROM reports WHERE id = ?").run(req.params.id);
   logAction(req.user.id, "DELETE_REPORT", req.params.id);
   res.status(204).end();
@@ -661,6 +669,9 @@ app.use((error, req, res, next) => {
 });
 
 photos.purgeOrphans();
+if (process.env.R2_MIGRATE_ON_START !== "false" && process.env.NODE_ENV !== "test") {
+  photos.migrateToR2().catch((error) => console.error("Photo migration failed:", error.message));
+}
 setInterval(() => { try { photos.purgeOrphans(); } catch (error) { console.error("Photo cleanup failed:", error.message); } }, 60 * 60 * 1000).unref();
 
 module.exports = app;

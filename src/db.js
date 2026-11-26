@@ -99,6 +99,9 @@ for (const table of ["users", "account_requests"]) {
   addColumn(table, "duties", "TEXT"); // icyo ashinzwe mu mpine (inshingano mu magambo make)
 }
 
+// Aho ifoto ibitse: 'db' (muri SQLite) cyangwa 'r2' (Cloudflare R2; SQLite ibika amakuru make gusa).
+addColumn("photos", "storage", "TEXT NOT NULL DEFAULT 'db'");
+
 function ensureAdmin({ username, password, fullName }) {
   const existing = db.prepare("SELECT id FROM users WHERE role = 'ADMIN' LIMIT 1").get();
   if (existing) return false;

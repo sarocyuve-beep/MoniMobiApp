@@ -1,5 +1,13 @@
 # Changelog
 
+## 26/11/2026: amafoto abikwa kuri Cloudflare R2
+
+- Iyo `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` na `R2_BUCKET` bishyizweho, ifoto ijya muri bucket ya R2 (private); SQLite ibika amakuru make gusa (id, ingano, raporo), bityo snapshot ya GitHub ntiyiyongera.
+- Amafoto yari asanzwe muri SQLite yimurirwa kuri R2 yonyine seriveri itangiye (`R2_MIGRATE_ON_START=false` irabihagarika).
+- Gusiba ifoto kuri raporo, gusiba raporo, no gusukura amafoto adafite raporo (amasaha 24) bisiba na object muri R2.
+- Igipimo cy'ububiko: `R2_MAX_TOTAL_MB` (8000 ku buryo busanzwe, munsi ya 10 GB za free plan).
+- Nta paki nshya ikenewe (`src/r2.js` ikoresha S3 API na AWS Signature V4). Test nshya: `test/r2.test.js`.
+
 ## 26/11/2026: amafoto (camera / gallery)
 
 - Muri Group III, buri muhigo ufite «📷 Fata ifoto» (camera) na «🖼️ Hitamo muri gallery» (ushobora guhitamo menshi icyarimwe), ibisobanuro kuri buri foto, no kuyikuraho. Hafi amafoto 12 kuri buri muhigo.

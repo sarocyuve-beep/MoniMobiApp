@@ -93,4 +93,18 @@ Reba `MOBILE_APK.md` — uburyo bwo kwinjiza app kuri phone (PWA) no gukora APK 
 
 ## Amafoto
 
-Abakozi bafata ifoto na camera cyangwa bakayihitamo muri gallery; zisigwa mu browser, zikabikwa muri SQLite zigahuzwa na raporo, zikajya no muri Word (igice IV). Ububiko bufite igipimo `PHOTO_MAX_TOTAL_MB` (25 MB ku buryo busanzwe). Niba amafoto ari menshi (amagana ku kwezi), ubike ahandi (object storage) — ibi ntibikenewe mu ikoreshwa rito.
+Abakozi bafata ifoto na camera cyangwa bakayihitamo muri gallery; zisigwa mu browser (≤1280 px, JPEG), zikabikwa, zigahuzwa na raporo, zikajya no muri Word (igice IV).
+
+**Ububiko:** nta R2 → amafoto abikwa muri SQLite (`PHOTO_MAX_TOTAL_MB`, 25 MB). Hamwe na R2 → amafoto abikwa muri Cloudflare R2 (private), SQLite ikabika amakuru make gusa; ibi bikwiriye kubika amafoto menshi igihe kirekire.
+
+### Gushyira R2 (free plan)
+
+Free plan ya R2: 10 GB z'ububiko, miliyoni 1 ya Class A (kwandika) na miliyoni 10 za Class B (gusoma) ku kwezi, nta kwishyura kwa egress. Ifoto imwe ni ~100–400 KB, bityo 10 GB zihagije amafoto ~25,000+.
+
+1. Cloudflare Dashboard → **R2 Object Storage** → **Create bucket** (urugero `monimobi-photos`). **Ntugire bucket public.** Cloudflare ishobora gusaba kongeramo uburyo bwo kwishyura mbere yo gufungura R2; ntihabaho kwishyura mu gihe ukoresha munsi y'igipimo cy'ubuntu.
+2. **R2 → Manage R2 API Tokens → Create API token**: Permission **Object Read & Write**, hitamo bucket yawe gusa. Bika **Access Key ID** na **Secret Access Key** (Secret igaragara rimwe gusa).
+3. **Account ID** iboneka ku rupapuro rwa R2 (iburyo).
+4. Muri Render → Environment shyiramo: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`. Uhite utangiza serivisi.
+5. Amafoto yari asanzwe muri SQLite yimurirwa kuri R2 yonyine. `R2_MAX_TOTAL_MB` (8000) irinda kurenga 10 GB; reba kandi ikoreshwa muri Cloudflare buri gihe.
+
+Ifoto ntiboneka kuri URL ya rubanda: seriveri ni yo ihabwa uburenganzira, ikayerekana abakozi binjiye gusa.
