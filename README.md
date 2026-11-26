@@ -108,3 +108,7 @@ Free plan ya R2: 10 GB z'ububiko, miliyoni 1 ya Class A (kwandika) na miliyoni 1
 5. Amafoto yari asanzwe muri SQLite yimurirwa kuri R2 yonyine. `R2_MAX_TOTAL_MB` (8000) irinda kurenga 10 GB; reba kandi ikoreshwa muri Cloudflare buri gihe.
 
 Ifoto ntiboneka kuri URL ya rubanda: seriveri ni yo ihabwa uburenganzira, ikayerekana abakozi binjiye gusa.
+
+### Hadafite card: Backblaze B2 (10 GB z'ubuntu)
+
+B2 ikorana na S3 API, bityo code imwe ikora. Kora konti kuri backblaze.com → **Buckets → Create a Bucket** (Private; **Object Lock** ntuyifungure; muri Lifecycle hitamo «Keep only the last version of the file»). **Application Keys → Add a New Application Key** (ihambire kuri iyo bucket, Read and Write). Muri Render shyiramo `S3_ENDPOINT` (urugero `https://s3.us-west-004.backblazeb2.com`, uboneka kuri bucket nka «Endpoint»), `S3_REGION` (urugero `us-west-004`), `S3_ACCESS_KEY_ID` (keyID), `S3_SECRET_ACCESS_KEY` (applicationKey), `S3_BUCKET`.

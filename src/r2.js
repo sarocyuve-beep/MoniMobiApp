@@ -8,13 +8,19 @@ const SERVICE = "s3";
 const EMPTY_SHA256 = crypto.createHash("sha256").update("").digest("hex");
 const TIMEOUT_MS = Number(process.env.R2_TIMEOUT_MS || 20000);
 
+// Works with any S3-compatible store. Names: S3_* (generic) or R2_* (Cloudflare). Examples:
+//  Cloudflare R2: R2_ACCOUNT_ID + R2_ACCESS_KEY_ID + R2_SECRET_ACCESS_KEY + R2_BUCKET   (region "auto")
+//  Backblaze B2 : S3_ENDPOINT=https://s3.<region>.backblazeb2.com + S3_REGION=<region> + S3_ACCESS_KEY_ID + S3_SECRET_ACCESS_KEY + S3_BUCKET
+const pick = (name) => process.env["S3_" + name] || process.env["R2_" + name] || "";
+
 function settings() {
   const accountId = process.env.R2_ACCOUNT_ID || "";
-  const accessKeyId = process.env.R2_ACCESS_KEY_ID || "";
-  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY || "";
-  const bucket = process.env.R2_BUCKET || "";
-  const endpoint = (process.env.R2_ENDPOINT || (accountId ? "https://" + accountId + ".r2.cloudflarestorage.com" : "")).replace(/\/$/, "");
-  return { accessKeyId, secretAccessKey, bucket, endpoint, ok: Boolean(accessKeyId && secretAccessKey && bucket && endpoint) };
+  const accessKeyId = pick("ACCESS_KEY_ID");
+  const secretAccessKey = pick("SECRET_ACCESS_KEY");
+  const bucket = pick("BUCKET");
+  const region = pick("REGION") || REGION;
+  const endpoint = (pick("ENDPOINT") || (accountId ? "https://" + accountId + ".r2.cloudflarestorage.com" : "")).replace(/\/$/, "");
+  return { accessKeyId, secretAccessKey, bucket, endpoint, region, ok: Boolean(accessKeyId && secretAccessKey && bucket && endpoint) };
 }
 
 function enabled() {
@@ -62,7 +68,7 @@ async function call(method, key, { body, contentType } = {}) {
   const payloadHash = body ? sha256Hex(body) : EMPTY_SHA256;
   const headers = { host: url.host, "x-amz-content-sha256": payloadHash, "x-amz-date": amzDate };
   if (body && contentType) headers["content-type"] = contentType;
-  const { authorization } = sign({ method, path, headers, payloadHash, accessKeyId: cfg.accessKeyId, secretAccessKey: cfg.secretAccessKey, amzDate });
+  const { authorization } = sign({ method, path, headers, payloadHash, accessKeyId: cfg.accessKeyId, secretAccessKey: cfg.secretAccessKey, amzDate, region: cfg.region });
   const { host, ...sendHeaders } = headers;
   const response = await fetch(url.origin + path, {
     method,
