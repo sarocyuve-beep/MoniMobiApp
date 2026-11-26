@@ -11,6 +11,7 @@ process.env.LOGIN_RATE_LIMIT = "1000";
 process.env.ACCOUNT_REQUEST_RATE_LIMIT = "1000";
 process.env.DB_PATH = path.join(temporaryDirectory, "test.sqlite");
 process.env.JWT_SECRET = crypto.randomBytes(32).toString("hex");
+process.env.PHOTO_MAX_TOTAL_MB = "0.05";
 
 const { db, ensureAdmin } = require("../src/db");
 const bcrypt = require("bcryptjs");
@@ -77,6 +78,17 @@ test("only the report app and its public data file are served", async () => {
   assert.equal(samplesFile.status, 200);
   assert.match(await samplesFile.text(), /window\.SAMPLE_REPORTS/);
   assert.equal(serverSource.status, 404);
+
+  const manifest = await fetch(baseUrl + "/manifest.webmanifest");
+  const worker = await fetch(baseUrl + "/sw.js");
+  const icon = await fetch(baseUrl + "/icons/icon-192.png");
+  const badIcon = await fetch(baseUrl + "/icons/..%2Fsrc%2Fserver.js");
+  assert.equal(manifest.status, 200);
+  assert.equal((await manifest.json()).short_name, "MoniMobi");
+  assert.equal(worker.status, 200);
+  assert.equal(icon.status, 200);
+  assert.equal(icon.headers.get("content-type"), "image/png");
+  assert.notEqual(badIcon.status, 200);
 });
 
 test("employees can view shared reports but only edit their own; admins can view all", async () => {
@@ -403,4 +415,91 @@ test("a user who forgot the password asks for a new one and an admin approves it
   assert.equal((await request("/api/password-resets/" + adminPending.id + "/reject", { token: adminToken, method: "POST" })).response.status, 200);
   const adminStill = await request("/api/auth/login", { method: "POST", body: { username: "admin", password: "admin-password-123" } });
   assert.equal(adminStill.response.status, 200);
+});
+
+const TEST_JPEG = Buffer.from("/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD/2wBDAQMDAwQDBAgEBAgQCwkLEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBD/wAARCAAwAEADASIAAhEBAxEB/8QAGQAAAwEBAQAAAAAAAAAAAAAAAwUGBAEH/8QAJxAAAQQCAQMEAgMAAAAAAAAABAABAgMhMREFBhITQVFhByIUI/D/xAAZAQACAwEAAAAAAAAAAAAAAAAGBwIEBQP/xAAlEQABBAIBAgcBAAAAAAAAAAABAAIDBAURMSGBEhMiMkFh8HH/2gAMAwEAAhEDEQA/ANQIusKgBF1hZwRdYVACLrCoZC5ylNi6HHRaARdYVCCLrCzgi6wqAEXWEE37nKY2LocdFoBF1hPxB2rj5O2GQARdO7LXfa0I+MX44QZbsGR2gmJjaQaAShE3/aUlX7yilX7ylJN+8rjGxFdaBRHZ3SB+o9w9K6eZW8qCTaKbYs/DvCU4s7M/th3XptX476O3TLLxriLbXt/l0+jH1LJhzjJ6oNDlv7OI+UviL+/C85BF1hUIIusJl3L7Wghw2kDiqQAALVcA9gB0XTqc977KYWzkz1cQlGNt1TcO0ueeamf4z7qjbsjpEbyoD2ShG2ddYnMvJ63jdCq15N75kzs3w6hARdYTumuNFfk+0JW8nCAW+Vvv2/feimBjse460dKpftcSgCib2EQsse2bvOnjwaMISaFn7fq75ZvnyZRvWXiKeSNF24qunBuPhpO3+yuFX7ylBN+8rIkkjmHoZ4T/AHfx+KMaVRzPc7aCVfvKUE37yjFX7ylBN+1ONiJa0C2Ai6wqAEXWFnBF1hUAIundlqZC5yk3i6HHRHEHauPk7YZcJv8AtFvtaEfGL8cJSVfvKHtmR2yjupWDQAhFX7ylBV+8oxN+8pQVfvKtRsRDWgQSr95Sgq/aMVf9pQVfvKuxsW/WgX//2Q==", "base64");
+
+async function uploadPhoto(token, body = TEST_JPEG, type = "image/jpeg") {
+  const response = await fetch(baseUrl + "/api/photos", {
+    method: "POST",
+    headers: { ...(token ? { Authorization: "Bearer " + token } : {}), "Content-Type": type },
+    body
+  });
+  return { response, result: await response.json() };
+}
+
+function reportWithPhotos(number, photos) {
+  return {
+    version: 4,
+    fields: { reportNumber: number, visitDate: "2026-11-20", visitType: "Mobilization", staffName: "Staff One" },
+    targets: [{ id: "t1", category: "UBUKUNGU", goal: "12", beneficiaries: "Itsinda GIRAMATA", sector: "CYUVE", cell: "KABEZA", village: "", details: { photos } }]
+  };
+}
+
+test("photos: upload, link to a report, view, replace and cascade on delete", async () => {
+  const anonymous = await uploadPhoto(null);
+  assert.equal(anonymous.response.status, 401);
+  const notJpeg = await uploadPhoto(staffToken, Buffer.from("not an image at all"), "image/jpeg");
+  assert.equal(notJpeg.response.status, 400);
+
+  const first = await uploadPhoto(staffToken);
+  const second = await uploadPhoto(staffToken);
+  assert.equal(first.response.status, 201);
+  assert.equal(first.result.photo.width, 64);
+  assert.equal(first.result.photo.height, 48);
+
+  // another employee cannot attach someone else's unsaved photo
+  const stolen = await request("/api/reports", { token: otherStaffToken, method: "POST", body: reportWithPhotos("R-PH-STEAL", [{ id: first.result.photo.id }]) });
+  assert.equal(stolen.response.status, 400);
+  const unknown = await request("/api/reports", { token: staffToken, method: "POST", body: reportWithPhotos("R-PH-UNKNOWN", [{ id: "missing-id" }]) });
+  assert.equal(unknown.response.status, 400);
+
+  const created = await request("/api/reports", { token: staffToken, method: "POST", body: reportWithPhotos("R-PH-1", [{ id: first.result.photo.id, caption: "Ikiraro" }, { id: second.result.photo.id }]) });
+  assert.equal(created.response.status, 201);
+  const reportId = created.result.report.id;
+  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM photos WHERE report_id = ?").get(reportId).n, 2);
+
+  // every signed-in employee can see the picture; anonymous users cannot
+  const viewed = await fetch(baseUrl + "/api/photos/" + first.result.photo.id, { headers: { Authorization: "Bearer " + otherStaffToken } });
+  assert.equal(viewed.status, 200);
+  assert.equal(viewed.headers.get("content-type"), "image/jpeg");
+  assert.equal(Buffer.compare(Buffer.from(await viewed.arrayBuffer()), TEST_JPEG), 0);
+  assert.equal((await fetch(baseUrl + "/api/photos/" + first.result.photo.id)).status, 401);
+
+  // saving the report without the second photo deletes it
+  const updated = await request("/api/reports/" + reportId, {
+    token: staffToken, method: "PUT",
+    body: { ...reportWithPhotos("R-PH-1", [{ id: first.result.photo.id, caption: "Ikiraro" }]), expectedUpdatedAt: created.result.report.updatedAt }
+  });
+  assert.equal(updated.response.status, 200);
+  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM photos WHERE report_id = ?").get(reportId).n, 1);
+  assert.equal((await fetch(baseUrl + "/api/photos/" + second.result.photo.id, { headers: { Authorization: "Bearer " + staffToken } })).status, 404);
+
+  // Word report embeds the real picture
+  const docx = await fetch(baseUrl + "/api/reports/docx", {
+    method: "POST", headers: { Authorization: "Bearer " + staffToken, "Content-Type": "application/json" }, body: JSON.stringify({ ids: [reportId] })
+  });
+  assert.equal(docx.status, 200);
+  const bytes = Buffer.from(await docx.arrayBuffer());
+  assert.ok(bytes.includes(Buffer.from("word/media/")), "docx should contain an embedded media file");
+
+  // deleting the report deletes its photos
+  await request("/api/reports/" + reportId, { token: staffToken, method: "DELETE" });
+  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM photos WHERE id = ?").get(first.result.photo.id).n, 0);
+});
+
+test("photos: unsaved uploads are cleaned up and the total storage is capped", async () => {
+  const orphan = await uploadPhoto(staffToken);
+  db.prepare("UPDATE photos SET created_at = datetime('now', '-3 days') WHERE id = ?").run(orphan.result.photo.id);
+  const photosModule = require("../src/photos");
+  assert.ok(photosModule.purgeOrphans() >= 1);
+  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM photos WHERE id = ?").get(orphan.result.photo.id).n, 0);
+
+  const tooBig = await uploadPhoto(staffToken, Buffer.concat([TEST_JPEG, Buffer.alloc(700 * 1024)]));
+  assert.equal(tooBig.response.status, 413);
+
+  let status = 201;
+  for (let i = 0; i < 100 && status === 201; i += 1) status = (await uploadPhoto(staffToken)).response.status;
+  assert.equal(status, 507);
+  db.prepare("DELETE FROM photos").run();
 });

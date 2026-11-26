@@ -8,3 +8,9 @@ node_modules/
 *.sqlite-wal
 *.backup
 *.bak
+
+# Android wrapper (generated)
+mobile/node_modules/
+mobile/android/
+mobile/capacitor.config.json
+mobile/app-url.txt

@@ -65,6 +65,19 @@ db.exec(`
   );
   CREATE UNIQUE INDEX IF NOT EXISTS idx_password_resets_pending ON password_resets(user_id) WHERE status = 'PENDING';
   CREATE UNIQUE INDEX IF NOT EXISTS idx_account_requests_pending ON account_requests(username) WHERE status = 'PENDING';
+  CREATE TABLE IF NOT EXISTS photos (
+    id TEXT PRIMARY KEY,
+    report_id TEXT,
+    uploaded_by INTEGER NOT NULL,
+    width INTEGER NOT NULL,
+    height INTEGER NOT NULL,
+    bytes INTEGER NOT NULL,
+    data BLOB NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (report_id) REFERENCES reports(id) ON DELETE CASCADE,
+    FOREIGN KEY (uploaded_by) REFERENCES users(id)
+  );
+  CREATE INDEX IF NOT EXISTS idx_photos_report ON photos(report_id);
   CREATE INDEX IF NOT EXISTS idx_reports_updated_at ON reports(updated_at);
   CREATE INDEX IF NOT EXISTS idx_reports_created_by ON reports(created_by);
   CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at);

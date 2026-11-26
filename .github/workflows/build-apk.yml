@@ -1,0 +1,54 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_url:
+        description: "URL ya app yoherejwe (urugero https://monimobi-app.onrender.com). Iyo uyisize, hakoreshwa repository variable APP_URL."
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    env:
+      APP_URL: ${{ github.event.inputs.app_url || vars.APP_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install Capacitor
+        working-directory: mobile
+        run: npm install
+
+      - name: Configure app URL
+        working-directory: mobile
+        run: npm run configure
+
+      - name: Create Android project
+        working-directory: mobile
+        run: npm run add-android
+
+      - name: Sync web assets and plugins
+        working-directory: mobile
+        run: npx cap sync android
+
+      - name: Build debug APK
+        working-directory: mobile/android
+        run: ./gradlew assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MoniMobi-apk
+          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

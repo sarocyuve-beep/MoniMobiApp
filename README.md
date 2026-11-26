@@ -86,3 +86,11 @@ Koresha `npm test` kugenzura kwinjira, uburenganzira bwo kureba raporo, kwirinda
 - **Kwisaba konti:** ku rupapuro rwo kwinjira umukozi akanda «Saba konti», akuzuza amazina, urwego (Umurenge/Akagari, n’akagari iyo ari Akagari), icyo ashinzwe (function), icyo ashinzwe mu mpine, username n’ijambo ry’ibanga. Admin abona ubusabe muri «Genzura konti z’abakozi» akabwemeza cyangwa akabwanga.
 - **Wibagiwe ijambo ry’ibanga:** umukozi akanda «Wibagiwe ijambo ry’ibanga?», akandika username n’ijambo rishya; admin arimwemeza (ashobora kubanza kumuhamagara). Admin ntiyemeza ubusabe bwe bwite; bisaba undi admin.
 - **Kugarura uburyo bwo kwinjira nka admin** (admin wibagiwe ijambo ry’ibanga, cyangwa nta admin ukiriho): muri Render → Environment shyiraho `ADMIN_USERNAME`, `ADMIN_PASSWORD` (inyuguti 12+), `ADMIN_FULL_NAME` na `ADMIN_RESET_ON_START=true`, hanyuma wongere utangize serivisi. Konti ya admin irasubizwaho ijambo ry’ibanga rishya (iyo itariho irakorwa) kandi isabwa kuryihindura igihe yinjiye. **Nyuma yo kwinjira subiza `ADMIN_RESET_ON_START` kuri `false`**, kuko ubundi ijambo ry’ibanga ryasubizwaho buri gihe serivisi itangiye.
+
+## Kuri phone (APK / PWA)
+
+Reba `MOBILE_APK.md` — uburyo bwo kwinjiza app kuri phone (PWA) no gukora APK ya Android (GitHub Actions cyangwa kuri computer).
+
+## Amafoto
+
+Abakozi bafata ifoto na camera cyangwa bakayihitamo muri gallery; zisigwa mu browser, zikabikwa muri SQLite zigahuzwa na raporo, zikajya no muri Word (igice IV). Ububiko bufite igipimo `PHOTO_MAX_TOTAL_MB` (25 MB ku buryo busanzwe). Niba amafoto ari menshi (amagana ku kwezi), ubike ahandi (object storage) — ibi ntibikenewe mu ikoreshwa rito.

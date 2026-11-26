@@ -391,15 +391,30 @@ function memoBody(type, reports, context) {
   return compact([intro, memoSummary(type, reports), closing]);
 }
 
-function photoSection(config, reports) {
+// Scales a photo to fit inside a box (pixels) while keeping its proportions.
+function fitImage(width, height, maxWidth, maxHeight) {
+  const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
+  return { width: Math.max(1, Math.round(width * ratio)), height: Math.max(1, Math.round(height * ratio)) };
+}
+
+function photoSection(config, reports, getPhoto) {
   const entries = [];
   reports.forEach((report) => {
     const f = fieldsOf(report);
+    const suffix = reports.length > 1 ? " (" + dash(f.beneficiaryName) + ")" : "";
+    const photos = Array.isArray(f.photos) ? f.photos.filter((item) => item && typeof item.id === "string") : [];
+    if (photos.length) {
+      photos.forEach((item) => {
+        const stored = typeof getPhoto === "function" ? getPhoto(item.id) : null;
+        entries.push({ label: "Ifoto " + (entries.length + 1) + (clean(item.caption) ? " — " + clean(item.caption) : "") + suffix, photo: stored });
+      });
+      return;
+    }
     const count = Math.min(Math.max(parseInt(f.photoCount, 10) || 0, 0), 12);
     const codes = clean(f.photoCodes).split(/[\n,;]+/).map(clean).filter(Boolean);
     const total = Math.max(count, codes.length);
     for (let i = 0; i < total; i++) {
-      entries.push("Ifoto " + (entries.length + 1) + (codes[i] ? " — " + codes[i] : "") + (reports.length > 1 ? " (" + dash(f.beneficiaryName) + ")" : ""));
+      entries.push({ label: "Ifoto " + (entries.length + 1) + (codes[i] ? " — " + codes[i] : "") + suffix });
     }
   });
   const children = [para([run(config.photos, { font: SANS, size: 26, bold: true, underline: true }), run(" (labeled photos)", { font: SANS, size: 22, italics: true, bold: true })], { after: 160, keepNext: true })];
@@ -410,13 +425,20 @@ function photoSection(config, reports) {
   const half = 7110;
   const rows = [];
   for (let i = 0; i < entries.length; i += 2) {
-    const make = (label) => label
-      ? new TableCell({
+    const make = (entry) => {
+      if (!entry) return new TableCell({ width: { size: half, type: WidthType.DXA }, borders, margins: cellMargins, children: [new Paragraph({ children: [] })] });
+      const picture = entry.photo
+        ? new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 120 },
+          children: [new ImageRun({ type: "jpg", data: entry.photo.data, transformation: fitImage(entry.photo.width, entry.photo.height, 420, 290), altText: { title: entry.label, description: entry.label, name: "photo" } })]
+        })
+        : new Paragraph({ children: [new TextRun({ text: "[Shyiramo ifoto hano]", font: SANS, size: 18, italics: true, color: "808080" })], spacing: { after: 1800 } });
+      return new TableCell({
         width: { size: half, type: WidthType.DXA }, borders, margins: cellMargins,
-        children: [new Paragraph({ children: [new TextRun({ text: "[Shyiramo ifoto hano]", font: SANS, size: 18, italics: true, color: "808080" })], spacing: { after: 1800 } }),
-          new Paragraph({ children: [new TextRun({ text: label, font: SANS, size: 18, bold: true })] })]
-      })
-      : new TableCell({ width: { size: half, type: WidthType.DXA }, borders, margins: cellMargins, children: [new Paragraph({ children: [] })] });
+        children: [picture, new Paragraph({ children: [new TextRun({ text: entry.label, font: SANS, size: 18, bold: true })] })]
+      });
+    };
     rows.push(new TableRow({ cantSplit: true, height: { value: 3200, rule: HeightRule.ATLEAST }, children: [make(entries[i]), make(entries[i + 1])] }));
   }
   children.push(new Table({ width: { size: 14220, type: WidthType.DXA }, columnWidths: [half, half], rows }));
@@ -564,7 +586,7 @@ async function buildReportDocx(rawReports, options = {}) {
     sections: [
       { properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1440, right: 1440, bottom: 1440, left: 1440, header: 708, footer: 708 } } }, footers: { default: footer() }, children: memo },
       { properties: landscape, footers: { default: footer() }, children: report },
-      { properties: landscape, footers: { default: footer() }, children: photoSection(config, reports) }
+      { properties: landscape, footers: { default: footer() }, children: photoSection(config, reports, options.getPhoto) }
     ]
   });
   return Packer.toBuffer(doc);

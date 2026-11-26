@@ -1,5 +1,22 @@
 # Changelog
 
+## 26/11/2026: amafoto (camera / gallery)
+
+- Muri Group III, buri muhigo ufite «📷 Fata ifoto» (camera) na «🖼️ Hitamo muri gallery» (ushobora guhitamo menshi icyarimwe), ibisobanuro kuri buri foto, no kuyikuraho. Hafi amafoto 12 kuri buri muhigo.
+- Ifoto isigwa mu browser (≤1280 px, JPEG, ~100–350 KB) mbere yo koherezwa; seriveri igenzura ko ari JPEG nyayo.
+- Amafoto abikwa muri SQLite (ameza `photos`) akahuzwa na raporo iyo ibitswe; ayo utabitse asibwa nyuma y'amasaha 24; ayavanywe muri raporo asibwa iyo ibitswe; asibwa na raporo iyo isibwe. Abakozi bose binjiye barayabona, nk'uko babona raporo.
+- Word: igice «IV. AMAFOTO» ubu gishyiramo amafoto nyayo n'ibisobanuro byayo.
+- Ububiko bw'amafoto bufite igipimo (`PHOTO_MAX_TOTAL_MB`, 25 MB ku buryo busanzwe) kugira ngo snapshot ya GitHub itaba nini cyane.
+- APK: uburenganzira bwa camera bwongewe muri `AndroidManifest.xml` na `mobile/scripts/apply-android.js`.
+- CSP: `img-src` yemeye `blob:`.
+
+## 26/11/2026: app kuri phone (PWA + APK)
+
+- PWA: `manifest.webmanifest`, `sw.js` n'amashusho (`icons/`); buto «📲 Shyira kuri phone» igaragara iyo Chrome yemeye kwinjiza app.
+- APK ya Android: umushinga wa Capacitor muri `mobile/` (ufungura app iri kuri Render muri WebView), n'uburyo bwo kuyibakira kuri GitHub (`.github/workflows/build-apk.yml`). Reba `MOBILE_APK.md`.
+- Kuri APK, «Pakura Word» ikoresha «Share» ya Android (WebView ntishobora kumanura blob).
+- Seriveri itanga `/manifest.webmanifest`, `/sw.js` na `/icons/*.png`; test yongeweho.
+
 ## 25/11/2026: ibyitegererezo by'amaraporo ku mihigo (Mobilization / Monitoring)
 
 - Umukozi iyo ahisemo umuhigo, Group III imwereka icyitegererezo kuri buri gice (Igikorwa fatizo, Abagomba kukigiramo uruhare, Ubumenyi basanzwe bafite, Ubutumwa, n'ibindi) gifite buto «Emeza uko kuri» (kibika icyitegererezo uko kiri) na «Hindura» (kigishyira mu kazu ko guhindura).

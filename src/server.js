@@ -10,6 +10,7 @@ const helmet = require("helmet");
 const { db } = require("./db");
 const { login, publicUser: basePublicUser, requireAuth, requireAdmin } = require("./auth");
 const persistence = require("./persist");
+const photos = require("./photos");
 const { buildReportDocx, docxFileName } = require("./docx-report");
 
 const app = express();
@@ -19,6 +20,7 @@ app.set("trust proxy", process.env.TRUST_PROXY === "1" ? 1 : false);
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
+      "img-src": ["'self'", "data:", "blob:"],
       "script-src": ["'self'", "'unsafe-inline'"],
       "style-src": ["'self'", "'unsafe-inline'"]
     }
@@ -314,6 +316,32 @@ app.get("/api/reports", requireAuth, (req, res) => {
   res.json({ reports: rows.map(reportFromRow) });
 });
 
+const photoLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: Number(process.env.PHOTO_RATE_LIMIT || 300),
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: { error: "Wohereje amafoto menshi cyane. Ongera ugerageze nyuma." }
+});
+
+// Photos arrive already shrunk by the browser as a raw image/jpeg body.
+app.post("/api/photos", requireAuth, photoLimiter, express.raw({ type: "image/jpeg", limit: photos.MAX_BYTES + 1024 }), (req, res) => {
+  if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: "Ohereza ifoto ya JPEG." });
+  try {
+    const photo = photos.save({ id: crypto.randomUUID(), userId: req.user.id, buffer: req.body });
+    res.status(201).json({ photo });
+  } catch (error) {
+    res.status(error.status || 500).json({ error: error.status ? error.message : "Ifoto ntibashije kubikwa." });
+  }
+});
+
+app.get("/api/photos/:id", requireAuth, (req, res) => {
+  const photo = photos.read(req.params.id);
+  if (!photo) return res.status(404).json({ error: "Ifoto ntiyabonetse." });
+  res.set({ "Content-Type": "image/jpeg", "Cache-Control": "private, max-age=86400", "X-Content-Type-Options": "nosniff" });
+  res.send(photo.data);
+});
+
 app.post("/api/reports/docx", requireAuth, async (req, res) => {
   let reports;
   if (req.body && Array.isArray(req.body.ids) && req.body.ids.length) {
@@ -334,7 +362,8 @@ app.post("/api/reports/docx", requireAuth, async (req, res) => {
       staffName: req.user.full_name,
       authorityName: req.body && req.body.authorityName,
       authorityTitle: req.body && req.body.authorityTitle,
-      memoText: req.body && req.body.memoText
+      memoText: req.body && req.body.memoText,
+      getPhoto: photos.read
     });
     res.set({
       "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -358,6 +387,8 @@ app.post("/api/reports", requireAuth, (req, res) => {
 
   const id = crypto.randomUUID();
   const report = { ...req.body, id: undefined, owner: undefined, updatedAt: undefined };
+  const photoError = photos.checkReferences(report, id, req.user);
+  if (photoError) return res.status(400).json({ error: photoError });
   const reportNumber = String(report.fields.reportNumber || "").trim();
   if (!reportNumber) return res.status(400).json({ error: "Raporo igomba kugira nomero." });
 
@@ -381,6 +412,7 @@ app.post("/api/reports", requireAuth, (req, res) => {
     req.user.id,
     now
   );
+  photos.sync(report, id);
   logAction(req.user.id, "CREATE_REPORT", id);
   res.status(201).json({ report: reportFromRow(db.prepare(reportSelect + " WHERE r.id = ?").get(id)) });
 });
@@ -396,6 +428,8 @@ app.put("/api/reports/:id", requireAuth, (req, res) => {
   }
 
   const report = { ...req.body, id: undefined, owner: undefined, updatedAt: undefined, expectedUpdatedAt: undefined };
+  const photoError = photos.checkReferences(report, req.params.id, req.user);
+  if (photoError) return res.status(400).json({ error: photoError });
   const reportNumber = String(report.fields.reportNumber || "").trim();
   if (!reportNumber) return res.status(400).json({ error: "Raporo igomba kugira nomero." });
   const now = new Date().toISOString();
@@ -417,6 +451,7 @@ app.put("/api/reports/:id", requireAuth, (req, res) => {
     now,
     req.params.id
   );
+  photos.sync(report, req.params.id);
   logAction(req.user.id, "UPDATE_REPORT", req.params.id);
   res.json({ report: reportFromRow(db.prepare(reportSelect + " WHERE r.id = ?").get(req.params.id)) });
 });
@@ -602,15 +637,30 @@ app.delete("/api/users/:id", requireAuth, requireAdmin, (req, res) => {
 app.get("/", (req, res) => res.sendFile(path.join(publicDirectory, "index.html")));
 app.get("/data.js", (req, res) => res.sendFile(path.join(publicDirectory, "data.js")));
 app.get("/samples.js", (req, res) => res.sendFile(path.join(publicDirectory, "samples.js")));
+app.get("/manifest.webmanifest", (req, res) => res.type("application/manifest+json").sendFile(path.join(publicDirectory, "manifest.webmanifest")));
+app.get("/sw.js", (req, res) => {
+  res.set("Cache-Control", "no-cache");
+  res.type("application/javascript").sendFile(path.join(publicDirectory, "sw.js"));
+});
+app.get("/icons/:file", (req, res, next) => {
+  if (!/^[a-z0-9-]+\.png$/.test(req.params.file)) return next();
+  res.sendFile(path.join(publicDirectory, "icons", req.params.file), (error) => { if (error) next(); });
+});
 app.use("/api", (req, res) => res.status(404).json({ error: "API endpoint ntiyabonetse." }));
 
 app.use((error, req, res, next) => {
   console.error("Request failed:", error.message);
   if (res.headersSent) return next(error);
+  if (error.type === "entity.too.large") {
+    return res.status(413).json({ error: "Ifoto cyangwa amakuru wohereje ni binini cyane." });
+  }
   if (error instanceof SyntaxError && error.status === 400 && "body" in error) {
     return res.status(400).json({ error: "Amakuru wohereje ntiyemewe." });
   }
   res.status(500).json({ error: "Habaye ikibazo kuri server. Ongera ugerageze." });
 });
+
+photos.purgeOrphans();
+setInterval(() => { try { photos.purgeOrphans(); } catch (error) { console.error("Photo cleanup failed:", error.message); } }, 60 * 60 * 1000).unref();
 
 module.exports = app;
